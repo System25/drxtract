@@ -1,0 +1,1178 @@
+#!/usr/bin/python
+
+# Script to extract contents from director DRX files.
+#
+
+import sys
+import os
+import struct
+
+# Default bit order for MAC
+bit_order_type = 'mac'
+bit_order = ">"
+previous_clut = None
+bmp_file_name = None
+
+MV93_FILE_TYPE = 'MV93'
+RIFX_FILE_FORMAT = 'RIFX'
+IMAP_FILE_FORMAT = 'imap'
+MMAP_FILE_FORMAT = 'mmap'
+FREE_FILE_FORMAT = 'free'
+THUM_FILE_FORMAT = 'THUM'
+BITD_FILE_FORMAT = 'BITD'
+CLUT_FILE_FORMAT = 'CLUT'
+CAST_FILE_FORMAT = 'CASt'
+
+IMAGE_TYPE = 1
+CLUT_TYPE = 4
+
+DEFAULT_WINDOWS_16COLORS_PALETTE = (
+  255, 255, 255, 0, # white
+  0, 255, 255, 0,   # aqua
+  255, 0, 255, 0,   # fuchsia
+  0, 0, 255, 0,     # blue
+  255, 255, 0, 0,   # yellow
+  0, 255, 0, 0,     # lime
+  255, 0, 0, 0,     # red
+  128, 128, 128, 0, # gray
+
+  192, 192, 192, 0, # silver
+  0, 128, 128, 0,   # teal
+  128, 0, 128, 0,   # purple
+  0, 0, 128, 0,     # navy
+  128, 128, 0, 0,   # olive
+  0, 128, 0, 0,     # green
+  128, 0, 0, 0,     # maroon
+  0, 0, 0, 0        # black
+ )
+
+DEFAULT_WINDOWS_256COLORS_PALETTE = (
+     0xFF, 0xFF, 0xFF, 0x00,
+     0xFF, 0xFF, 0x00, 0x00,
+     0xFF, 0x00, 0xFF, 0x00,
+     0xFF, 0x00, 0x00, 0x00,
+     0x00, 0xFF, 0xFF, 0x00,
+     0x00, 0xFF, 0x00, 0x00,
+     0x00, 0x00, 0xFF, 0x00,
+     0x80, 0x80, 0x80, 0x00,
+     0xA4, 0xA0, 0xA0, 0x00,
+     0xF0, 0xFB, 0xFF, 0x00,
+     0x33, 0x33, 0x33, 0x00,
+     0x00, 0x66, 0x99, 0x00,
+     0x33, 0x66, 0x33, 0x00,
+     0x99, 0x33, 0x00, 0x00,
+     0xFF, 0x00, 0xCC, 0x00,
+     0x00, 0x00, 0x88, 0x00,
+     0x66, 0xCC, 0xFF, 0x00,
+     0xCC, 0x99, 0xFF, 0x00,
+     0xDD, 0xDD, 0xDD, 0x00,
+     0x00, 0x99, 0xFF, 0x00,
+     0xFF, 0x66, 0xFF, 0x00,
+     0xCC, 0x66, 0xFF, 0x00,
+     0x99, 0x66, 0xFF, 0x00,
+     0x66, 0x66, 0xFF, 0x00,
+     0x33, 0x66, 0xFF, 0x00,
+     0x00, 0x66, 0xFF, 0x00,
+     0xFF, 0x33, 0xFF, 0x00,
+     0xCC, 0x33, 0xFF, 0x00,
+     0x99, 0x33, 0xFF, 0x00,
+     0x66, 0x33, 0xFF, 0x00,
+     0x33, 0x33, 0xFF, 0x00,
+     0x00, 0x33, 0xFF, 0x00,
+     0xCC, 0x00, 0xFF, 0x00,
+     0x99, 0x00, 0xFF, 0x00,
+     0x66, 0x00, 0xFF, 0x00,
+     0x33, 0x00, 0xFF, 0x00,
+     0xFF, 0xFF, 0xCC, 0x00,
+     0xCC, 0xFF, 0xCC, 0x00,
+     0x99, 0xFF, 0xCC, 0x00,
+     0x66, 0xFF, 0xCC, 0x00,
+     0x33, 0xFF, 0xCC, 0x00,
+     0x00, 0xFF, 0xCC, 0x00,
+     0xFF, 0xCC, 0xCC, 0x00,
+     0xCC, 0xCC, 0xCC, 0x00,
+     0x99, 0xCC, 0xCC, 0x00,
+     0x66, 0xCC, 0xCC, 0x00,
+     0x33, 0xCC, 0xCC, 0x00,
+     0x00, 0xCC, 0xCC, 0x00,
+     0xFF, 0x99, 0xCC, 0x00,
+     0xCC, 0x99, 0xCC, 0x00,
+     0x99, 0x99, 0xCC, 0x00,
+     0x66, 0x99, 0xCC, 0x00,
+     0x33, 0x99, 0xCC, 0x00,
+     0x00, 0x99, 0xCC, 0x00,
+     0xFF, 0x66, 0xCC, 0x00,
+     0xCC, 0x66, 0xCC, 0x00,
+     0x99, 0x66, 0xCC, 0x00,
+     0x66, 0x66, 0xCC, 0x00,
+     0x33, 0x66, 0xCC, 0x00,
+     0x00, 0x66, 0xCC, 0x00,
+     0xFF, 0x33, 0xCC, 0x00,
+     0xCC, 0x33, 0xCC, 0x00,
+     0x99, 0x33, 0xCC, 0x00,
+     0x66, 0x33, 0xCC, 0x00,
+     0x33, 0x33, 0xCC, 0x00,
+     0x00, 0x33, 0xCC, 0x00,
+     0xFF, 0x08, 0xD4, 0x00,
+     0xCC, 0x00, 0xCC, 0x00,
+     0x99, 0x00, 0xCC, 0x00,
+     0x66, 0x00, 0xCC, 0x00,
+     0x33, 0x00, 0xCC, 0x00,
+     0x00, 0x00, 0xCC, 0x00,
+     0xFF, 0xFF, 0x99, 0x00,
+     0xCC, 0xFF, 0x99, 0x00,
+     0x99, 0xFF, 0x99, 0x00,
+     0x66, 0xFF, 0x99, 0x00,
+     0x33, 0xFF, 0x99, 0x00,
+     0x00, 0xFF, 0x99, 0x00,
+     0xFF, 0xCC, 0x99, 0x00,
+     0xCC, 0xCC, 0x99, 0x00,
+     0x99, 0xCC, 0x99, 0x00,
+     0x66, 0xCC, 0x99, 0x00,
+     0x33, 0xCC, 0x99, 0x00,
+     0x00, 0xCC, 0x99, 0x00,
+     0xFF, 0x99, 0x99, 0x00,
+     0xCC, 0x99, 0x99, 0x00,
+     0x99, 0x99, 0x99, 0x00,
+     0x66, 0x99, 0x99, 0x00,
+     0x33, 0x99, 0x99, 0x00,
+     0x00, 0x99, 0x99, 0x00,
+     0xFF, 0x66, 0x99, 0x00,
+     0xCC, 0x66, 0x99, 0x00,
+     0x99, 0x66, 0x99, 0x00,
+     0x66, 0x66, 0x99, 0x00,
+     0x33, 0x66, 0x99, 0x00,
+     0x00, 0x66, 0xA1, 0x00,
+     0xFF, 0x33, 0x99, 0x00,
+     0xCC, 0x33, 0x99, 0x00,
+     0x99, 0x33, 0x99, 0x00,
+     0x66, 0x33, 0x99, 0x00,
+     0x33, 0x33, 0x99, 0x00,
+     0x00, 0x33, 0x99, 0x00,
+     0xFF, 0x00, 0x99, 0x00,
+     0xCC, 0x00, 0x99, 0x00,
+     0x99, 0x00, 0x99, 0x00,
+     0x66, 0x00, 0x99, 0x00,
+     0x33, 0x00, 0x99, 0x00,
+     0x00, 0x00, 0x99, 0x00,
+     0xFF, 0xFF, 0x66, 0x00,
+     0xCC, 0xFF, 0x66, 0x00,
+     0x99, 0xFF, 0x66, 0x00,
+     0x66, 0xFF, 0x66, 0x00,
+     0x33, 0xFF, 0x66, 0x00,
+     0x00, 0xFF, 0x66, 0x00,
+     0xFF, 0xCC, 0x66, 0x00,
+     0xCC, 0xCC, 0x66, 0x00,
+     0x99, 0xCC, 0x66, 0x00,
+     0x66, 0xCC, 0x66, 0x00,
+     0x33, 0xCC, 0x66, 0x00,
+     0x00, 0xCC, 0x66, 0x00,
+     0xFF, 0x99, 0x66, 0x00,
+     0xCC, 0x99, 0x66, 0x00,
+     0x99, 0x99, 0x66, 0x00,
+     0x66, 0x99, 0x66, 0x00,
+     0x33, 0x99, 0x66, 0x00,
+     0x00, 0x99, 0x66, 0x00,
+     0xFF, 0x66, 0x66, 0x00,
+     0xCC, 0x66, 0x66, 0x00,
+     0x99, 0x66, 0x66, 0x00,
+     0x66, 0x66, 0x66, 0x00,
+     0x33, 0x66, 0x66, 0x00,
+     0x00, 0x66, 0x66, 0x00,
+     0xFF, 0x33, 0x66, 0x00,
+     0xCC, 0x33, 0x66, 0x00,
+     0x99, 0x33, 0x66, 0x00,
+     0x66, 0x33, 0x66, 0x00,
+     0x33, 0x33, 0x66, 0x00,
+     0x00, 0x33, 0x66, 0x00,
+     0xFF, 0x00, 0x66, 0x00,
+     0xCC, 0x00, 0x66, 0x00,
+     0x99, 0x00, 0x66, 0x00,
+     0x66, 0x00, 0x66, 0x00,
+     0x33, 0x00, 0x66, 0x00,
+     0x00, 0x00, 0x66, 0x00,
+     0xFF, 0xFF, 0x33, 0x00,
+     0xCC, 0xFF, 0x33, 0x00,
+     0x99, 0xFF, 0x33, 0x00,
+     0x66, 0xFF, 0x33, 0x00,
+     0x33, 0xFF, 0x33, 0x00,
+     0x00, 0xFF, 0x33, 0x00,
+     0xFF, 0xCC, 0x33, 0x00,
+     0xCC, 0xCC, 0x33, 0x00,
+     0x99, 0xCC, 0x33, 0x00,
+     0x66, 0xCC, 0x33, 0x00,
+     0x33, 0xCC, 0x33, 0x00,
+     0x00, 0xCC, 0x33, 0x00,
+     0xFF, 0x99, 0x33, 0x00,
+     0xCC, 0x99, 0x33, 0x00,
+     0x99, 0x99, 0x33, 0x00,
+     0x66, 0x99, 0x33, 0x00,
+     0x33, 0x99, 0x33, 0x00,
+     0x00, 0x99, 0x33, 0x00,
+     0xFF, 0x66, 0x33, 0x00,
+     0xCC, 0x66, 0x33, 0x00,
+     0x99, 0x66, 0x33, 0x00,
+     0x66, 0x66, 0x33, 0x00,
+     0x33, 0x6E, 0x33, 0x00,
+     0x00, 0x66, 0x33, 0x00,
+     0xFF, 0x33, 0x33, 0x00,
+     0xCC, 0x33, 0x33, 0x00,
+     0x99, 0x33, 0x33, 0x00,
+     0x66, 0x33, 0x33, 0x00,
+     0x3B, 0x33, 0x33, 0x00,
+     0x00, 0x33, 0x33, 0x00,
+     0xFF, 0x00, 0x33, 0x00,
+     0xCC, 0x00, 0x33, 0x00,
+     0x99, 0x00, 0x33, 0x00,
+     0x66, 0x00, 0x33, 0x00,
+     0x33, 0x00, 0x33, 0x00,
+     0x00, 0x00, 0x33, 0x00,
+     0xCC, 0xFF, 0x00, 0x00,
+     0x99, 0xFF, 0x00, 0x00,
+     0x66, 0xFF, 0x00, 0x00,
+     0x33, 0xFF, 0x00, 0x00,
+     0xFF, 0xCC, 0x00, 0x00,
+     0xCC, 0xCC, 0x00, 0x00,
+     0x99, 0xCC, 0x00, 0x00,
+     0x66, 0xCC, 0x00, 0x00,
+     0x33, 0xCC, 0x00, 0x00,
+     0x00, 0xCC, 0x00, 0x00,
+     0xFF, 0x99, 0x00, 0x00,
+     0xCC, 0x99, 0x00, 0x00,
+     0x99, 0x99, 0x00, 0x00,
+     0x66, 0x99, 0x00, 0x00,
+     0x33, 0x99, 0x00, 0x00,
+     0x00, 0x99, 0x00, 0x00,
+     0xFF, 0x66, 0x00, 0x00,
+     0xCC, 0x66, 0x00, 0x00,
+     0x99, 0x66, 0x00, 0x00,
+     0x66, 0x66, 0x00, 0x00,
+     0x33, 0x66, 0x00, 0x00,
+     0x00, 0x66, 0x00, 0x00,
+     0xFF, 0x33, 0x00, 0x00,
+     0xCC, 0x33, 0x00, 0x00,
+     0xA1, 0x33, 0x00, 0x00,
+     0x66, 0x33, 0x00, 0x00,
+     0x33, 0x33, 0x00, 0x00,
+     0x00, 0x33, 0x00, 0x00,
+     0xCC, 0x00, 0x00, 0x00,
+     0x99, 0x00, 0x00, 0x00,
+     0x66, 0x00, 0x00, 0x00,
+     0x33, 0x00, 0x00, 0x00,
+     0x00, 0x00, 0xEE, 0x00,
+     0x00, 0x00, 0xDD, 0x00,
+     0x00, 0x00, 0xAA, 0x00,
+     0x00, 0x00, 0x90, 0x00,
+     0x00, 0x00, 0x77, 0x00,
+     0x00, 0x00, 0x55, 0x00,
+     0x00, 0x00, 0x44, 0x00,
+     0x00, 0x00, 0x22, 0x00,
+     0x00, 0x00, 0x11, 0x00,
+     0x00, 0xEE, 0x00, 0x00,
+     0x00, 0xDD, 0x00, 0x00,
+     0x00, 0xAA, 0x00, 0x00,
+     0x00, 0x88, 0x00, 0x00,
+     0x00, 0x77, 0x00, 0x00,
+     0x00, 0x55, 0x00, 0x00,
+     0x00, 0x44, 0x00, 0x00,
+     0x00, 0x22, 0x00, 0x00,
+     0x00, 0x11, 0x00, 0x00,
+     0xEE, 0x00, 0x00, 0x00,
+     0xDD, 0x00, 0x00, 0x00,
+     0xAA, 0x00, 0x00, 0x00,
+     0x88, 0x00, 0x00, 0x00,
+     0x77, 0x00, 0x00, 0x00,
+     0x55, 0x00, 0x00, 0x00,
+     0x44, 0x00, 0x00, 0x00,
+     0x22, 0x00, 0x00, 0x00,
+     0x11, 0x00, 0x00, 0x00,
+     0x30, 0x22, 0x22, 0x00,
+     0x99, 0x99, 0xFF, 0x00,
+     0xFF, 0xCC, 0xFF, 0x00,
+     0xFF, 0xD4, 0x99, 0x00,
+     0x99, 0xD4, 0x99, 0x00,
+     0x99, 0xFF, 0xFF, 0x00,
+     0xF0, 0xF0, 0xF0, 0x00,
+     0xF0, 0xC8, 0xA4, 0x00,
+     0xC0, 0xDC, 0xC0, 0x00,
+     0xC0, 0xC0, 0xC0, 0x00,
+     0xBF, 0xBF, 0x00, 0x00,
+     0xBF, 0x00, 0xBF, 0x00,
+     0xBF, 0x00, 0x00, 0x00,
+     0x00, 0xBF, 0xBF, 0x00,
+     0x00, 0xBF, 0x00, 0x00,
+     0x00, 0x00, 0xBF, 0x00,
+     0x00, 0x00, 0x00, 0x00,
+ )
+
+# ====================================================================================================================================
+def parse_imap(data):
+    # Unknown block data
+    content = struct.unpack(bit_order+"hhiiiii", data)
+    print("IMAP[0]: %s"%(content[0]))
+    print("IMAP[1]: %s"%(content[1]))
+    print("IMAP[2]: %s"%(content[2]))
+    print("IMAP[3]: %s"%(content[3]))
+    print("IMAP[4]: %s"%(content[4]))
+    print("IMAP[5]: %s"%(content[5]))
+    print("IMAP[6]: %s"%(content[6]))
+
+# ====================================================================================================================================
+def save_4bit_bmp(bmp_width, bmp_height, file, previous_clut, fdata):
+    bmp_bpp = 4
+    values = (bmp_width*bmp_height+(16*4)+40+14, # The size of the BMP file in bytes
+              0, # Reserved
+              0, # Reserved
+              ((16*4)+40+14) # Data offset
+             )
+    s = struct.Struct('<ihhi')
+    packed_data = s.pack(*values)
+    file.write(packed_data)
+
+    ncolors = 16
+
+    # Write BITMAPINFOHEADER
+    values = (40, # the size of this header (40 bytes)
+              bmp_width, # the bitmap width in pixels (signed integer)
+              bmp_height, # the bitmap height in pixels (signed integer)
+              1, # the number of color planes (must be 1)
+              bmp_bpp, # the number of bits per pixel, which is the color depth of the image. Typical values are 1, 4, 8, 16, 24 and 32.
+              0, # the compression method being used
+              0, # the image size. This is the size of the raw bitmap data; a dummy 0 can be given for BI_RGB bitmaps.
+              0, # the horizontal resolution of the image. (pixel per meter, signed integer)
+              0, # the vertical resolution of the image. (pixel per meter, signed integer)
+              ncolors, # the number of colors in the color palette, or 0 to default to 2n
+              ncolors  # the number of important colors used, or 0 when every color is important; generally ignored
+             )
+    s = struct.Struct('<iiihhiiiiii')
+    packed_data = s.pack(*values)
+    file.write(packed_data)
+
+    # Write the color palette
+    if previous_clut is not None:
+        s = struct.Struct('B'*(ncolors*4))
+        packed_data = s.pack(*previous_clut[0:(ncolors*4)])
+        file.write(packed_data)
+
+    else:
+        # Default windows 16 colors palete
+        s = struct.Struct('B'*(ncolors*4))
+        packed_data = s.pack(*DEFAULT_WINDOWS_16COLORS_PALETTE)
+        file.write(packed_data)
+
+    # get the pixel information
+    # RLE encoded bytes contains 2 pixel colors
+    w = (bmp_width/2)
+
+    imgdata = [0 for x in range(w*bmp_height)]
+    x = 0
+    y = bmp_height - 1
+    idx = 8
+    while (idx < len(fdata)) and (y>=0):
+        val = struct.unpack("B", fdata[idx])[0]
+        if (val & 0x80) != 0:
+            # RLE encoded
+            run_length = 257 - val
+            run_value = struct.unpack("B", fdata[idx+1])[0]
+            idx = idx + 2
+            for i in range(0, run_length):
+                imgdata[y*w + x] = run_value
+                x += 1
+                if x >= w:
+                    x = 0
+                    y -= 1
+            
+
+        elif val != 0:
+            # Not RLE encoded
+            run_length = (val + 1)
+            idx = idx + 1
+            for i in range(0, run_length):
+                imgdata[y*w + x] = struct.unpack("B", fdata[idx])[0]
+                idx = idx + 1
+                x += 1
+                if x >= w:
+                    x = 0
+                    y -= 1
+
+        else: # val is zero
+            run_value = struct.unpack("B", fdata[idx+1])[0]
+            idx = idx + 2
+
+            imgdata[y*w + x] = run_value
+            x += 1
+            if x >= w:
+                x = 0
+                y -= 1
+
+    if y!=-1 or x!=0:
+        print("WARNING: Not enought data to decode. Probably the image is not properly generated. (y=%s, x=%s)"%(y, x))
+
+    if idx != len(fdata):
+        print("WARNING: there is more data to decode. Probably the image is not properly generated. (%s != %s)"%(idx, len(fdata)))
+
+
+    # Write the pixel information
+    file.write(struct.pack("B"*(w*bmp_height), *imgdata))
+    file.close()
+
+# ====================================================================================================================================
+def save_8bit_bmp(bmp_width, bmp_height, file, previous_clut, fdata):
+    bmp_bpp = 8
+    values = (bmp_width*bmp_height+(256*4)+40+14, # The size of the BMP file in bytes
+              0, # Reserved
+              0, # Reserved
+              ((256*4)+40+14) # Data offset
+             )
+    s = struct.Struct('<ihhi')
+    packed_data = s.pack(*values)
+    file.write(packed_data)
+
+    ncolors = 256
+
+    # Write BITMAPINFOHEADER
+    values = (40, # the size of this header (40 bytes)
+              bmp_width, # the bitmap width in pixels (signed integer)
+              bmp_height, # the bitmap height in pixels (signed integer)
+              1, # the number of color planes (must be 1)
+              bmp_bpp, # the number of bits per pixel, which is the color depth of the image. Typical values are 1, 4, 8, 16, 24 and 32.
+              0, # the compression method being used
+              0, # the image size. This is the size of the raw bitmap data; a dummy 0 can be given for BI_RGB bitmaps.
+              0, # the horizontal resolution of the image. (pixel per meter, signed integer)
+              0, # the vertical resolution of the image. (pixel per meter, signed integer)
+              ncolors, # the number of colors in the color palette, or 0 to default to 2n
+              ncolors  # the number of important colors used, or 0 when every color is important; generally ignored
+             )
+    s = struct.Struct('<iiihhiiiiii')
+    packed_data = s.pack(*values)
+    file.write(packed_data)
+
+    # Write the color palette
+    if previous_clut is not None:
+        s = struct.Struct('B'*(256*4))
+        packed_data = s.pack(*previous_clut)
+        file.write(packed_data)
+
+    else:
+        # Default windows 256 colors palete
+        s = struct.Struct('B'*(256*4))
+        packed_data = s.pack(*DEFAULT_WINDOWS_256COLORS_PALETTE)
+        file.write(packed_data)
+
+    # get the pixel information
+    # RLE encoded bytes contains 1 pixel color
+    w = bmp_width
+
+    imgdata = [0 for x in range(w*bmp_height)]
+    x = 0
+    y = bmp_height - 1
+    idx = 8
+    while (idx < len(fdata)) and (y>=0):
+        val = struct.unpack("B", fdata[idx])[0]
+        if (val & 0x80) != 0:
+            # RLE encoded
+            run_length = 257 - val
+            run_value = struct.unpack("B", fdata[idx+1])[0]
+            idx = idx + 2
+            for i in range(0, run_length):
+                imgdata[y*w + x] = run_value
+                x += 1
+                if x >= w:
+                    x = 0
+                    y -= 1
+            
+
+        elif val != 0:
+            # Not RLE encoded
+            run_length = val + 1
+            idx = idx + 1
+            for i in range(0, run_length):
+                imgdata[y*w + x] = struct.unpack("B", fdata[idx])[0]
+                idx = idx + 1
+                x += 1
+                if x >= w:
+                    x = 0
+                    y -= 1
+
+        else: # val is zero
+            run_value = struct.unpack("B", fdata[idx+1])[0]
+            idx = idx + 2
+            imgdata[y*w + x] = run_value
+            x += 1
+            if x >= w:
+                x = 0
+                y -= 1
+
+    if y!=-1 or x!=0:
+        print("WARNING: Not enought data to decode. Probably the image is not properly generated. (y=%s, x=%s)"%(y, x))
+
+    if idx != len(fdata):
+        print("WARNING: there is more data to decode. Probably the image is not properly generated. (%s != %s)"%(idx, len(fdata)))
+
+    # Write the pixel information
+    file.write(struct.pack("B"*(bmp_width*bmp_height), *imgdata))
+    file.close()
+
+# ====================================================================================================================================
+def save_16bit_bmp(bmp_width, bmp_height, file, fdata):
+    bmp_bpp = 16
+    hsize = 124
+    values = (bmp_width*bmp_height*2+hsize+14, # The size of the BMP file in bytes
+              0, # Reserved
+              0, # Reserved
+              (hsize+14) # Data offset
+             )
+    s = struct.Struct('<ihhi')
+    packed_data = s.pack(*values)
+    file.write(packed_data)
+
+    # Write BITMAPINFOHEADER
+    values = (hsize, # the size of this header (hsize bytes)
+              bmp_width, # the bitmap width in pixels (signed integer)
+              bmp_height, # the bitmap height in pixels (signed integer)
+              1, # the number of color planes (must be 1)
+              bmp_bpp, # the number of bits per pixel, which is the color depth of the image. Typical values are 1, 4, 8, 16, 24 and 32.
+              3, # the compression method being used (BI_BITFIELDS)
+              0, # the image size. This is the size of the raw bitmap data; a dummy 0 can be given for BI_RGB bitmaps.
+              0, # the horizontal resolution of the image. (pixel per meter, signed integer)
+              0, # the vertical resolution of the image. (pixel per meter, signed integer)
+              0, # the number of colors in the color palette, or 0 to default to 2n
+              0, # the number of important colors used, or 0 when every color is important; generally ignored
+              0x00007C00, # Red channel bitmask
+              0x000003E0, # Green channel bitmask
+              0x0000001F, # Blue channel bitmask
+              0x00000000, # Alpha channel bitmask
+              0x73524742, # "BGRs"
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, # CIEXYZTRIPLE Color Space endpoints
+              0, # Red Gamma
+              0, # Green Gamma
+              0, # Blue Gamma
+             )
+    s = struct.Struct('<iiihhIIIIIIIIIIIIIIIIIIIIIIIIIII')
+    packed_data = s.pack(*values)
+    file.write(packed_data)
+
+    # get the pixel information
+    # RLE encoded bytes are:
+    #   - RLE encoded lower byte
+    #   - RLE encoded upper byte
+
+    w = bmp_width*2
+    h = bmp_height
+
+    imgdata = [0 for x in range(w*bmp_height)]
+    x = 0
+    y = bmp_height - 1
+    idx = 8
+    while (idx < len(fdata)) and (y>=0):
+        val = struct.unpack("B", fdata[idx])[0]
+        if (val & 0x80) != 0:
+            # RLE encoded
+            run_length = 257 - val
+            run_value = struct.unpack("B", fdata[idx+1])[0]
+            idx = idx + 2
+
+            # Jump to next byte when necessary
+            if ((x + run_length) > bmp_width) and (x < bmp_width):
+                x = bmp_width
+
+            # Jump to next row when necessary
+            if ((x + run_length) > w):
+                x = 0
+                y -= 1
+
+            for i in range(0, run_length):
+                imgdata[y*w + x] = run_value
+                x += 1
+            
+
+        else:
+            # Not RLE encoded
+            run_length = val + 1
+            idx = idx + 1
+            for i in range(0, run_length):
+                imgdata[y*w + x] = struct.unpack("B", fdata[idx])[0]
+                idx = idx + 1
+                x += 1
+                if x >= w:
+                    x = 0
+                    y -= 1
+
+    if y!=-1 or x!=0:
+        print("WARNING: Not enought data to decode. Probably the image is not properly generated. (y=%s, x=%s)"%(y, x))
+
+    if idx != len(fdata):
+        print("WARNING: there is more data to decode. Probably the image is not properly generated. (%s != %s)"%(idx, len(fdata)))
+
+
+    # Order lower and upper bytes
+    imgdatamix = [0 for x in range(bmp_width*2*bmp_height)]
+    w2 = bmp_width*2
+    w1 = bmp_width
+    w0 = 0
+    for y in range(0, bmp_height):
+        yw1 = y*w1
+        yw2 = y*w2
+        for x in range(0, bmp_width):
+            imgdatamix[yw2 + x*2 + 0] = imgdata[yw2 + w1 + x]  # Upper
+            imgdatamix[yw2 + x*2 + 1] = imgdata[yw2 + w0 + x]  # Lower
+
+    # Write the pixel information
+    file.write(struct.pack("B"*(bmp_width*2*bmp_height), *imgdatamix))
+    file.close()
+
+# ====================================================================================================================================
+def save_24bit_bmp(bmp_width, bmp_height, file, fdata):
+    bmp_bpp = 24
+    values = (bmp_width*bmp_height*3+40+14, # The size of the BMP file in bytes
+              0, # Reserved
+              0, # Reserved
+              (40+14) # Data offset
+             )
+    s = struct.Struct('<ihhi')
+    packed_data = s.pack(*values)
+    file.write(packed_data)
+
+    ncolors = 0
+
+    # Write BITMAPINFOHEADER
+    values = (40, # the size of this header (40 bytes)
+              bmp_width, # the bitmap width in pixels (signed integer)
+              bmp_height, # the bitmap height in pixels (signed integer)
+              1, # the number of color planes (must be 1)
+              bmp_bpp, # the number of bits per pixel, which is the color depth of the image. Typical values are 1, 4, 8, 16, 24 and 32.
+              0, # the compression method being used
+              0, # the image size. This is the size of the raw bitmap data; a dummy 0 can be given for BI_RGB bitmaps.
+              0, # the horizontal resolution of the image. (pixel per meter, signed integer)
+              0, # the vertical resolution of the image. (pixel per meter, signed integer)
+              ncolors, # the number of colors in the color palette, or 0 to default to 2n
+              ncolors  # the number of important colors used, or 0 when every color is important; generally ignored
+             )
+    s = struct.Struct('<iiihhiiiiii')
+    packed_data = s.pack(*values)
+    file.write(packed_data)
+
+    # get the pixel information
+    # RLE encoded bytes are:
+    #   - RLE encoded Alpha channel for 1 row
+    #   - RLE encoded Blue channel for 1 row
+    #   - RLE encoded Green channel for 1 row
+    #   - RLE encoded Red channel for 1 row
+
+    w = bmp_width*4
+    h = bmp_height
+
+    imgdata = [0 for x in range(w*bmp_height)]
+    x = 0
+    y = bmp_height - 1
+    idx = 8
+    while (idx < len(fdata)) and (y>=0):
+        val = struct.unpack("B", fdata[idx])[0]
+        if (val & 0x80) != 0:
+            # RLE encoded
+            run_length = 257 - val
+            run_value = struct.unpack("B", fdata[idx+1])[0]
+            idx = idx + 2
+            for i in range(0, run_length):
+                imgdata[y*w + x] = run_value
+                x += 1
+                if x >= w:
+                    x = 0
+                    y -= 1
+            
+
+        elif val != 0:
+            # Not RLE encoded
+            run_length = val + 1
+            idx = idx + 1
+            for i in range(0, run_length):
+                imgdata[y*w + x] = struct.unpack("B", fdata[idx])[0]
+                idx = idx + 1
+                x += 1
+                if x >= w:
+                    x = 0
+                    y -= 1
+
+        else: # val is zero
+            run_value = struct.unpack("B", fdata[idx+1])[0]
+            idx = idx + 2
+            imgdata[y*w + x] = run_value
+            x += 1
+            if x >= w:
+                x = 0
+                y -= 1
+
+    if y!=-1 or x!=0:
+        print("WARNING: Not enought data to decode. Probably the image is not properly generated. (y=%s, x=%s)"%(y, x))
+
+    if idx != len(fdata):
+        print("WARNING: there is more data to decode. Probably the image is not properly generated. (%s != %s)"%(idx, len(fdata)))
+
+
+    # Order RGB bytes and discard Alpha channel
+    imgdatamix = [0 for x in range(bmp_width*3*bmp_height)]
+    w4 = bmp_width*4
+    w3 = bmp_width*3
+    w2 = bmp_width*2
+    w1 = bmp_width
+    w0 = 0
+    for y in range(0, bmp_height):
+        yw4 = y*w4
+        yw3 = y*w3
+        for x in range(0, bmp_width):
+            imgdatamix[yw3 + x*3 + 0] = imgdata[yw4 + w3 + x]  # Red
+            imgdatamix[yw3 + x*3 + 1] = imgdata[yw4 + w2 + x]  # Green
+            imgdatamix[yw3 + x*3 + 2] = imgdata[yw4 + w1 + x]  # Blue
+
+    # Write the pixel information
+    file.write(struct.pack("B"*(bmp_width*3*bmp_height), *imgdatamix))
+    file.close()
+
+# ====================================================================================================================================
+def parse_mmap(data, fileContent):
+    # This file types will be ignored
+    types_to_ignore = [IMAP_FILE_FORMAT, MMAP_FILE_FORMAT, FREE_FILE_FORMAT, THUM_FILE_FORMAT]
+
+    # Unknown block data
+    content = struct.unpack(bit_order+"hhiiiii", data[0:24])
+    print("MMAP[0]: %s"%(content[0]))
+    print("MMAP[1]: %s"%(content[1]))
+    # Number Of Files (including nulls at the end of the directory)
+    no_files_wnull = content[2]
+    # Number Of Files (not including the nulls at the end of the directory)
+    no_files_wonull = content[3]
+    print("MMAP: Number of files (including nulls) %s"%(no_files_wnull))
+    print("MMAP: Number of files (without nulls) %s"%(no_files_wonull))
+    # Padding
+    if content[4] != -1 or content[5] != -1:
+        print("ERROR: Bad nmap padding %s %s"%(content[4], content[5]))
+        sys.exit(-1)        
+
+    print("MMAP[6]: %s"%(content[6]))
+
+    # Ignore RIFX file data
+    file_format = struct.unpack("cccc", data[24:28])
+    file_format = ('%c%c%c%c'%(file_format[0], file_format[1], file_format[2], file_format[3]))
+    print("MMAP: Meta file: %s"%(file_format))
+    if RIFX_FILE_FORMAT != file_format:
+        print("ERROR: nmap internal format is not %s"%(RIFX_FILE_FORMAT))
+        sys.exit(-1)
+
+    # Read file length
+    file_length = struct.unpack(bit_order+"i", data[28:32])[0]
+    print("NMAP: Meta file length (must be the whole data length): %s"%(file_length))
+    if len(fileContent) != file_length + 8:
+        print("ERROR: Bad file length!")
+        sys.exit(-1)
+
+    # Read file offset
+    file_offset = struct.unpack(bit_order+"i", data[32:36])[0]
+    print("NMAP: Meta file offset (must be zero): %s"%(file_offset))
+    if file_offset != 0:
+        print("ERROR: Bad file offset!")
+        sys.exit(-1)
+
+    # Unknown
+    unknown0 = struct.unpack(bit_order+"i", data[36:40])[0]
+    print("NMAP: Unknown 0: %s"%(unknown0))
+
+    unknown1 = struct.unpack(bit_order+"i", data[40:44])[0]
+    print("NMAP: Unknown 1: %s"%(unknown1))
+
+    # Extract file contents
+    index = 44
+    nfiles = 1
+  
+    # Default values
+    previous_clut = None
+    bmp_file_name = None
+    bmp_width = 0
+    bmp_height = 0
+    bmp_bpp = 0
+    while index < len(data) and nfiles < no_files_wonull:
+        print("---------------------------------------")
+        print("FILE: Number: %s"%(nfiles))
+
+        # Read file format
+        file_format = struct.unpack("cccc", data[index:(index+4)])
+        file_format = ('%c%c%c%c'%(file_format[0], file_format[1], file_format[2], file_format[3]))
+        print("FILE: File format: %s"%(file_format))
+
+        # Read file length
+        file_length = struct.unpack(bit_order+"i", data[(index+4):(index+8)])[0]
+        print("FILE: Length: %s"%(file_length))
+
+        # Read file offset
+        file_offset = struct.unpack(bit_order+"i", data[(index+8):(index+12)])[0]
+        print("FILE: Offset: %s"%(file_offset))
+
+        # Unknown
+        unknown0 = struct.unpack(bit_order+"i", data[(index+12):(index+16)])[0]
+        print("FILE: Unknown 0: %s"%(unknown0))
+
+        unknown1 = struct.unpack(bit_order+"i", data[(index+16):(index+20)])[0]
+        print("FILE: Unknown 1: %s"%(unknown1))
+
+        if (file_format in types_to_ignore) or (file_length == 0):
+            print("FILE: Empty file data or must ignore file!")
+
+        # -------------------------- CLUT ------------------------------------------------------------------
+        elif (file_format == CLUT_FILE_FORMAT):
+            # Save clut for BMP creation
+            fdata = fileContent[file_offset:(file_offset+file_length+8)]
+
+            # Read data format
+            data_format = struct.unpack("cccc", fdata[0:4])
+            data_format = ('%c%c%c%c'%(data_format[0], data_format[1], data_format[2], data_format[3]))
+            if data_format != file_format:
+                print("ERROR: Bad data format! (%s != %s)"%(data_format, file_format))
+                sys.exit(-1)
+
+            if len(fdata)<8:
+                print("WARNING: Creating empty file!")
+                file.close()
+                index = index + 20
+                nfiles = nfiles + 1
+                continue
+
+            # Read file length
+            data_length = struct.unpack(bit_order+"i", fdata[4:8])[0]
+            if data_length != file_length:
+                print("ERROR: Bad data length! (%s != %s)"%(data_length, file_length))
+                sys.exit(-1)
+
+            idx = 8
+            previous_clut = () 
+
+            while (idx+5) < len(fdata):
+                previous_clut += (struct.unpack("B", fdata[idx+5])[0],) # Red
+                previous_clut += (struct.unpack("B", fdata[idx+3])[0],) # Green
+                previous_clut += (struct.unpack("B", fdata[idx+1])[0],) # Blue
+                previous_clut += (0,)            # Alpha
+                idx = idx + 6
+
+            while len(previous_clut) < (256*4):
+                previous_clut += (0, 0, 0, 0) # Black
+
+
+        # -------------------------- CASt ------------------------------------------------------------------
+        elif (file_format == CAST_FILE_FORMAT):     
+            # Save cast info for a later use
+            fdata = fileContent[file_offset:(file_offset+file_length+8)]
+
+            # Read data format
+            data_format = struct.unpack("cccc", fdata[0:4])
+            data_format = ('%c%c%c%c'%(data_format[0], data_format[1], data_format[2], data_format[3]))
+            if data_format != file_format:
+                print("ERROR: Bad data format! (%s != %s)"%(data_format, file_format))
+                sys.exit(-1)
+
+            if len(fdata)<8:
+                print("WARNING: Creating empty file!")
+                file.close()
+                index = index + 20
+                nfiles = nfiles + 1
+                continue
+
+            # Read file length
+            data_length = struct.unpack(bit_order+"i", fdata[4:8])[0]
+            if data_length != file_length:
+                print("ERROR: Bad data length! (%s != %s)"%(data_length, file_length))
+                sys.exit(-1)
+
+            # Parse cast data
+            idx = 8
+            cast_bit_order = '>'
+            data_type = struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+
+            print("DEBUG: data_type = %s"%(data_type)) 
+            bmp_file_name = None
+            if data_type == IMAGE_TYPE:
+                print("Reading image data...")
+                # Probably data start offset
+                unknown_00 = struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+                idx += 4
+                unknown_01 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+                idx += 4
+                unknown_02 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+                idx += 4
+                unknown_03 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+                idx += 4
+                unknown_04 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+                idx += 4
+                unknown_05 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+                idx += 4
+                unknown_06 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+                idx += 4
+                unknown_07 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+                idx += 4
+                unknown_08 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+                idx += 4
+                unknown_09 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+                idx += 4
+                unknown_10 =  struct.unpack("B", fdata[idx])[0]
+                idx += 1
+
+                print("DEBUG: unknown_00 = %s"%(unknown_00)) 
+                print("DEBUG: unknown_01 = %s"%(unknown_01)) 
+                print("DEBUG: unknown_02 = %s"%(unknown_02)) 
+                print("DEBUG: unknown_03 = %s"%(unknown_03)) 
+                print("DEBUG: unknown_04 = %s"%(unknown_04)) 
+                print("DEBUG: unknown_05 = %s"%(unknown_05)) 
+                print("DEBUG: unknown_06 = %s"%(unknown_06)) 
+                print("DEBUG: unknown_07 = %s"%(unknown_07)) 
+                print("DEBUG: unknown_08 = %s"%(unknown_08)) 
+                print("DEBUG: unknown_09 = %s"%(unknown_09)) 
+                print("DEBUG: unknown_10 = %s"%(unknown_10)) 
+
+                fnamepad = struct.unpack("B", fdata[idx])[0]
+                print("DEBUG: fnamepad = %s"%(fnamepad)) 
+                idx += 1
+
+                fnamechars = struct.unpack("B", fdata[idx])[0]
+                print("DEBUG: fnamechars = %s"%(fnamechars)) 
+                idx += 1
+                bmp_file_name = fdata[idx:idx+fnamechars]
+                idx += fnamechars
+
+                idx += (fnamepad - (fnamechars+1))
+
+                print("DEBUG: bmp_file_name = %s"%(bmp_file_name)) 
+
+                bmp_bpp_val =  struct.unpack(cast_bit_order+"B", fdata[idx])[0]
+                idx += 1                
+
+                if bmp_bpp_val == 0x81:
+                    # 4 bit per pixel image
+                    bmp_bpp = 4
+
+                elif bmp_bpp_val == 0x82:
+                    # 8 bit per pixel image
+                    bmp_bpp = 8
+
+                elif bmp_bpp_val == 0x84:
+                    # 16 bit per pixel image
+                    bmp_bpp = 16
+
+                elif bmp_bpp_val == 0x8A:
+                    # 24 bit per pixel image
+                    bmp_bpp = 24
+
+                else:
+                    print("WARNING: Unknown BPP value: %s"%(bmp_bpp_val))
+
+                print("DEBUG: bmp_bpp = %s"%(bmp_bpp)) 
+
+
+                unknown_11 =  struct.unpack(cast_bit_order+"B", fdata[idx])[0]
+                idx += 1                
+                print("DEBUG: unknown_11 = %s"%(unknown_11)) 
+
+                h_padding =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+                idx += 2
+                print("DEBUG: h_padding = %s"%(h_padding)) 
+
+                w_padding =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+                idx += 2
+                print("DEBUG: w_padding = %s"%(w_padding)) 
+
+                bmp_height =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+                idx += 2                
+                print("DEBUG: bmp_height = %s"%(bmp_height)) 
+
+                bmp_width =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+                idx += 2                
+                print("DEBUG: bmp_width = %s"%(bmp_width)) 
+
+                bmp_height -= h_padding
+                bmp_width -= w_padding
+
+            else:
+                print("WARNING: Unknown CASt type: %s"%(data_type))
+             
+
+
+        # -------------------------- BITD ------------------------------------------------------------------
+        elif (file_format == BITD_FILE_FORMAT):
+            # RLE compression?
+            file_ext = 'bmp'
+            
+            file_name = "%s.%s"%(nfiles, file_ext)
+            if bmp_file_name is not None:
+                file_name = bmp_file_name
+
+            print("FILE: Saving file content to: %s"%(file_name))
+            with open(os.path.join(sys.argv[3], file_name), 'wb') as file:
+                fdata = fileContent[file_offset:(file_offset+file_length+8)]
+                # Read data format
+                data_format = struct.unpack("cccc", fdata[0:4])
+                data_format = ('%c%c%c%c'%(data_format[0], data_format[1], data_format[2], data_format[3]))
+                if data_format != file_format:
+                    print("ERROR: Bad data format! (%s != %s)"%(data_format, file_format))
+                    sys.exit(-1)
+
+                if len(fdata)<8:
+                    print("WARNING: Creating empty file!")
+                    file.close()
+                    index = index + 20
+                    nfiles = nfiles + 1
+                    continue
+
+                # Read file length
+                data_length = struct.unpack(bit_order+"i", fdata[4:8])[0]
+                if data_length != file_length:
+                    print("ERROR: Bad data length! (%s != %s)"%(data_length, file_length))
+                    sys.exit(-1)
+
+                # Write Windows bitmap file header
+                file.write('BM')
+                
+                # bmp_width must be divisible by 2
+                if (bmp_width & 1) == 1:
+                    bmp_width += 1
+
+                if bmp_bpp == 4:
+                    # 4 bits per pixel image
+                    save_4bit_bmp(bmp_width, bmp_height, file, previous_clut, fdata)
+
+                elif bmp_bpp == 8:
+                    # 8 bits per pixel image
+                    save_8bit_bmp(bmp_width, bmp_height, file, previous_clut, fdata)
+
+                elif bmp_bpp == 16:
+                    # 16 bits per pixel image
+                    save_16bit_bmp(bmp_width, bmp_height, file, fdata)
+
+                elif bmp_bpp == 24:
+                    # 24 bits per pixel image
+                    save_24bit_bmp(bmp_width, bmp_height, file, fdata)
+
+                else:
+                    print("ERROR: Bad BPP value (%s)"%(bmp_bpp))
+                    sys.exit(-1)
+
+
+        else:
+            # Save file content
+            file_ext = file_format
+            if sys.argv[1] == 'pc':
+                file_ext = file_format[3] + file_format[2] + file_format[1] + file_format[0]
+
+            file_name = "%s.%s"%(nfiles, file_ext)
+            print("FILE: Saving file content to: %s"%(file_name))
+            with open(os.path.join(sys.argv[3], file_name), 'wb') as file:
+                fdata = fileContent[file_offset:(file_offset+file_length+8)]
+                # Read data format
+                data_format = struct.unpack("cccc", fdata[0:4])
+                data_format = ('%c%c%c%c'%(data_format[0], data_format[1], data_format[2], data_format[3]))
+                if data_format != file_format:
+                    print("ERROR: Bad data format! (%s != %s)"%(data_format, file_format))
+                    sys.exit(-1)
+
+                if len(fdata)<8:
+                    print("WARNING: Creating empty file!")
+                    file.close()
+                    index = index + 20
+                    nfiles = nfiles + 1
+                    continue
+
+                # Read file length
+                data_length = struct.unpack(bit_order+"i", fdata[4:8])[0]
+                if data_length != file_length:
+                    print("ERROR: Bad data length! (%s != %s)"%(data_length, file_length))
+                    sys.exit(-1)
+
+                file.write(fdata[8:])
+                file.close()
+
+        index = index + 20
+        nfiles = nfiles + 1
+
+
+def parse_riff(fileContent):
+    # Check if file format is RIFX
+    file_format = struct.unpack("cccc", fileContent[0:4])
+    file_format = ('%c%c%c%c'%(file_format[0], file_format[1], file_format[2], file_format[3]))
+    print("INFO: File format: %s"%(file_format))
+    if RIFX_FILE_FORMAT != file_format:
+        print("ERROR: File format is not %s"%(RIFX_FILE_FORMAT))
+        sys.exit(-1)
+
+    # Read file length
+    file_length = struct.unpack(bit_order+"i", fileContent[4:8])[0]
+    print("INFO: File contains %s bytes of information."%(file_length))
+    if len(fileContent) != file_length + 8:
+        print("ERROR: Bad file length!")
+        sys.exit(-1)
+ 
+    # Check Macromedia Director MV93 header
+    mv93_format = struct.unpack("cccc", fileContent[8:12])
+    mv93_format = ('%c%c%c%c'%(mv93_format[0], mv93_format[1], mv93_format[2], mv93_format[3]))
+    print("INFO: Data format: %s"%(mv93_format))
+    if MV93_FILE_TYPE != mv93_format:
+        print("ERROR: Data format is not %s"%(MV93_FILE_TYPE))
+        sys.exit(-1)
+
+    index = 12
+    while index < len(fileContent):
+        block_type = struct.unpack("cccc", fileContent[index:(index+4)])
+        block_type = ('%c%c%c%c'%(block_type[0], block_type[1], block_type[2], block_type[3]))
+        print("==================================")
+        print("INFO: Block type: %s"%(block_type))
+
+        block_size = struct.unpack(bit_order+"i", fileContent[(index+4):(index+8)])[0]
+        print("INFO: Block size: %s"%(block_size))
+
+        block_data = fileContent[(index+8):(index + 8 + block_size)]
+        if block_type == IMAP_FILE_FORMAT:
+            # Parse 'imap' block
+            parse_imap(block_data)
+
+        if block_type == MMAP_FILE_FORMAT:
+            # Parse 'mmap' block
+            parse_mmap(block_data, fileContent)
+
+
+        else:
+            print("WARNING: Unknown block type!")
+
+        index = index + 8 + block_size
+
+
+
+if __name__ == '__main__':
+    if len(sys.argv) < 4:
+        print("USSAGE: drxtract [pc|mac] <file.drx> <directory>")
+
+    else:
+        if sys.argv[1] != 'pc' and sys.argv[1] != 'mac':
+            print("ERROR: First argument must be 'pc' or 'mac'")
+            sys.exit(-1)
+
+        if sys.argv[1] == 'pc':
+            bit_order_type = 'pc'
+            bit_order = "<"
+            MV93_FILE_TYPE = '39VM'
+            RIFX_FILE_FORMAT = 'XFIR'
+            IMAP_FILE_FORMAT = 'pami'
+            MMAP_FILE_FORMAT = 'pamm'
+            FREE_FILE_FORMAT = 'eerf'
+            THUM_FILE_FORMAT = 'MUHT'
+            BITD_FILE_FORMAT = 'DTIB'
+            CLUT_FILE_FORMAT = 'TULC'
+            CAST_FILE_FORMAT = 'tSAC'
+
+        if not os.path.isfile(sys.argv[2]):
+            print("ERROR: '%s' is not a file"%(sys.argv[2]))
+            sys.exit(-1)
+        
+        if not os.path.isdir(sys.argv[3]):
+            print("ERROR: '%s' is not a directory"%(sys.argv[3]))
+            sys.exit(-1)
+
+        print("Try to parse %s file."%(sys.argv[2]))
+        with open(sys.argv[2], mode='rb') as file:
+            fileContent = file.read()
+            parse_riff(fileContent)
+
