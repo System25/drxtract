@@ -15,6 +15,7 @@ import sys
 import os
 import struct
 import re
+import wave
 
 # Default bit order for MAC
 bit_order_type = 'mac'
@@ -31,10 +32,13 @@ THUM_FILE_FORMAT = 'THUM'
 BITD_FILE_FORMAT = 'BITD'
 CLUT_FILE_FORMAT = 'CLUT'
 CAST_FILE_FORMAT = 'CASt'
+SND_FILE_FORMAT = 'snd '
+
 
 # Director 5 types
 DIR5_IMAGE_TYPE = 1
 DIR5_CLUT_TYPE = 4
+DIR5_SND_TYPE = 6
 
 # Director 4 types
 DIR4_IMAGE_TYPE = 0x1C0000
@@ -776,6 +780,9 @@ def save_8bit_bmp(bmp_width, bmp_height, file, previous_clut, fdata):
         if (val & 0x80) != 0:
             # RLE encoded
             run_length = 257 - val
+            if idx+1 >= len(fdata):
+                print("ERROR: Unexpected end of data! (data length=%s)"%(len(fdata)))
+                break
             run_value = struct.unpack("B", fdata[idx+1])[0]
             idx = idx + 2
 
@@ -783,6 +790,8 @@ def save_8bit_bmp(bmp_width, bmp_height, file, previous_clut, fdata):
             if ((x + run_length) > w):
                 x = 0
                 y -= 1
+            if y < 0:
+                break
 
             for i in range(0, run_length):
                 imgdata[y*w + x] = run_value
@@ -798,15 +807,24 @@ def save_8bit_bmp(bmp_width, bmp_height, file, previous_clut, fdata):
             # Not RLE encoded
             run_length = val + 1
             idx = idx + 1
+            if idx >= len(fdata):
+                print("ERROR: Bad run length! (value=%s)"%(run_length))
+                break
 
             # Jump to next row when necessary
             if ((x + run_length) > w):
                 x = 0
                 y -= 1
+            if y < 0:
+                break
 
             for i in range(0, run_length):
                 imgdata[y*w + x] = struct.unpack("B", fdata[idx])[0]
                 idx = idx + 1
+                if idx >= len(fdata):
+                    print("ERROR: Bad run length! (value=%s)"%(run_length))
+                    break
+
                 x += 1
                 if x >= w:
                     x = 0
@@ -1110,6 +1128,8 @@ def parse_mmap(data, fileContent):
     bmp_width = 0
     bmp_height = 0
     bmp_bpp = 0
+
+    snd_file_name = None
     while index < len(data) and nfiles < no_files_wonull:
         print("---------------------------------------")
         print("FILE: Number: %s"%(nfiles))
@@ -1209,7 +1229,7 @@ def parse_mmap(data, fileContent):
 
             print("DEBUG: data_type = %s"%(data_type)) 
             bmp_file_name = None
-            if data_type == DIR5_IMAGE_TYPE:
+            if data_type == DIR5_IMAGE_TYPE: # --------------------------------------------------------------------------------------
                 print("Reading image data...")
                 unknown_00 = struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
                 idx += 4
@@ -1333,8 +1353,60 @@ def parse_mmap(data, fileContent):
                 print("DEBUG: unknown_16 = %s"%(unknown_16)) 
 
 
+            elif data_type == DIR5_SND_TYPE: # --------------------------------------------------------------------------------------
+                print("Reading sound data...")
+                unknown_00 = struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+                idx += 4
+                unknown_01 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+                idx += 4
+                unknown_02 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+                idx += 4
+                unknown_03 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+                idx += 4
+                unknown_04 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+                idx += 4
+                unknown_05 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+                idx += 4
+                unknown_06 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+                idx += 4
+                unknown_07 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+                idx += 4
+                unknown_08 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+                idx += 4
+                unknown_09 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+                idx += 4
+                unknown_10 =  struct.unpack("B", fdata[idx])[0]
+                idx += 1
 
-            if data_type == DIR4_IMAGE_TYPE:
+                print("DEBUG: unknown_00 = %s"%(unknown_00)) 
+                print("DEBUG: unknown_01 = %s"%(unknown_01)) 
+                print("DEBUG: unknown_02 = %s"%(unknown_02)) 
+                print("DEBUG: unknown_03 = %s"%(unknown_03)) 
+                print("DEBUG: unknown_04 = %s"%(unknown_04)) 
+                print("DEBUG: unknown_05 = %s"%(unknown_05)) 
+                print("DEBUG: unknown_06 = %s"%(unknown_06)) 
+                print("DEBUG: unknown_07 = %s"%(unknown_07)) 
+                print("DEBUG: unknown_08 = %s"%(unknown_08)) 
+                print("DEBUG: unknown_09 = %s"%(unknown_09)) 
+                print("DEBUG: unknown_10 = %s"%(unknown_10)) 
+
+                fnamepad = struct.unpack("B", fdata[idx])[0]
+                print("DEBUG: fnamepad = %s"%(fnamepad)) 
+                idx += 1
+
+                fnamechars = struct.unpack("B", fdata[idx])[0]
+                print("DEBUG: fnamechars = %s"%(fnamechars)) 
+                idx += 1
+                snd_file_name = fdata[idx:idx+fnamechars]
+                idx += fnamechars
+
+                idx += (fnamepad - (fnamechars+1))
+
+                print("DEBUG: snd_file_name = %s"%(bmp_file_name)) 
+
+
+
+            elif data_type == DIR4_IMAGE_TYPE: # --------------------------------------------------------------------------------------
                 print("Reading image data...")
                 unknown_00 = struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
                 idx += 4
@@ -1345,26 +1417,8 @@ def parse_mmap(data, fileContent):
                 bmp_bpp_val =  struct.unpack("B", fdata[idx])[0]
                 idx += 1                
 
-
-                if bmp_bpp_val == 0x82:
-                    # 8 bit per pixel image
-                    bmp_bpp = 8
-
-                elif bmp_bpp_val == 0x84:
-                    # 16 bit per pixel image
-                    bmp_bpp = 16
-
-                elif bmp_bpp_val == 0x85:
-                    # 16 bit per pixel image (MAC format)
-                    bmp_bpp = 16
-
-                elif bmp_bpp_val == 0x8A:
-                    # 24 bit per pixel image
-                    bmp_bpp = 24
-
-                else:
-                    print("WARNING: Unknown BPP value: %s default to 8 BPP"%(bmp_bpp_val))
-                    bmp_bpp = 8
+                # Force 8BPP
+                bmp_bpp = 8
 
                 print("DEBUG: bmp_bpp = %s"%(bmp_bpp)) 
 
@@ -1480,6 +1534,150 @@ def parse_mmap(data, fileContent):
             else:
                 print("WARNING: Unknown CASt type: %s"%(data_type))
              
+        # -------------------------- BITD ------------------------------------------------------------------
+        elif (file_format == SND_FILE_FORMAT):
+            # RLE compression?
+            file_ext = 'wav'
+            
+            file_name = "%s.%s"%(nfiles, file_ext)
+            if snd_file_name is not None:
+                file_name = snd_file_name
+                if not file_name.upper().endswith('.WAV'):
+                    file_name = "%s.%s"%(file_name, file_ext)
+
+            # Remove strange chars
+            file_name = re.sub(r"[^A-Za-z0-9\-_\.]", "_", file_name)
+
+            print("FILE: Saving file content to: %s"%(file_name))
+            fdata = fileContent[file_offset:(file_offset+file_length+8)]
+
+            # Read data format
+            data_format = struct.unpack("cccc", fdata[0:4])
+            data_format = ('%c%c%c%c'%(data_format[0], data_format[1], data_format[2], data_format[3]))
+            if data_format != file_format:
+                print("ERROR: Bad data format! (%s != %s)"%(data_format, file_format))
+                sys.exit(-1)
+
+            if len(fdata)<8:
+                print("WARNING: Creating empty file!")
+                file.close()
+                index = index + 20
+                nfiles = nfiles + 1
+                continue
+
+            # Read file length
+            data_length = struct.unpack(bit_order+"i", fdata[4:8])[0]
+            if data_length != file_length:
+                print("ERROR: Bad data length! (%s != %s)"%(data_length, file_length))
+                sys.exit(-1)
+
+            wavef = wave.open(os.path.join(sys.argv[3], file_name),'w')
+            idx = 8
+            cast_bit_order = '>'
+
+            # Read SND file header
+            unknown_00 = struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_01 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_02 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_03 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_04 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+
+            # Number of channels
+            num_channels =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+
+            # Sample rate
+            sample_rate =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+
+
+            unknown_05 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_06 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_07 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_08 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_09 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_10 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_11 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_12 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_13 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_14 =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+
+            # Bits per sample
+            bps =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+
+            unknown_15 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_16 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_17 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_18 =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+
+            print("DEBUG: num_channels = %s"%(num_channels)) 
+            print("DEBUG: sample_rate = %s"%(sample_rate)) 
+            print("DEBUG: bps = %s"%(bps)) 
+
+            print("DEBUG: unknown_01 = %s"%(unknown_01)) 
+            print("DEBUG: unknown_02 = %s"%(unknown_02)) 
+            print("DEBUG: unknown_03 = %s"%(unknown_03)) 
+            print("DEBUG: unknown_04 = %s"%(unknown_04)) 
+            print("DEBUG: unknown_05 = %s"%(unknown_05)) 
+            print("DEBUG: unknown_06 = %s"%(unknown_06)) 
+            print("DEBUG: unknown_07 = %s"%(unknown_07)) 
+            print("DEBUG: unknown_08 = %s"%(unknown_08)) 
+            print("DEBUG: unknown_09 = %s"%(unknown_09)) 
+            print("DEBUG: unknown_10 = %s"%(unknown_10)) 
+            print("DEBUG: unknown_11 = %s"%(unknown_11)) 
+            print("DEBUG: unknown_12 = %s"%(unknown_12)) 
+            print("DEBUG: unknown_13 = %s"%(unknown_13)) 
+            print("DEBUG: unknown_14 = %s"%(unknown_14)) 
+            print("DEBUG: unknown_15 = %s"%(unknown_15)) 
+            print("DEBUG: unknown_16 = %s"%(unknown_16)) 
+            print("DEBUG: unknown_17 = %s"%(unknown_17)) 
+            print("DEBUG: unknown_18 = %s"%(unknown_18)) 
+
+
+            # Write wave file
+            wavef.setnchannels(num_channels)
+            wavef.setsampwidth(bps/8) 
+            wavef.setframerate(sample_rate)
+
+            if bps == 8:
+                # 8 bit per sample
+                wavef.writeframesraw( fdata[idx:] )
+
+            elif bps == 16:
+                # 16 bit per sample
+                # Convert from big endian word to little endian word
+                while idx < len(fdata[idx:]):
+                    sample =  struct.unpack(">H", fdata[idx:idx+2])[0]
+                    idx += 2
+                    data = struct.pack('<H', sample)
+                    wavef.writeframesraw( data )
+
+            else:
+                print("ERROR: Bad number of bits per sample! (%s)"%(bps))
+                sys.exit(-1)
+
+            wavef.writeframes('')
+            wavef.close()
 
 
         # -------------------------- BITD ------------------------------------------------------------------
@@ -1555,6 +1753,9 @@ def parse_mmap(data, fileContent):
                 file_ext = file_format[3] + file_format[2] + file_format[1] + file_format[0]
 
             file_name = "%s.%s"%(nfiles, file_ext)
+            # Remove strange chars
+            file_name = re.sub(r"[^A-Za-z0-9\-_\.]", "_", file_name)
+
             print("FILE: Saving file content to: %s"%(file_name))
             with open(os.path.join(sys.argv[3], file_name), 'wb') as file:
                 fdata = fileContent[file_offset:(file_offset+file_length+8)]
@@ -1657,6 +1858,7 @@ if __name__ == '__main__':
             BITD_FILE_FORMAT = 'DTIB'
             CLUT_FILE_FORMAT = 'TULC'
             CAST_FILE_FORMAT = 'tSAC'
+            SND_FILE_FORMAT = ' dns'
 
         if not os.path.isfile(sys.argv[2]):
             print("ERROR: '%s' is not a file"%(sys.argv[2]))
