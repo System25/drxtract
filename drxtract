@@ -721,7 +721,7 @@ def save_4bit_bmp(bmp_width, bmp_height, file, previous_clut, fdata):
     file.close()
 
 # ====================================================================================================================================
-def save_8bit_bmp(bmp_width, bmp_height, file, previous_clut, fdata):
+def save_8bit_bmp(bmp_width, bmp_height, bmp_wlimit, file, previous_clut, fdata):
     bmp_bpp = 8
     values = (bmp_width*bmp_height+(256*4)+40+14, # The size of the BMP file in bytes
               0, # Reserved
@@ -775,6 +775,8 @@ def save_8bit_bmp(bmp_width, bmp_height, file, previous_clut, fdata):
     x = 0
     y = bmp_height - 1
     idx = 8
+    previous_encoded = True
+    previous_run_length = 0
     while (idx < len(fdata)) and (y>=0):
         val = struct.unpack("B", fdata[idx])[0]
         if (val & 0x80) != 0:
@@ -787,9 +789,10 @@ def save_8bit_bmp(bmp_width, bmp_height, file, previous_clut, fdata):
             idx = idx + 2
 
             # Jump to next row when necessary
-            if ((x + run_length) > w):
+            if ((x + run_length) > bmp_wlimit):
                 x = 0
                 y -= 1
+
             if y < 0:
                 break
 
@@ -802,6 +805,8 @@ def save_8bit_bmp(bmp_width, bmp_height, file, previous_clut, fdata):
                     if y < 0:
                         break
             
+            previous_encoded = True
+            previous_run_length = run_length
 
         else:
             # Not RLE encoded
@@ -812,9 +817,26 @@ def save_8bit_bmp(bmp_width, bmp_height, file, previous_clut, fdata):
                 break
 
             # Jump to next row when necessary
-            if ((x + run_length) > w):
+            if ((x + run_length) > bmp_wlimit) or ( not previous_encoded and (run_length+previous_run_length) < 128 ):
+                # (not previous_encoded and (run_length+previous_run_length) < 128) condition
+                # detects when there is something like:
+                #   00 AA 00 BB
+                #
+                # Because that could be compressed as:
+                #   01 AA BB
+                #
+                # And that means that [00 BB] must be at the begining of a new line
+                previous_encoded = True
+                previous_run_length = 0
+
                 x = 0
                 y -= 1
+
+            else:
+                previous_encoded = False
+                previous_run_length = run_length
+
+
             if y < 0:
                 break
 
@@ -827,10 +849,15 @@ def save_8bit_bmp(bmp_width, bmp_height, file, previous_clut, fdata):
 
                 x += 1
                 if x >= w:
+                    previous_encoded = True
+                    previous_run_length = 0
+
                     x = 0
                     y -= 1
                     if y < 0:
                         break
+
+
 
     if y!=-1 or x!=0:
         print("WARNING: Not enought data to decode. Probably the image is not properly generated. (y=%s, x=%s)"%(y, x))
@@ -1623,8 +1650,14 @@ def parse_mmap(data, fileContent):
                     file_name = file_name.decode('shift-jis')
                 except:
                     file_name = file_namer
+            file_name = file_name.replace("/", "_")
 
-            print("FILE: Saving file content to: %s"%(file_name))
+            try:
+                print(u"FILE: Saving file content to: %s"%(file_name))
+            except:
+                file_name = file_namer
+                print(u"FILE: Saving file content to: %s"%(file_name))
+
             fdata = fileContent[file_offset:(file_offset+file_length+8)]
 
             # Read data format
@@ -1809,8 +1842,16 @@ def parse_mmap(data, fileContent):
                     file_name = file_name.decode('shift-jis')
                 except:
                     file_name = file_namer
+            file_name = file_name.replace("/", "_")
 
-            print("FILE: Saving file content to: %s"%(file_name))
+            
+            try:
+                print(u"FILE: Saving file content to: %s"%(file_name))
+            except:
+                file_name = file_namer
+                print(u"FILE: Saving file content to: %s"%(file_name))
+
+
             with open(os.path.join(sys.argv[3], file_name), 'wb') as file:
                 fdata = fileContent[file_offset:(file_offset+file_length+8)]
                 # Read data format
@@ -1837,9 +1878,11 @@ def parse_mmap(data, fileContent):
                 file.write('BM')
                 
                 # bmp_width must be divisible by 4
+                bmp_wlimit = bmp_width
                 if (bmp_width & 3) != 0:
                     bmp_width += 4-(bmp_width & 3)
-
+                    print("Change bmp_width to %s"%(bmp_width))
+                    bmp_wlimit += 1
 
                 if bmp_bpp == 4:
                     # 4 bits per pixel image
@@ -1847,7 +1890,7 @@ def parse_mmap(data, fileContent):
 
                 elif bmp_bpp == 8:
                     # 8 bits per pixel image
-                    save_8bit_bmp(bmp_width, bmp_height, file, previous_clut, fdata)
+                    save_8bit_bmp(bmp_width, bmp_height, bmp_wlimit, file, previous_clut, fdata)
 
                 elif bmp_bpp == 16:
                     # 16 bits per pixel image
@@ -1877,8 +1920,15 @@ def parse_mmap(data, fileContent):
                     file_name = file_name.decode('shift-jis')
                 except:
                     file_name = file_namer
+            file_name = file_name.replace("/", "_")
 
-            print("FILE: Saving file content to: %s"%(file_name))
+
+            try:
+                print(u"FILE: Saving file content to: %s"%(file_name))
+            except:
+                file_name = file_namer
+                print(u"FILE: Saving file content to: %s"%(file_name))
+
             with open(os.path.join(sys.argv[3], file_name), 'wb') as file:
                 fdata = fileContent[file_offset:(file_offset+file_length+8)]
                 # Read data format
