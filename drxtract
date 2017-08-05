@@ -771,6 +771,18 @@ def save_8bit_bmp(bmp_width, bmp_height, bmp_wlimit, file, previous_clut, fdata)
     # RLE encoded bytes contains 1 pixel color
     w = bmp_width
 
+    if (len(fdata)-8) == w*bmp_height:
+        print("The size of the data matches the image resolution. Not RLE compressed!")
+        # Write the pixel information
+        y = bmp_height - 1
+        while y>=0:
+            idx = 8 + y*w
+            file.write(fdata[idx:(idx+w)])
+            y -= 1
+        file.close()
+        return
+
+
     imgdata = [0 for x in range(w*bmp_height)]
     x = 0
     y = bmp_height - 1
