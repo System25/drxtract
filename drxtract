@@ -713,40 +713,40 @@ THREE_BYTE_OPCODES = [
     0xa6  # UNKNOWN
 ]
 
-SIMPLE_OPERATIONS = {
-    0x01: 'return;',
-    0x02: 'unknown_op(0x02);',
-    0x03: 'push(0);',
-    0x04: 'push(pop() * pop());',
-    0x05: 'push(pop() + pop());',
-    0x06: 'push(pop() - pop());',
-    0x07: 'push(pop() / pop());',
-    0x08: 'push(pop() % pop());',
-    0x09: 'push(-pop());',
-    0x0A: 'push((pop() + "") + (pop() + ""));',
-    0x0B: 'push((pop() + "") + " " + (pop() + ""));',
-    0x0C: 'push(pop() < pop());',
-    0x0D: 'push(pop() <= pop());',
-    0x0E: 'push(pop() != pop());',
-    0x0F: 'push(pop() == pop());',
-    0x10: 'push(pop() > pop());',
-    0x11: 'push(pop() >= pop());',
-    0x12: 'push(pop() && pop());',
-    0x13: 'push(pop() || pop());',
-    0x14: 'push(!pop());',
-    0x15: 'push(contains_op());',
-    0x16: 'push(starts_op());',
-    0x17: 'push(split_op());',
-    0x18: 'push(highlight_op());',
-    0x19: 'push(sprint_intersect_op());',
-    0x1A: 'push(sprint_within_op());',
-    0x1B: 'push(cast_member_op());',
-    0x1C: 'push(goto_frame_1_op_st());',
-    0x1D: 'push(goto_frame_1_op_ed());',
-    0x1E: 'unknown_op(0x1e);',
-    0x1F: 'push(transpose_op());'
-}
 
+operations_stack = []
+
+
+# ====================================================================================================================================
+def clear_stack():
+    operations_stack = []
+
+# ====================================================================================================================================
+def push(value):
+    operations_stack.append(value)
+
+def pop():
+    if len(operations_stack) <= 0:
+        return None
+
+    return operations_stack.pop()
+
+
+def pop_s():
+    val = pop()
+    if val is None:
+        val = 'ERROR_EMPTY_STACK'
+    return val
+
+def flush_stack(f, spacing):
+    op = pop()
+    while op is not None:
+        f.write("\n")
+        f.write(spacing)
+        f.write("%s;"%(op))
+        op = pop()
+
+    f.write("\n")
 
 # ====================================================================================================================================
 def to_string(strval):
@@ -2295,9 +2295,13 @@ def parse_mmap(data, fileContent, offset):
 
 
                     # Generate code
+                    clear_stack()
+                    window_to_tell = None
+
                     idxc = bc_off + 8
                     while (idxc - bc_off - 8) < bc_length:
                         if idxc in label_indexes:
+                            flush_stack(file, spacing)
                             if idxc in label_types:
                                 if label_types[idxc].startswith('}'):
                                     spacing = spacing[0:(len(spacing) - 4)]
@@ -2323,116 +2327,399 @@ def parse_mmap(data, fileContent, offset):
 
                         if opcode in ONE_BYTE_OPCODES:
                             # One byte operation
-                            file.write("// [0x%04x]: 0x%02x \n"%(idxc - 1, opcode))
-                            file.write(spacing)
-                            file.write(SIMPLE_OPERATIONS[opcode])
+                            file.write("// [0x%04x]: 0x%02x"%(idxc - 1, opcode))
+
+                            if opcode == 0x01:
+                                flush_stack(file, spacing)
+                                file.write('\n')
+                                file.write(spacing)
+                                file.write('return;')
+
+                            elif opcode == 0x03:
+                                push('0')
+
+                            elif opcode == 0x04:
+                                op2 = pop_s()
+                                op1 = pop_s()
+                                push('(' + op1 + ' * ' + op2 + ')')
+
+                            elif opcode == 0x04:
+                                op2 = pop_s()
+                                op1 = pop_s()
+                                push('(' + op1 + ' * ' + op2 + ')')
+
+                            elif opcode == 0x05:
+                                op2 = pop_s()
+                                op1 = pop_s()
+                                push('(' + op1 + ' + ' + op2 + ')')
+
+                            elif opcode == 0x06:
+                                op2 = pop_s()
+                                op1 = pop_s()
+                                push('(' + op1 + ' - ' + op2 + ')')
+
+                            elif opcode == 0x07:
+                                op2 = pop_s()
+                                op1 = pop_s()
+                                push('(' + op1 + ' / ' + op2 + ')')
+
+                            elif opcode == 0x08:
+                                op2 = pop_s()
+                                op1 = pop_s()
+                                push('(' + op1 + ' % ' + op2 + ')')
+
+                            elif opcode == 0x09:
+                                push('-' + pop_s())
+
+                            elif opcode == 0x0A:
+                                push('((' + pop_s() + '"") + (' + pop_s() + '""))')
+
+                            elif opcode == 0x0B:
+                                push('((' + pop_s() + '"") + " " + (' + pop_s() + '""))')
+
+                            elif opcode == 0x0C:
+                                op2 = pop_s()
+                                op1 = pop_s()
+                                push('(' + op1 + ' < ' + op2 + ')')
+
+                            elif opcode == 0x0D:
+                                op2 = pop_s()
+                                op1 = pop_s()
+                                push('(' + op1 + ' <= ' + op2 + ')')
+
+                            elif opcode == 0x0E:
+                                op2 = pop_s()
+                                op1 = pop_s()
+                                push('(' + op1 + ' != ' + op2 + ')')
+
+                            elif opcode == 0x0F:
+                                op2 = pop_s()
+                                op1 = pop_s()
+                                push('(' + op1 + ' == ' + op2 + ')')
+
+                            elif opcode == 0x10:
+                                op2 = pop_s()
+                                op1 = pop_s()
+                                push('(' + op1 + ' > ' + op2 + ')')
+
+                            elif opcode == 0x11:
+                                op2 = pop_s()
+                                op1 = pop_s()
+                                push('(' + op1 + ' >= ' + op2 + ')')
+
+                            elif opcode == 0x12:
+                                op2 = pop_s()
+                                op1 = pop_s()
+                                push('(' + op1 + ' && ' + op2 + ')')
+
+                            elif opcode == 0x13:
+                                op2 = pop_s()
+                                op1 = pop_s()
+                                push('(' + op1 + ' || ' + op2 + ')')
+
+                            elif opcode == 0x14:
+                                push('(!' + pop_s() + ')')
+
+                            elif opcode == 0x15:
+                                op2 = pop_s()
+                                op1 = pop_s()
+                                push('contains(' + op1 + ', ' + op2 + ')')
+
+                            elif opcode == 0x16:
+                                op2 = pop_s()
+                                op1 = pop_s()
+                                push('starts_with(' + op1 + ', ' + op2 + ')')
+
+
+                            elif opcode == 0x17:
+                                op_str = pop_s()       # The string to slice
+                                op_ll_pos = pop_s()    # Last line position
+                                op_fl_pos = pop_s()    # First line position
+                                op_li_pos = pop_s()    # Last item position
+                                op_fi_pos = pop_s()    # First item position (items separated by the itemDelimiter, which is a comma by default)
+                                op_lw_pos = pop_s()    # Last word position
+                                op_fw_pos = pop_s()    # First word position
+                                op_lc_pos = pop_s()    # Last char position
+                                op_fc_pos = pop_s()    # First char position
+
+                                push('slice(' + op_str + ', ' + op_ll_pos + ', ' + op_fl_pos + ', ' + op_li_pos + ', ' + op_fi_pos + ', ' + op_lw_pos + ', ' + op_fw_pos + ', ' + op_lc_pos + ', ' + op_fc_pos + ')')
+
+
+                            elif opcode == 0x18:
+                                op_cid = pop_s()       # Field number (cast ID
+                                op_ll_pos = pop_s()    # Last line position
+                                op_fl_pos = pop_s()    # First line position
+                                op_li_pos = pop_s()    # Last item position
+                                op_fi_pos = pop_s()    # First item position (items separated by the itemDelimiter, which is a comma by default)
+                                op_lw_pos = pop_s()    # Last word position
+                                op_fw_pos = pop_s()    # First word position
+                                op_lc_pos = pop_s()    # Last char position
+                                op_fc_pos = pop_s()    # First char position
+
+                                push('highlight(' + op_cid + ', ' + op_ll_pos + ', ' + op_fl_pos + ', ' + op_li_pos + ', ' + op_fi_pos + ', ' + op_lw_pos + ', ' + op_fw_pos + ', ' + op_lc_pos + ', ' + op_fc_pos + ')')
+
+                            elif opcode == 0x19:
+                                op2 = pop_s()
+                                op1 = pop_s()
+
+                                push('sprite_intersects(' + op1 + ', ' + op2 + ')')
+
+                            elif opcode == 0x1A:
+                                op2 = pop_s()
+                                op1 = pop_s()
+
+                                push('sprite_within(' + op1 + ', ' + op2 + ')')
+
+                            elif opcode == 0x1B:
+                                push('field(' + pop_s() + ')')
+
+                            elif opcode == 0x1C:
+                                # Start of "tell" operation
+                                window_to_tell = pop_s()
+
+                            elif opcode == 0x1D:
+                                # End of "tell" operation
+                                params = ''
+                                p = pop()
+                                while p is not None:
+                                    if params == '':
+                                        params = p
+                                    else:
+                                        params = p + ', ' + params
+                                    p = pop()
+
+                                file.write("\n")
+                                file.write(spacing)
+                                file.write('tell(' + window_to_tell + ', ' + params + ');')
+
+                            elif opcode == 0x1F:
+                                push('transpose(' + pop_s() + ')')
+
 
                         elif opcode in TWO_BYTE_OPCODES:
                             # Two bytes operation
                             op1 = ord(fdata[idxc])
                             idxc = idxc + 1
 
-                            file.write("// [0x%04x]: 0x%02x 0x%02x \n"%(idxc - 2, opcode, op1))
-                            file.write(spacing)
+                            file.write("// [0x%04x]: 0x%02x 0x%02x"%(idxc - 2, opcode, op1))
+
 
                             if opcode == 0x41:
                                 # Push integer of value XX, which must be between 1 and 127, inclusive.
-                                file.write('push(0x%02x);'%(op1))
+                                push('0x%02x'%(op1))
 
                             elif opcode == 0x42:
                                 # Pop the specified number of values off the top of the stack, create an unparenthesized argument list containing them 
                                 # (i.e. for a call statement like myFunction 1, 2, 3), and push that to the stack.
-                                file.write('push(arglist(%s));'%(op1))
+                                params = ''
+                                for c in range(0, op1):
+                                    p = pop_s()
+                                    if params == '':
+                                        params = p
+                                    else:
+                                        params = p + ', ' + params
+
+                                push(params)
 
                             elif opcode == 0x43:
                                 # Pop the specified number of values off the top of the stack, create a list for them (which can also be used for a parenthesized call expression like set result = myFunction(1, 2, 3)), 
                                 # and push that to the stack.
-                                file.write('push(list(%s));'%(op1))
+                                params = ''
+                                for c in range(0, op1):
+                                    p = pop_s()
+                                    if params == '':
+                                        params = p
+                                    else:
+                                        params = p + ', ' + params
+
+                                push('<%s'%(params))
 
                             elif opcode == 0x44:
                                 # Push a constant from local constant records onto the stack. These records seem to be six bytes long (regardless of the actual size of the constant value), 
                                 # so pushing the first one is 44 00, the second is 44 06, the third is 44 0C, etc. 
-                                file.write('push(%s);'%(constants[op1 / bytes_per_const]))
+                                push('%s'%(constants[op1 / bytes_per_const]))
 
                             elif opcode == 0x45:
                                 # Push a symbol with a name from namelist[XX]. Note that the name will be stored as "name", not "#name". 
-                                file.write('push(symbol("%s"));'%(name_list[op1]))
+                                push('symbol("%s")'%(name_list[op1]))
 
                             elif opcode == 0x46:
                                 # Push a object with a name from namelist[XX]. 
-                                file.write('push(object("%s"));'%(name_list[op1]))
+                                push('object("%s")'%(name_list[op1]))
 
                             elif opcode == 0x49:
                                 # Push the value of a global variable with a name from namelist[XX].  
-                                file.write('push(global["%s"]);'%(name_list[op1]))
+                                push('global["%s"]'%(name_list[op1]))
 
                             elif opcode == 0x4A:
                                 # Push the value of a property.  
-                                file.write('push(property("%s"));'%(name_list[op1]))
+                                push('property("%s")'%(name_list[op1]))
 
                             elif opcode == 0x4B:
                                 # Push the value of a function call parameter. The parameter records seem to be 6 bytes long, so the first is pushed with 4B 00, the second with 4B 06, etc.   
-                                file.write('push(param%s);'%(op1 / bytes_per_const))
+                                push('param%s'%(op1 / bytes_per_const))
 
                             elif opcode == 0x4C:
                                 # Push the value of a function call parameter. The parameter records seem to be 6 bytes long, so the first is pushed with 4B 00, the second with 4B 06, etc.   
-                                file.write('push(local%s);'%(op1 / bytes_per_const))
+                                push('local%s'%(op1 / bytes_per_const))
 
                             elif opcode == 0x4F:
                                 # Pop one value and use it to set the global variable with name from namelist[XX].    
-                                file.write('global["%s"] = pop();'%(name_list[op1]))
+                                file.write("\n")
+                                file.write(spacing)
+                                file.write('global["%s"] = %s;'%(name_list[op1], pop_s()))
 
                             elif opcode == 0x50:
                                 # Pop one value and use it to set a property.
-                                file.write('set_property("%s", pop());'%(name_list[op1]))
+                                file.write("\n")
+                                file.write(spacing)
+                                file.write('set_property("%s", %s);'%(name_list[op1], pop_s()))
 
                             elif opcode == 0x51:
                                 # Pop one value and use it to set a parameter. 
-                                file.write('param%s = pop();'%(op1 / bytes_per_const))
+                                file.write("\n")
+                                file.write(spacing)
+                                file.write('param%s = %s;'%(op1 / bytes_per_const, pop_s()))
 
                             elif opcode == 0x52:
                                 # Pop one value and use it to set a local variable.
-                                file.write('local%s = pop();'%(op1 / bytes_per_const))
+                                file.write("\n")
+                                file.write(spacing)
+                                file.write('local%s = %s'%(op1 / bytes_per_const, pop_s()))
 
                             elif opcode == 0x54:
                                 # Unconditional backwards jump by XX bytes, relative to the first byte of this instruction. 
+                                file.write("\n")
+                                file.write(spacing)
                                 file.write('// goto label%04x;'%(idxc - 2 - op1))
+                                flush_stack(file, spacing)
+                                
  
                             elif opcode == 0x56:
                                 # Call a function defined in this script with the name at namelist[XX].
-                                file.write('call("local", "%s");'%(name_list[op1]))
+                                params = pop_s()
+                                if params.startswith('<'):
+                                    # The function must return something
+                                    push('%s(%s)'%(name_list[op1], params[1:]))
+                                else:
+                                    file.write("\n")
+                                    file.write(spacing)
+                                    file.write('%s(%s);'%(name_list[op1], params))
 
                             elif opcode == 0x57:
                                 # Call the external function with name from namelist[XX].
-                                file.write('call("external", "%s");'%(name_list[op1]))
+                                params = pop_s()
+                                if params.startswith('<'):
+                                    # The function must return something
+                                    push('%s(%s)'%(name_list[op1], params[1:]))
+                                else:
+                                    file.write("\n")
+                                    file.write(spacing)
+                                    file.write('%s(%s);'%(name_list[op1], params))
 
                             elif opcode == 0x58:
                                 # Call an object method
-                                file.write('push(contextual("%s"));'%(name_list[op1]))
+                                obj = pop_s()
+                                params = pop_s()
+                                if params.startswith('<'):
+                                    # The function must return something
+                                    push('%s.%s(%s)'%(obj, name_list[op1], params[1:]))
+                                else:
+                                    file.write("\n")
+                                    file.write(spacing)
+                                    file.write('%s.%s(%s)'%(obj, name_list[op1], params))
+
+                            elif opcode == 0x59:
+                                if op1 == 0x16:
+                                    op_type = int(pop(), 16)
+                                    op_var = pop_s()
+                                    op_value = pop_s()
+                                    op_types = ['field']
+                                    file.write("\n")
+                                    file.write(spacing)
+                                    file.write('set_%s(%s, %s)'%(op_types[op_type], op_var, op_value))
+
+
+                                else:
+                                    file.write("\n")
+                                    file.write(spacing)
+                                    file.write("ERROR: Missing subcommand! (0x%02x) :("%(op1))
 
                             # TODO! Complete this
+
+                            elif opcode == 0x5B:
+                                op_type = 'UNKNOWN'
+                                if op1 == 0x02:
+                                    op_type = 'item'
+                                elif op1 == 0x05:
+                                    op_type = 'word'
+                                elif op1 == 0x06:
+                                    op_type = 'line'
+
+                                op_vind = pop_s()      # The local variable
+                                op_ll_pos = pop_s()    # Last line position
+                                op_fl_pos = pop_s()    # First line position
+                                op_li_pos = pop_s()    # Last item position
+                                op_fi_pos = pop_s()    # First item position (items separated by the itemDelimiter, which is a comma by default)
+                                op_lw_pos = pop_s()    # Last word position
+                                op_fw_pos = pop_s()    # First word position
+                                op_lc_pos = pop_s()    # Last char position
+                                op_fc_pos = pop_s()    # First char position
+
+                                op_vind = int(op_vind, 16)
+                                op_vname = 'local%s'%(op_vind / bytes_per_const)
+
+                                file.write("\n")
+                                file.write(spacing)
+                                file.write('delete("' + op_type +'", ' + op_vname + ', ' + op_ll_pos + ', ' + op_fl_pos + ', ' + op_li_pos + ', ' + op_fi_pos + ', ' + op_lw_pos + ', ' + op_fw_pos + ', ' + op_lc_pos + ', ' + op_fc_pos + ')')
+
+                            elif opcode == 0x5C:
+                                if op1 == 0x01:
+                                    # the number of chars in someText
+                                    op_type = int(pop(), 16)
+                                    op_var = pop_s()
+                                    op_types = ['chars', 'words', 'items', 'lines']
+                                    push('number_of("%s", %s)'%(op_types[op_type - 1], op_var))
+
+
+                                else:
+                                    file.write("\n")
+                                    file.write(spacing)
+                                    file.write("ERROR: Missing subcommand! (0x%02x) :("%(op1))
 
                             elif opcode == 0x5F:
                                 # Push the value of the contextual property with the name at namelist[XX].
-                                file.write('call("method", "%s");'%(name_list[op1]))
+                                push('the("%s")'%(name_list[op1]))
 
                             # TODO! Complete this
 
+                            elif opcode == 0x63:
+                                # property to tell  
+                                push('%s'%(name_list[op1]))
+
                             elif opcode == 0x64:
                                 # Push a copy of a value already on the stack, relative to the top where 00 is the top slot, 01 is one slot beneath the top, etc. 
-                                file.write('copy(%s);'%(op1))
+                                file.write("\n")
+                                file.write(spacing)
+                                file.write("ERROR: I don't know to implement the copy command! :(")
 
                             elif opcode == 0x65:
                                 # Pop and discard XX values from the top of the stack.
-                                file.write('discard(%s);'%(op1))
+                                file.write("\n")
+                                file.write(spacing)
+                                file.write("ERROR: I don't know to implement the discard command! :(")
 
                             elif opcode == 0x66:
                                 # Pop an empty list and push the value of a read-only property named at namelist[XX]. 
-                                file.write('pop(); push(property("%s"));'%(name_list[op1]))
+                                pop()
+                                push('property("%s")'%(name_list[op1]))
 
 
                             else:
                                 # Unknown operation
+                                flush_stack(file, spacing)
+                                file.write("\n")
+                                file.write(spacing)
                                 file.write('unknown_op2(0x%02x, 0x%02x);'%(opcode, op1))
 
                         else:
@@ -2443,41 +2730,47 @@ def parse_mmap(data, fileContent, offset):
                             op2 = ord(fdata[idxc])
                             idxc = idxc + 1
 
-                            file.write("// [0x%04x]: 0x%02x 0x%02x 0x%02x \n"%(idxc - 3, opcode, op1, op2))
-                            file.write(spacing)
+                            file.write("// [0x%04x]: 0x%02x 0x%02x 0x%02x"%(idxc - 3, opcode, op1, op2))
 
                             if opcode == 0x81:
                                 # Push the integer ((XX * 0x100) + YY).
-                                file.write('push(0x%02x%02x);'%(op1, op2))
+                                push('0x%02x%02x'%(op1, op2))
 
                             elif opcode == 0x82:
                                 # Pop the specified number of values off the top of the stack, create an unparenthesized argument list containing them 
                                 # (i.e. for a call statement like myFunction 1, 2, 3), and push that to the stack.
-                                file.write('push(arglist(%s));'%(op1 * 256 + op2))
+                                push('arglist(%s)'%(op1 * 256 + op2))
 
                             elif opcode == 0x83:
                                 # Pop the specified number of values off the top of the stack, create a list for them (which can also be used for a parenthesized call expression like set result = myFunction(1, 2, 3)), 
                                 # and push that to the stack.
-                                file.write('push(list(%s));'%(op1 * 256 + op2))
+                                push('list(%s)'%(op1 * 256 + op2))
 
                             elif opcode == 0x84:
                                 # Push a constant from local constant records onto the stack. 
-                                file.write('push(%s);'%(constants[(op1 * 256 + op2) / bytes_per_const]))
+                                push('%s'%(constants[(op1 * 256 + op2) / bytes_per_const]))
 
                             elif opcode == 0x89:
                                 # Push the value of a global variable with a name from namelist[XX].  
-                                file.write('push(global["%s"]);'%(name_list[(op1 * 256 + op2)]))
+                                push('global["%s"]'%(name_list[(op1 * 256 + op2)]))
 
                             elif opcode == 0x8F:
                                 # Pop one value and use it to set the global variable with name from namelist[XX].    
-                                file.write('global["%s"] = pop();'%(name_list[(op1 * 256 + op2)]))
+                                file.write("\n")
+                                file.write(spacing)
+                                file.write('global["%s"] = %s;'%(name_list[(op1 * 256 + op2)], pop_s()))
 
                             elif opcode == 0x90:
                                 # Pop one value and use it to set a property.
-                                file.write('set_property("%s", pop());'%(name_list[(op1 * 256 + op2)]))
+                                file.write("\n")
+                                file.write(spacing)
+                                file.write('set_property("%s", %s);'%(name_list[(op1 * 256 + op2)], pop_s()))
 
                             elif opcode == 0x93:
                                 # Unconditional jump: Advance by ((XX * 0x100) + YY) bytes, relative to the first byte of this instruction.
+                                flush_stack(file, spacing)
+                                file.write("\n")
+                                file.write(spacing)
                                 file.write('// goto label%04x;'%(idxc - 3 + (op1 * 256 + op2)))
                                 if label_types[idxc - 3 + (op1 * 256 + op2)] == '} // for':
                                     file.write('\n')
@@ -2489,32 +2782,44 @@ def parse_mmap(data, fileContent, offset):
 
                             elif opcode == 0x95:
                                 # Conditional jump: Pop a value, and if it is logically FALSE, advance by ((XX * 0x100) + YY) bytes, relative to the first byte of this instruction. 
+                                file.write("\n")
+                                file.write(spacing)
                                 file.write('// if (!pop()) goto label%04x;\n'%(idxc - 3 + (op1 * 256 + op2)))
                                 file.write(spacing)
                                 if label_types[idxc - 3 + (op1 * 256 + op2)] == '} // for':
-                                    file.write('if (!pop()) break;')
+                                    file.write('if (!%s) break;'%(pop_s()))
                                 else:
-                                    file.write('if (pop()) {')
+                                    file.write('if (%s) {'%(pop_s()))
                                     spacing = spacing + '    '
 
                             elif opcode == 0xa0:
                                 # Pop one value and use it to set a property.
-                                file.write('set_property("%s", pop());'%(name_list[(op1 * 256 + op2)]))
+                                file.write("\n")
+                                file.write(spacing)
+                                file.write('set_property("%s", %s);'%(name_list[(op1 * 256 + op2)], pop_s()))
 
                             elif opcode == 0xa1:
                                 # Pop one value and use it to set a parameter. 
-                                file.write('param%s = pop();'%((op1 * 256 + op2) / bytes_per_const))
+                                file.write("\n")
+                                file.write(spacing)
+                                file.write('param%s = %s;'%((op1 * 256 + op2) / bytes_per_const, pop_s()))
 
                             elif opcode == 0xa2:
                                 # Pop one value and use it to set a local variable.
-                                file.write('local%s = pop();'%((op1 * 256 + op2) / bytes_per_const))
+                                file.write("\n")
+                                file.write(spacing)
+                                file.write('local%s = %s;'%((op1 * 256 + op2) / bytes_per_const, pop_s()))
 
                             elif opcode == 0xa6:
                                 # Pop an empty list and push the value of a read-only property named at namelist[XX]. 
-                                file.write('pop(); push(property("%s"));'%(name_list[(op1 * 256 + op2)]))
+                                pop()
+                                push('property("%s")'%(name_list[(op1 * 256 + op2)]))
 
                             else:
                                 # Unknown operation
+                                flush_stack(file, spacing)
+                                file.write("\n")
+                                file.write(spacing)
                                 file.write('unknown_op3(0x%02x, 0x%02x, 0x%02x);'%(opcode, op1, op2))
 
                         file.write("\n")
