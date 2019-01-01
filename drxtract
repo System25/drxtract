@@ -33,6 +33,10 @@ BITD_FILE_FORMAT = 'BITD'
 CLUT_FILE_FORMAT = 'CLUT'
 CAST_FILE_FORMAT = 'CASt'
 SND_FILE_FORMAT = 'snd '
+KEY_FILE_FORMAT = 'KEY*'
+CAS_FILE_FORMAT = 'CAS*'
+LSCR_FILE_FORMAT = 'Lscr'
+LNAM_FILE_FORMAT = 'Lnam'
 
 
 # Director 5 types
@@ -605,6 +609,159 @@ DEFAULT_WINDOWS_256COLORS_PALETTE = (
      0x00, 0x00, 0x00, 0x00,
  )
 
+
+ONE_BYTE_OPCODES = [ 
+    0x01, # exit            Leave the current function immediately and return to its caller. Automatically added as the final step of a function.
+    0x02, # UNKNOWN
+    0x03, # 0 or FALSE      Push zero onto the stack
+    0x04, # (a * b)         Pop two values from the stack, multiply them together and push the result.
+    0x05, # (a + b)         Pop two values from the stack, add them together and push the result.
+    0x06, # (a - b)         Pop two values from the stack, subtract the second from the first and push the result.
+    0x07, # (a / b)         Pop two values from the stack, divide the first by the second and push the result.
+    0x08, # (a mod b)       Pop two values from the stack, perform a modulo operation and push the result.
+    0x09, # (-a)            Pop one value from the stack, negate it and push the result.
+    0x0A, # (a & b)         Pop two values from the stack, concatenate them and push the resulting string.
+    0x0B, # (a && b)        Pop two values from the stack, concatenate them with one space character added in between, and push the resulting string.
+    0x0C, # (a < b)         Pop two values from the stack, push 1 if the first is less than the second and 0 if not.
+    0x0D, # (a <= b)        Pop two values from the stack, push 1 if the first is less than or equal to the second and 0 if not.
+    0x0E, # (a <> b)        Pop two values from the stack, push 0 if the two values are the same and 1 if they are not.
+    0x0F, # (a = b)         Pop two values from the stack, push 1 if the two values are the same and 0 if they are not.
+    0x10, # (a > b)         Pop two values from the stack, push 1 if the first is greater than the second and 0 if not.
+    0x11, # (a >= b)        Pop two values from the stack, push 1 if the first is greater than or equal to the sceond and 0 if not.
+    0x12, # (a and b)       Pop two values from the stack, push 1 if both are logically true and 0 if not.
+    0x13, # (a or b)        Pop two values from the stack, push 1 if either are logically true and 0 if not.
+    0x14, # (not a)         Pop one value from the stack, push 0 if it is logically true and 1 if not.
+    0x15, # (a contains b)  Pop two values from the stack, push 1 if the first is a string that contains the second and 0 if not.
+          #                 The text comparison is case-insensitive and ignores diacritic marks.
+    0x16, # (a starts b)    Pop two values from the stack, push 1 if the first is a string that begins with second string and 0 if not.
+          #                 The text comparison is case-insensitive and ignores diacritic marks.
+    0x17, # (split op)      String slice/split operation.
+    0x18, # (hilite op)     Highlight (select) some text.
+    0x19, # (sprite 1 intersects 2)  Pop two sprite IDs and push 1 if the bounding rectangles of the two sprites touch at all, or 0 if they do not.
+    0x1A, # (sprite 1 within 2) Pop two sprite IDs and push 1 if the bounding rectangle of the first is entirely inside the bounding rectangle of the second, or 0 if not.
+    0x1B, # (field 1)       Pop a cast ID (name or number), push the value of that cast member's text property.
+    0x1C, # tell someObject to go to frame 1   Pop an object from the stack and begin running subsequent bytecodes in the context of that object, until code 1D is encountered.
+    0x1D, # tell someObject to go to frame 1   Marker for the end of a sequence of bytecodes started by 1C. Similar to 01 except for nested bytecode chunks instead of the main one.
+    0x1E, # UNKNOWN         Some kind of list transformation or check, seen used just before setting the actorList to []. More research is needed to know exactly what is happening there.
+    0x1F  # [#key: value]   Pops a list that must be in the form [#symbol1, val1, #symbol2, val2 ...] to transform into [#symbol1: val1, #symbol2: val2 ...]
+
+]
+
+TWO_BYTE_OPCODES = [
+    0x41, # push <int>      Push integer of value XX, which must be between 1 and 127, inclusive. To push zero, use 03. To push larger integers, use 81 XX YY.
+    0x42, # push <nargs>    Pop the specified number of values off the top of the stack, create an unparenthesized argument list containing them (i.e. for a call statement like myFunction 1, 2, 3), and push that to the stack.
+    0x43, # push <list>     op the specified number of values off the top of the stack, create a list for them (which can also be used for a parenthesized call expression like set result = myFunction(1, 2, 3)), 
+          #                 and push that to the stack.
+    0x44, # push <const>    Push a constant from local constant records onto the stack. These records seem to be six bytes long (regardless of the actual size of the constant value), 
+          #                 so pushing the first one is 44 00, the second is 44 06, the third is 44 0C, etc. To push the 65th one and beyond use code 84 YY ZZ
+    0x45, # push <sym>      Push a symbol with a name from namelist[XX]. Note that the name will be stored as "name", not "#name".
+    0x46, # push <object>   Push a object with a name from namelist[XX]. See also code 86.
+    0x47, # UNKNOWN
+    0x48, # UNKNOWN
+    0x49, # push <global>   Push the value of a global variable with a name from namelist[XX].
+    0x4A, # push <prop>     Push the value of a property
+    0x4B, # push <param>    Push the value of a function call parameter. The parameter records seem to be 6 bytes long, so the first is pushed with 4B 00, the second with 4B 06, etc.
+    0x4C, # push <local>    Push the value of a local variable. The local variable records seem to be 6 bytes long, so the first is pushed with 4C 00, the second with 4C 06, etc.
+    0x4D, # UNKNOWN
+    0x4E, # UNKNOWN
+    0x4F, # set <global>    Pop one value and use it to set the global variable with name from namelist[XX].
+    0x50, # set <prop>      Pop one value and use it to set a property.
+    0x51, # set <param>     Pop one value and use it to set a parameter.
+    0x52, # set <local>     Pop one value and use it to set a local variable. See code 4C 00 for a note about local variable records.
+    0x53, # UNKNOWN
+    0x54, # end repeat      Unconditional backwards jump by XX bytes, relative to the first byte of this instruction.
+    0x55, # UNKNOWN
+    0x56, # call <localfn>  Call a function defined in this script with the name at namelist[XX]. 
+          #                 The top value on the stack must be an argument list. If the argument list was created with code 43 XX, one return value will be pushed to the stack. 
+          #                 If the argument list was created with code 42 XX, no return value will be pushed.
+    0x57, # call <globfn>   Call the external function with name from namelist[XX].
+    0x58, # call <obj, met> Pop [argument list, call target] to make a method call. If the call target is a literal number, this indicates a local variable is the target. 
+          #                 It must be divided by six to get the actual local variable number. The first argument of the argument list will be a symbol with the name of the method. 
+          #                 Note: It is still unclear what difference the value of XX makes. It has been seen as 0x01 and 0x05. More research is needed to know more. (Possibly local variables vs. call parameters?)
+
+    0x59, # UNKNOWN
+    0x5A, # UNKNOWN
+    0x5B, # UNKNOWN
+    0x5C, # UNKNOWN
+    0x5D, # UNKNOWN
+    0x5E, # UNKNOWN
+    0x5F, # UNKNOWN
+    0x60, # UNKNOWN
+    0x61, # UNKNOWN
+    0x62, # UNKNOWN
+    0x63, # UNKNOWN
+    0x64, # UNKNOWN
+    0x65,  # UNKNOWN
+    0x66  # UNKNOWN
+
+]
+
+
+THREE_BYTE_OPCODES = [
+    0x81, # UNKNOWN
+    0x82, # UNKNOWN
+    0x83, # UNKNOWN
+    0x84, # UNKNOWN
+    0x89, # UNKNOWN
+    0x8F, # UNKNOWN
+    0x90, # UNKNOWN
+    0x93, # UNKNOWN
+    0x95, # UNKNOWN
+    0xa0, # UNKNOWN
+    0xa1, # UNKNOWN
+    0xa2, # UNKNOWN
+    0xa6  # UNKNOWN
+]
+
+SIMPLE_OPERATIONS = {
+    0x01: 'return;',
+    0x02: 'unknown_op(0x02);',
+    0x03: 'push(0);',
+    0x04: 'push(pop() * pop());',
+    0x05: 'push(pop() + pop());',
+    0x06: 'push(pop() - pop());',
+    0x07: 'push(pop() / pop());',
+    0x08: 'push(pop() % pop());',
+    0x09: 'push(-pop());',
+    0x0A: 'push((pop() + "") + (pop() + ""));',
+    0x0B: 'push((pop() + "") + " " + (pop() + ""));',
+    0x0C: 'push(pop() < pop());',
+    0x0D: 'push(pop() <= pop());',
+    0x0E: 'push(pop() != pop());',
+    0x0F: 'push(pop() == pop());',
+    0x10: 'push(pop() > pop());',
+    0x11: 'push(pop() >= pop());',
+    0x12: 'push(pop() && pop());',
+    0x13: 'push(pop() || pop());',
+    0x14: 'push(!pop());',
+    0x15: 'push(contains_op());',
+    0x16: 'push(starts_op());',
+    0x17: 'push(split_op());',
+    0x18: 'push(highlight_op());',
+    0x19: 'push(sprint_intersect_op());',
+    0x1A: 'push(sprint_within_op());',
+    0x1B: 'push(cast_member_op());',
+    0x1C: 'push(goto_frame_1_op_st());',
+    0x1D: 'push(goto_frame_1_op_ed());',
+    0x1E: 'unknown_op(0x1e);',
+    0x1F: 'push(transpose_op());'
+}
+
+
+# ====================================================================================================================================
+def to_string(strval):
+    strval = strval.replace("\\", "\\\\")
+    strval = strval.replace("\"", "\\\"")
+    strval = strval.replace("\a", "\\a")
+    strval = strval.replace("\b", "\\b")
+    strval = strval.replace("\f", "\\f")
+    strval = strval.replace("\n", "\\n")
+    strval = strval.replace("\r", "\\r")
+    strval = strval.replace("\t", "\\t")
+    strval = strval.replace("\v", "\\v")
+    return '"' + strval + '"'
+
+
 # ====================================================================================================================================
 def parse_imap(data):
     # Unknown block data
@@ -1107,7 +1264,7 @@ def save_24bit_bmp(bmp_width, bmp_height, file, fdata):
     file.close()
 
 # ====================================================================================================================================
-def parse_mmap(data, fileContent):
+def parse_mmap(data, fileContent, offset):
     # This file types will be ignored
     types_to_ignore = [IMAP_FILE_FORMAT, MMAP_FILE_FORMAT, FREE_FILE_FORMAT, THUM_FILE_FORMAT]
 
@@ -1139,14 +1296,14 @@ def parse_mmap(data, fileContent):
     # Read file length
     file_length = struct.unpack(bit_order+"i", data[28:32])[0]
     print("NMAP: Meta file length (must be the whole data length): %s"%(file_length))
-    if len(fileContent) != file_length + 8:
+    if len(fileContent) != file_length + 8 + offset:
         print("ERROR: Bad file length!")
         sys.exit(-1)
 
     # Read file offset
     file_offset = struct.unpack(bit_order+"i", data[32:36])[0]
-    print("NMAP: Meta file offset (must be zero): %s"%(file_offset))
-    if file_offset != 0:
+    print("NMAP: Meta file offset: %s"%(file_offset))
+    if file_offset != 0 and file_offset != offset:
         print("ERROR: Bad file offset!")
         sys.exit(-1)
 
@@ -1156,6 +1313,82 @@ def parse_mmap(data, fileContent):
 
     unknown1 = struct.unpack(bit_order+"i", data[40:44])[0]
     print("NMAP: Unknown 1: %s"%(unknown1))
+
+    name_list = []
+
+    # Look for list of names
+    index = 44
+    while index < len(data):
+        # Read file format
+        file_format = struct.unpack("cccc", data[index:(index+4)])
+        file_format = ('%c%c%c%c'%(file_format[0], file_format[1], file_format[2], file_format[3]))
+
+        # Read file length
+        file_length = struct.unpack(bit_order+"i", data[(index+4):(index+8)])[0]
+
+        # Read file offset
+        file_offset = struct.unpack(bit_order+"i", data[(index+8):(index+12)])[0]
+
+        # Unknown
+        unknown0 = struct.unpack(bit_order+"i", data[(index+12):(index+16)])[0]
+
+        unknown1 = struct.unpack(bit_order+"i", data[(index+16):(index+20)])[0]
+
+        # -------------------------- Lnam ------------------------------------------------------------------
+        if (file_format == LNAM_FILE_FORMAT):
+            print('Getting names from Lnam file')
+
+            lnam_bit_order = '>'
+
+            fdata = fileContent[file_offset:(file_offset+file_length+8)]
+
+            # Skip file size and length
+            indx = 8
+
+            # Unknown header data
+            unk = struct.unpack(lnam_bit_order+"i", fdata[(indx):(indx+4)])[0]
+            indx = indx + 4
+            print "Unknown: %08x"%(unk)
+
+            unk = struct.unpack(lnam_bit_order+"i", fdata[(indx):(indx+4)])[0]
+            indx = indx + 4
+            print "Unknown: %08x"%(unk)
+
+            filesize = struct.unpack(lnam_bit_order+"i", fdata[(indx):(indx+4)])[0]
+            indx = indx + 4
+            print "filesize: %08x"%(filesize)
+
+            filesize_cp = struct.unpack(lnam_bit_order+"i", fdata[(indx):(indx+4)])[0]
+            indx = indx + 4
+            print "filesize_cp: %08x"%(filesize_cp)
+
+            unk = struct.unpack(lnam_bit_order+"h", fdata[(indx):(indx+2)])[0]
+            indx = indx + 2
+            print "Unknown: %08x"%(unk)            
+
+            nnames = struct.unpack(lnam_bit_order+"h", fdata[(indx):(indx+2)])[0]
+            indx = indx + 2
+            print "Number of names: %s"%(nnames)            
+
+
+            if filesize_cp != filesize:
+                print("ERROR: Bad file size! (%s != %s)"%(filesize_cp, filesize))
+                sys.exit(-1)
+
+
+              
+            for i in range(0, nnames):
+                nbytes = ord(fdata[indx])
+                indx = indx + 1
+
+                name = fdata[indx:(indx + nbytes)]
+                indx = indx + nbytes
+                
+                name_list.append(name)
+                print("DEBUG: name_list[%s] = %s"%(i, name))
+                
+
+        index = index + 20
 
     # Extract file contents
     index = 44
@@ -1195,6 +1428,80 @@ def parse_mmap(data, fileContent):
 
         if (file_format in types_to_ignore) or (file_length == 0):
             print("FILE: Empty file data or must ignore file!")
+
+
+        # -------------------------- KEY* ------------------------------------------------------------------
+        elif (file_format == KEY_FILE_FORMAT):
+            file_ext = "KEY"
+            file_name = "%s.%s"%(nfiles, file_ext)
+
+            print(u"FILE: Saving KEY file to: %s"%(file_name))
+
+            with open(os.path.join(sys.argv[3], file_name), 'wb') as file:
+                fdata = fileContent[file_offset:(file_offset+file_length+8)]
+
+                # Skip file size and length
+                indx = 8
+
+                # Unknown header data
+                unk = struct.unpack(bit_order+"i", fdata[(indx):(indx+4)])[0]
+                indx = indx + 4
+                print "Unknown: %08x"%(unk)
+
+                unk = struct.unpack(bit_order+"i", fdata[(indx):(indx+4)])[0]
+                indx = indx + 4
+                print "Unknown: %08x"%(unk)
+
+                unk = struct.unpack(bit_order+"i", fdata[(indx):(indx+4)])[0]
+                indx = indx + 4
+                print "Unknown: %08x"%(unk)
+
+                unk = struct.unpack(bit_order+"i", fdata[(indx):(indx+4)])[0]
+                indx = indx + 4
+                print "Unknown: %08x"%(unk)
+
+                unk = struct.unpack(bit_order+"i", fdata[(indx):(indx+4)])[0]
+                indx = indx + 4
+                print "Unknown: %08x"%(unk)
+
+                
+                while len(fdata) >= indx + 12:
+                    file_ext = struct.unpack("cccc", fdata[indx:indx+4])
+                    file_ext = ('%c%c%c%c'%(file_ext[0], file_ext[1], file_ext[2], file_ext[3]))
+                    if sys.argv[1] == 'pc':
+                        file_ext = file_ext[3] + file_ext[2] + file_ext[1] + file_ext[0]
+
+                    nfile = struct.unpack(bit_order+"i", fdata[(indx+4):(indx+8)])[0]
+                    cas_index = struct.unpack(bit_order+"i", fdata[(indx+8):(indx+12)])[0]
+
+                    indx = indx + 12
+
+                    if nfile > 0:
+                        key_value = "%s.%s, %08x\n"%(nfile, file_ext, cas_index)
+                        file.write(key_value)
+
+                file.close()
+
+        # -------------------------- CAS* ------------------------------------------------------------------
+        elif (file_format == CAS_FILE_FORMAT):
+            file_ext = "CAS"
+            file_name = "%s.%s"%(nfiles, file_ext)
+
+            print(u"FILE: Saving CAS file to: %s"%(file_name))
+
+            with open(os.path.join(sys.argv[3], file_name), 'wb') as file:
+                fdata = fileContent[file_offset:(file_offset+file_length+8)]
+
+                # Skip file size and length
+                indx = 8
+
+                while len(fdata) >= indx + 4:
+                    cas_index = struct.unpack(">i", fdata[(indx):(indx+4)])[0]
+                    indx = indx + 4
+                    key_value = "%08x\n"%(cas_index)
+                    file.write(key_value)
+
+                file.close()
 
         # -------------------------- CLUT ------------------------------------------------------------------
         elif (file_format == CLUT_FILE_FORMAT):
@@ -1642,7 +1949,582 @@ def parse_mmap(data, fileContent):
 
             else:
                 print("WARNING: Unknown CASt type: %s"%(data_type))
-             
+
+        # -------------------------- Lingo script ------------------------------------------------------------------
+        elif (file_format == LSCR_FILE_FORMAT):
+            print("Lingo script header ================ ")
+
+            # Format details from: http://fileformats.archiveteam.org/wiki/Lingo_bytecode
+
+            fdata = fileContent[file_offset:(file_offset+file_length+8)]
+
+            lsrc_bit_order = '>'
+
+            # Skip file size and length
+            idx = 8
+            scr_type = struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_01 =  struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            filesize0 =  struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            filesize1 =  struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_04 =  struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_05 =  struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_06 =  struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_07 =  struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_08 =  struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_09 =  struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_10 =  struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_11 =  struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_12 =  struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_13 =  struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_14 =  struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_15 =  struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+
+            print("DEBUG: scr_type = %08x"%(scr_type)) 
+            print("DEBUG: unknown_01 = %08x"%(unknown_01)) 
+            print("DEBUG: filesize0 = %s"%(filesize0)) 
+            print("DEBUG: filesize1 = %s"%(filesize1)) 
+            print("DEBUG: unknown_04 = %08x"%(unknown_04)) 
+            print("DEBUG: unknown_05 = %08x"%(unknown_05)) 
+            print("DEBUG: unknown_06 = %08x"%(unknown_06)) 
+            print("DEBUG: unknown_07 = %08x"%(unknown_07)) 
+            print("DEBUG: unknown_08 = %08x"%(unknown_08)) 
+            print("DEBUG: unknown_09 = %08x"%(unknown_09)) 
+            print("DEBUG: unknown_10 = %08x"%(unknown_10)) 
+            print("DEBUG: unknown_11 = %08x"%(unknown_11)) 
+            print("DEBUG: unknown_12 = %08x"%(unknown_12)) 
+            print("DEBUG: unknown_13 = %08x"%(unknown_13)) 
+            print("DEBUG: unknown_14 = %08x"%(unknown_14)) 
+            print("DEBUG: unknown_15 = %08x"%(unknown_15)) 
+
+            if filesize1 != filesize0 or filesize1 != len(fdata) - 8:
+                print("ERROR: bad filesize (%s, %s, %s)"%(filesize1, filesize0, (len(fdata) - 8))) 
+                sys.exit(-1)
+
+            # $0040-$0041 	uint16 	Offset to the function records block  
+            frb_offset = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+
+            unknown_17 =  struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+            unknown_18 =  struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+
+            # Offset to the function records block repeated
+            frb_offset_cp = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+
+            print("DEBUG: frb_offset = %s"%(frb_offset)) 
+            print("DEBUG: unknown_17 = %s"%(unknown_17)) 
+            print("DEBUG: unknown_18 = %s"%(unknown_18)) 
+            print("DEBUG: frb_offset_cp = %s"%(frb_offset_cp)) 
+
+            if frb_offset != frb_offset_cp:
+                print("ERROR: bad offset to the function records block (%s, %s)"%(frb_offset, frb_offset_cp))
+                sys.exit(-1)
+
+            # $0048-$0049 	uint16 	Number of function records 
+            frb_nrecords = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+
+            unknown_19 =  struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+
+            # Offset to the function records block repeated
+            frb_offset_cp = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+
+            print("DEBUG: frb_nrecords = %s"%(frb_nrecords)) 
+            print("DEBUG: unknown_19 = %s"%(unknown_19)) 
+            print("DEBUG: frb_offset_cp = %s"%(frb_offset_cp)) 
+
+            if frb_offset != frb_offset_cp:
+                print("ERROR: bad offset to the function records block (%s, %s)"%(frb_offset, frb_offset_cp)) 
+                sys.exit(-1)
+
+            # $004E-$004F    uint16 	Number of constants 
+            con_nconstants = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+
+            unknown_20 =  struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+
+            # $0052-$0053 	uint16 	Offset to the constant records block 
+            crb_offset = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+
+            unknown_21 =  struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+
+            # Size in bytes of the constants area???
+            unknown_22 =  struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+
+            unknown_23 =  struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+
+            # $005A-$005B 	uint16 	Base address for constant data
+            con_offset = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+
+            print("DEBUG: con_nconstants = %s"%(con_nconstants)) 
+            print("DEBUG: unknown_20 = %s"%(unknown_20)) 
+            print("DEBUG: crb_offset = %s"%(crb_offset))            
+            print("DEBUG: unknown_21 = %s"%(unknown_21)) 
+            print("DEBUG: unknown_22 = %s"%(unknown_22)) 
+            print("DEBUG: unknown_23 = %s"%(unknown_23)) 
+            print("DEBUG: con_offset = %s"%(con_offset))      
+
+            # Read the constants record blocks
+            constants = []
+
+            bytes_per_const = 6
+            idx = crb_offset + 8
+            for i in range(0, con_nconstants):
+                if scr_type == 0x1fc7ea60:
+                    # uint32: Value type ID 
+                   constant_type = struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
+                   idx += 4
+                   bytes_per_const = 8
+                else:
+                    # uint16: Value type ID 
+                   constant_type = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+                   idx += 2
+
+                # uint32: Data address, relative to the base address given in the header 
+                constant_offset = struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
+                idx += 4
+
+                #print("DEBUG: constant_type = %s"%(constant_type)) 
+                #print("DEBUG: contant_offset = %s"%(constant_offset)) 
+
+                if constant_type == 1:
+                    # Text constant
+                    idxc = con_offset + constant_offset + 8
+
+                    # uint32: String length
+                    strlength = struct.unpack(lsrc_bit_order+"i", fdata[idxc:idxc+4])[0] - 1
+                    idxc += 4
+                    #print("DEBUG: strlength = %s"%(strlength)) 
+
+                    strval = str(fdata[idxc:idxc+strlength])
+                    constants.append(to_string(strval))
+                   
+
+                elif constant_type == 4:
+                    # 32 bits integer
+                    print("ERROR: TODO! integer treatment: %s"%(constant_type)) 
+                    sys.exit(-1)
+
+                elif constant_type == 9:
+                    # Floating point 
+                    print("ERROR: TODO! floating point treatment: %s"%(constant_type))
+                    sys.exit(-1)
+
+
+                else:
+                    # Unknown
+                    print("ERROR: Unknown constant type: %s"%(constant_type))
+                    sys.exit(-1)
+
+                print("DEBUG: constants[%s] = %s"%(i, constants[i])) 
+
+            
+            file_ext = "scr"
+            file_name = "%s.%s"%(nfiles, file_ext)
+
+            print(u"FILE: Saving script file to: %s"%(file_name))
+
+            with open(os.path.join(sys.argv[3], file_name), 'wb') as file:
+
+                # Read the functions record blocks
+                idx = frb_offset + 8
+                for i in range(0, frb_nrecords):
+
+                    # $0000-$0001 	uint16 	Namelist index for the function's name, or 0xFFFF if there is no name(?)
+                    namelist_index = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+                    idx += 2
+
+                    # $0002-$0003 	uint16 	Unknown
+                    unknown_rb0 = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+                    idx += 2
+
+                    # $0004-$0007 	uint32 	Length of the function bytecode in bytes
+                    bc_length = struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
+                    idx += 4
+
+                    # $0008-$000B 	uint32 	Offset to the function bytecode
+                    bc_off = struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
+                    idx += 4
+
+                    # $000C-$000D 	uint16 	Number of arguments
+                    bc_narg = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+                    idx += 2
+
+                    # $000E-$0011 	uint32 	Unknown
+                    unknown_rb1 = struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
+                    idx += 4
+
+                    # $0012-$0013 	uint16 	Number of local variables
+                    bc_nlocal = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+                    idx += 2
+
+                    # $0014-$0017 	uint32 	Unknown
+                    unknown_rb2 = struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
+                    idx += 4
+
+                    # $0018-$0019 	uint16 	Count (C)
+                    count_c = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+                    idx += 2
+
+                    # $001A-$001D 	uint32 	Unknown
+                    unknown_rb3 = struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
+                    idx += 4
+
+                    # $001E-$0021 	uint32 	Unknown
+                    unknown_rb4 = struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
+                    idx += 4
+
+                    # $0022-$0023 	uint16 	Unknown
+                    unknown_rb5 = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+                    idx += 2
+
+                    # $0024-$0025 	uint16 	Count (D)
+                    count_d = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+                    idx += 2
+
+                    # $0026-$0029 	uint32 	Unknown
+                    unknown_rb6 = struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
+                    idx += 4
+
+                    print("DEBUG: namelist_index = %x"%(namelist_index)) 
+                    print("DEBUG: unknown_rb0 = %x"%(unknown_rb0)) 
+                    print("DEBUG: bc_length = %x"%(bc_length)) 
+                    print("DEBUG: bc_off = %x"%(bc_off)) 
+                    print("DEBUG: bc_narg = %x"%(bc_narg)) 
+                    print("DEBUG: unknown_rb1 = %x"%(unknown_rb1)) 
+                    print("DEBUG: bc_nlocal = %x"%(bc_nlocal)) 
+                    print("DEBUG: unknown_rb2 = %x"%(unknown_rb2)) 
+                    print("DEBUG: count_c = %x"%(count_c)) 
+                    print("DEBUG: unknown_rb3 = %x"%(unknown_rb3)) 
+                    print("DEBUG: unknown_rb4 = %x"%(unknown_rb4)) 
+                    print("DEBUG: unknown_rb5 = %x"%(unknown_rb5)) 
+                    print("DEBUG: count_d = %x"%(count_d)) 
+                    print("DEBUG: unknown_rb6 = %x"%(unknown_rb6)) 
+
+                    fname = 'noname'
+                    if namelist_index > 0 and namelist_index < len(name_list):
+                        fname = name_list[namelist_index]
+
+                    args = ''
+                    for c in range(0, bc_narg):
+                         if args == '':
+                              args = ('param%s'%(c))
+                         else:
+                              args = args + ', ' + ('param%s'%(c))
+
+                    file.write("function %s(%s) {\n"%(fname, args))
+
+                    spacing = '    ';
+
+
+                    for c in range(0, bc_nlocal):
+                         file.write(spacing)
+                         file.write("var local%s;\n"%(c))
+                    
+                    label_indexes = []
+                    label_types = {}
+                    # Search for loops
+                    idxc = bc_off + 8
+                    while (idxc - bc_off - 8) < bc_length:
+                        opcode = ord(fdata[idxc])
+                        idxc = idxc + 1
+                        
+                        if ((opcode not in ONE_BYTE_OPCODES) and
+                            (opcode not in TWO_BYTE_OPCODES) and
+                            (opcode not in THREE_BYTE_OPCODES)):
+                            print("ERROR: Unknown opcode: %02x"%(opcode))
+                            sys.exit(-1)
+
+                        if opcode in ONE_BYTE_OPCODES:
+                            pass
+
+                        elif opcode in TWO_BYTE_OPCODES:
+                            # Two bytes operation
+                            op1 = ord(fdata[idxc])
+                            idxc = idxc + 1
+
+                            if opcode == 0x54:
+                                # Unconditional backwards jump by XX bytes, relative to the first byte of this instruction. 
+                                label_indexes.append(idxc - 2 - op1)
+                                label_types[idxc - 2 - op1] = 'for(;;) {'
+                                label_types[idxc] = '} // for'
+
+                        else:
+                            # Three bytes operation 
+                            op1 = ord(fdata[idxc])
+                            idxc = idxc + 1
+
+                            op2 = ord(fdata[idxc])
+                            idxc = idxc + 1
+
+                            if opcode == 0x93:
+                                # Unconditional jump: Advance by ((XX * 0x100) + YY) bytes, relative to the first byte of this instruction.
+                                label_indexes.append(idxc - 3 + (op1 * 256 + op2))
+                                label_types[idxc - 3 + (op1 * 256 + op2)] = '} // if'
+
+                            elif opcode == 0x95:
+                                # Conditional jump: Pop a value, and if it is logically FALSE, advance by ((XX * 0x100) + YY) bytes, relative to the first byte of this instruction. 
+                                label_indexes.append(idxc - 3 + (op1 * 256 + op2))
+                                label_types[idxc - 3 + (op1 * 256 + op2)] = '} else {'
+
+
+                    # Generate code
+                    idxc = bc_off + 8
+                    while (idxc - bc_off - 8) < bc_length:
+                        if idxc in label_indexes:
+                            if idxc in label_types:
+                                if label_types[idxc].startswith('}'):
+                                    spacing = spacing[0:(len(spacing) - 4)]
+
+                                file.write(spacing)
+                                file.write("%s\n"%(label_types[idxc]))
+                                if label_types[idxc] != '} // for' and label_types[idxc] != '} // if':
+                                    spacing = spacing + '    '
+
+                            else:
+                                file.write("label%08x\n"%(idxc))
+
+                        file.write(spacing)
+
+                        opcode = ord(fdata[idxc])
+                        idxc = idxc + 1
+                        
+                        if ((opcode not in ONE_BYTE_OPCODES) and
+                            (opcode not in TWO_BYTE_OPCODES) and
+                            (opcode not in THREE_BYTE_OPCODES)):
+                            print("ERROR: Unknown opcode: %02x"%(opcode))
+                            sys.exit(-1)
+
+                        if opcode in ONE_BYTE_OPCODES:
+                            # One byte operation
+                            file.write("// [0x%04x]: 0x%02x \n"%(idxc - 1, opcode))
+                            file.write(spacing)
+                            file.write(SIMPLE_OPERATIONS[opcode])
+
+                        elif opcode in TWO_BYTE_OPCODES:
+                            # Two bytes operation
+                            op1 = ord(fdata[idxc])
+                            idxc = idxc + 1
+
+                            file.write("// [0x%04x]: 0x%02x 0x%02x \n"%(idxc - 2, opcode, op1))
+                            file.write(spacing)
+
+                            if opcode == 0x41:
+                                # Push integer of value XX, which must be between 1 and 127, inclusive.
+                                file.write('push(0x%02x);'%(op1))
+
+                            elif opcode == 0x42:
+                                # Pop the specified number of values off the top of the stack, create an unparenthesized argument list containing them 
+                                # (i.e. for a call statement like myFunction 1, 2, 3), and push that to the stack.
+                                file.write('push(arglist(%s));'%(op1))
+
+                            elif opcode == 0x43:
+                                # Pop the specified number of values off the top of the stack, create a list for them (which can also be used for a parenthesized call expression like set result = myFunction(1, 2, 3)), 
+                                # and push that to the stack.
+                                file.write('push(list(%s));'%(op1))
+
+                            elif opcode == 0x44:
+                                # Push a constant from local constant records onto the stack. These records seem to be six bytes long (regardless of the actual size of the constant value), 
+                                # so pushing the first one is 44 00, the second is 44 06, the third is 44 0C, etc. 
+                                file.write('push(%s);'%(constants[op1 / bytes_per_const]))
+
+                            elif opcode == 0x45:
+                                # Push a symbol with a name from namelist[XX]. Note that the name will be stored as "name", not "#name". 
+                                file.write('push(symbol("%s"));'%(name_list[op1]))
+
+                            elif opcode == 0x46:
+                                # Push a object with a name from namelist[XX]. 
+                                file.write('push(object("%s"));'%(name_list[op1]))
+
+                            elif opcode == 0x49:
+                                # Push the value of a global variable with a name from namelist[XX].  
+                                file.write('push(global["%s"]);'%(name_list[op1]))
+
+                            elif opcode == 0x4A:
+                                # Push the value of a property.  
+                                file.write('push(property("%s"));'%(name_list[op1]))
+
+                            elif opcode == 0x4B:
+                                # Push the value of a function call parameter. The parameter records seem to be 6 bytes long, so the first is pushed with 4B 00, the second with 4B 06, etc.   
+                                file.write('push(param%s);'%(op1 / bytes_per_const))
+
+                            elif opcode == 0x4C:
+                                # Push the value of a function call parameter. The parameter records seem to be 6 bytes long, so the first is pushed with 4B 00, the second with 4B 06, etc.   
+                                file.write('push(local%s);'%(op1 / bytes_per_const))
+
+                            elif opcode == 0x4F:
+                                # Pop one value and use it to set the global variable with name from namelist[XX].    
+                                file.write('global["%s"] = pop();'%(name_list[op1]))
+
+                            elif opcode == 0x50:
+                                # Pop one value and use it to set a property.
+                                file.write('set_property("%s", pop());'%(name_list[op1]))
+
+                            elif opcode == 0x51:
+                                # Pop one value and use it to set a parameter. 
+                                file.write('param%s = pop();'%(op1 / bytes_per_const))
+
+                            elif opcode == 0x52:
+                                # Pop one value and use it to set a local variable.
+                                file.write('local%s = pop();'%(op1 / bytes_per_const))
+
+                            elif opcode == 0x54:
+                                # Unconditional backwards jump by XX bytes, relative to the first byte of this instruction. 
+                                file.write('// goto label%04x;'%(idxc - 2 - op1))
+ 
+                            elif opcode == 0x56:
+                                # Call a function defined in this script with the name at namelist[XX].
+                                file.write('call("local", "%s");'%(name_list[op1]))
+
+                            elif opcode == 0x57:
+                                # Call the external function with name from namelist[XX].
+                                file.write('call("external", "%s");'%(name_list[op1]))
+
+                            elif opcode == 0x58:
+                                # Call an object method
+                                file.write('push(contextual("%s"));'%(name_list[op1]))
+
+                            # TODO! Complete this
+
+                            elif opcode == 0x5F:
+                                # Push the value of the contextual property with the name at namelist[XX].
+                                file.write('call("method", "%s");'%(name_list[op1]))
+
+                            # TODO! Complete this
+
+                            elif opcode == 0x64:
+                                # Push a copy of a value already on the stack, relative to the top where 00 is the top slot, 01 is one slot beneath the top, etc. 
+                                file.write('copy(%s);'%(op1))
+
+                            elif opcode == 0x65:
+                                # Pop and discard XX values from the top of the stack.
+                                file.write('discard(%s);'%(op1))
+
+                            elif opcode == 0x66:
+                                # Pop an empty list and push the value of a read-only property named at namelist[XX]. 
+                                file.write('pop(); push(property("%s"));'%(name_list[op1]))
+
+
+                            else:
+                                # Unknown operation
+                                file.write('unknown_op2(0x%02x, 0x%02x);'%(opcode, op1))
+
+                        else:
+                            # Three bytes operation 
+                            op1 = ord(fdata[idxc])
+                            idxc = idxc + 1
+
+                            op2 = ord(fdata[idxc])
+                            idxc = idxc + 1
+
+                            file.write("// [0x%04x]: 0x%02x 0x%02x 0x%02x \n"%(idxc - 3, opcode, op1, op2))
+                            file.write(spacing)
+
+                            if opcode == 0x81:
+                                # Push the integer ((XX * 0x100) + YY).
+                                file.write('push(0x%02x%02x);'%(op1, op2))
+
+                            elif opcode == 0x82:
+                                # Pop the specified number of values off the top of the stack, create an unparenthesized argument list containing them 
+                                # (i.e. for a call statement like myFunction 1, 2, 3), and push that to the stack.
+                                file.write('push(arglist(%s));'%(op1 * 256 + op2))
+
+                            elif opcode == 0x83:
+                                # Pop the specified number of values off the top of the stack, create a list for them (which can also be used for a parenthesized call expression like set result = myFunction(1, 2, 3)), 
+                                # and push that to the stack.
+                                file.write('push(list(%s));'%(op1 * 256 + op2))
+
+                            elif opcode == 0x84:
+                                # Push a constant from local constant records onto the stack. 
+                                file.write('push(%s);'%(constants[(op1 * 256 + op2) / bytes_per_const]))
+
+                            elif opcode == 0x89:
+                                # Push the value of a global variable with a name from namelist[XX].  
+                                file.write('push(global["%s"]);'%(name_list[(op1 * 256 + op2)]))
+
+                            elif opcode == 0x8F:
+                                # Pop one value and use it to set the global variable with name from namelist[XX].    
+                                file.write('global["%s"] = pop();'%(name_list[(op1 * 256 + op2)]))
+
+                            elif opcode == 0x90:
+                                # Pop one value and use it to set a property.
+                                file.write('set_property("%s", pop());'%(name_list[(op1 * 256 + op2)]))
+
+                            elif opcode == 0x93:
+                                # Unconditional jump: Advance by ((XX * 0x100) + YY) bytes, relative to the first byte of this instruction.
+                                file.write('// goto label%04x;'%(idxc - 3 + (op1 * 256 + op2)))
+                                if label_types[idxc - 3 + (op1 * 256 + op2)] == '} // for':
+                                    file.write('\n')
+                                    file.write(spacing)
+                                    file.write('break;')
+                                    if label_types[idxc] == '} else {':
+                                        label_types[idxc] = '} // if'
+                                    
+
+                            elif opcode == 0x95:
+                                # Conditional jump: Pop a value, and if it is logically FALSE, advance by ((XX * 0x100) + YY) bytes, relative to the first byte of this instruction. 
+                                file.write('// if (!pop()) goto label%04x;\n'%(idxc - 3 + (op1 * 256 + op2)))
+                                file.write(spacing)
+                                if label_types[idxc - 3 + (op1 * 256 + op2)] == '} // for':
+                                    file.write('if (!pop()) break;')
+                                else:
+                                    file.write('if (pop()) {')
+                                    spacing = spacing + '    '
+
+                            elif opcode == 0xa0:
+                                # Pop one value and use it to set a property.
+                                file.write('set_property("%s", pop());'%(name_list[(op1 * 256 + op2)]))
+
+                            elif opcode == 0xa1:
+                                # Pop one value and use it to set a parameter. 
+                                file.write('param%s = pop();'%((op1 * 256 + op2) / bytes_per_const))
+
+                            elif opcode == 0xa2:
+                                # Pop one value and use it to set a local variable.
+                                file.write('local%s = pop();'%((op1 * 256 + op2) / bytes_per_const))
+
+                            elif opcode == 0xa6:
+                                # Pop an empty list and push the value of a read-only property named at namelist[XX]. 
+                                file.write('pop(); push(property("%s"));'%(name_list[(op1 * 256 + op2)]))
+
+                            else:
+                                # Unknown operation
+                                file.write('unknown_op3(0x%02x, 0x%02x, 0x%02x);'%(opcode, op1, op2))
+
+                        file.write("\n")
+
+                    file.write("}\n\n")
+
+                file.close()
+ 
+
+
         # -------------------------- SND ------------------------------------------------------------------
         elif (file_format == SND_FILE_FORMAT):
             # RLE compression?
@@ -1970,31 +2852,32 @@ def parse_mmap(data, fileContent):
         nfiles = nfiles + 1
 
 
-def parse_riff(fileContent):
+def parse_riff(fileContent, offset):
     # Check if file format is RIFX
-    file_format = struct.unpack("cccc", fileContent[0:4])
+    file_format = struct.unpack("cccc", fileContent[offset:offset+4])
     file_format = ('%c%c%c%c'%(file_format[0], file_format[1], file_format[2], file_format[3]))
+
     print("INFO: File format: %s"%(file_format))
     if RIFX_FILE_FORMAT != file_format:
         print("ERROR: File format is not %s"%(RIFX_FILE_FORMAT))
         sys.exit(-1)
 
     # Read file length
-    file_length = struct.unpack(bit_order+"i", fileContent[4:8])[0]
+    file_length = struct.unpack(bit_order+"i", fileContent[offset+4:offset+8])[0]
     print("INFO: File contains %s bytes of information."%(file_length))
-    if len(fileContent) != file_length + 8:
+    if len(fileContent) != file_length + 8 + offset:
         print("ERROR: Bad file length!")
         sys.exit(-1)
  
     # Check Macromedia Director MV93 header
-    mv93_format = struct.unpack("cccc", fileContent[8:12])
+    mv93_format = struct.unpack("cccc", fileContent[offset+8:offset+12])
     mv93_format = ('%c%c%c%c'%(mv93_format[0], mv93_format[1], mv93_format[2], mv93_format[3]))
     print("INFO: Data format: %s"%(mv93_format))
     if MV93_FILE_TYPE != mv93_format:
         print("ERROR: Data format is not %s"%(MV93_FILE_TYPE))
         sys.exit(-1)
 
-    index = 12
+    index = offset + 12
     while index < len(fileContent):
         block_type = struct.unpack("cccc", fileContent[index:(index+4)])
         block_type = ('%c%c%c%c'%(block_type[0], block_type[1], block_type[2], block_type[3]))
@@ -2011,14 +2894,13 @@ def parse_riff(fileContent):
 
         if block_type == MMAP_FILE_FORMAT:
             # Parse 'mmap' block
-            parse_mmap(block_data, fileContent)
+            parse_mmap(block_data, fileContent, offset)
 
 
         else:
             print("WARNING: Unknown block type!")
 
         index = index + 8 + block_size
-
 
 
 if __name__ == '__main__':
@@ -2043,6 +2925,10 @@ if __name__ == '__main__':
             CLUT_FILE_FORMAT = 'TULC'
             CAST_FILE_FORMAT = 'tSAC'
             SND_FILE_FORMAT = ' dns'
+            KEY_FILE_FORMAT = '*YEK'
+            CAS_FILE_FORMAT = '*SAC'
+            LSCR_FILE_FORMAT = 'rcsL'
+            LNAM_FILE_FORMAT = 'manL'
 
         if not os.path.isfile(sys.argv[2]):
             print("ERROR: '%s' is not a file"%(sys.argv[2]))
@@ -2053,7 +2939,23 @@ if __name__ == '__main__':
             sys.exit(-1)
 
         print("Try to parse %s file."%(sys.argv[2]))
+        rifx_offset = 0
         with open(sys.argv[2], mode='rb') as file:
             fileContent = file.read()
-            parse_riff(fileContent)
+            if sys.argv[2].upper().endswith('.EXE'):
+                # Try to find DRX header inside the EXE file
+                content = fileContent
+                index = content.find(RIFX_FILE_FORMAT)
+                found = False
+                while index >= 0 and not found:
+                    rifx_offset += index
+                    content = content[index:]
+                    if content[8:12] == MV93_FILE_TYPE:
+                        found = True
+                    else:
+                        content = content[4:]
+                        rifx_offset += 4
+                        index = content.find(RIFX_FILE_FORMAT)
+
+            parse_riff(fileContent, rifx_offset)
 
