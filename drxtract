@@ -713,6 +713,18 @@ THREE_BYTE_OPCODES = [
     0xa6  # UNKNOWN
 ]
 
+NO_PAREN_FUNCTIONS = [
+    'put',
+    'window',
+    'forget',
+    'alert'
+]
+
+SPECIAL_CONSTANTS = {
+    '""': 'empty',
+    '"\\r"': 'return',
+    '"\\""': 'quote'
+}
 
 operations_stack = []
 
@@ -743,7 +755,7 @@ def flush_stack(f, spacing):
     while op is not None:
         f.write("\n")
         f.write(spacing)
-        f.write("%s;"%(op))
+        f.write("%s"%(op))
         op = pop()
 
     f.write("\n")
@@ -2145,7 +2157,7 @@ def parse_mmap(data, fileContent, offset):
                 print("DEBUG: constants[%s] = %s"%(i, constants[i])) 
 
             
-            file_ext = "scr"
+            file_ext = "Lscr"
             file_name = "%s.%s"%(nfiles, file_ext)
 
             print(u"FILE: Saving script file to: %s"%(file_name))
@@ -2228,7 +2240,7 @@ def parse_mmap(data, fileContent, offset):
                     print("DEBUG: unknown_rb6 = %x"%(unknown_rb6)) 
 
                     fname = 'noname'
-                    if namelist_index > 0 and namelist_index < len(name_list):
+                    if namelist_index >= 0 and namelist_index < len(name_list):
                         fname = name_list[namelist_index]
 
                     args = ''
@@ -2238,18 +2250,14 @@ def parse_mmap(data, fileContent, offset):
                          else:
                               args = args + ', ' + ('param%s'%(c))
 
-                    file.write("function %s(%s) {\n"%(fname, args))
+                    file.write("on %s %s\n"%(fname, args))
 
-                    spacing = '    ';
+                    spacing = '    '
 
-
-                    for c in range(0, bc_nlocal):
-                         file.write(spacing)
-                         file.write("var local%s;\n"%(c))
-                    
                     label_indexes = []
                     label_types = {}
-                    # Search for loops
+                    global_vars = []
+                    # Search for loops and globals
                     idxc = bc_off + 8
                     while (idxc - bc_off - 8) < bc_length:
                         opcode = ord(fdata[idxc])
@@ -2272,8 +2280,16 @@ def parse_mmap(data, fileContent, offset):
                             if opcode == 0x54:
                                 # Unconditional backwards jump by XX bytes, relative to the first byte of this instruction. 
                                 label_indexes.append(idxc - 2 - op1)
-                                label_types[idxc - 2 - op1] = 'for(;;) {'
-                                label_types[idxc] = '} // for'
+                                label_types[idxc - 2 - op1] = 'repeat while TRUE'
+                                label_types[idxc] = 'end repeat'
+                            elif opcode == 0x49:
+                                # Push the value of a global variable with a name from namelist[XX].  
+                                if not name_list[op1] in global_vars:
+                                    global_vars.append(name_list[op1])
+                            elif opcode == 0x4F:
+                                # Pop one value and use it to set the global variable with name from namelist[XX].    
+                                if not name_list[op1] in global_vars:
+                                    global_vars.append(name_list[op1])
 
                         else:
                             # Three bytes operation 
@@ -2286,29 +2302,45 @@ def parse_mmap(data, fileContent, offset):
                             if opcode == 0x93:
                                 # Unconditional jump: Advance by ((XX * 0x100) + YY) bytes, relative to the first byte of this instruction.
                                 label_indexes.append(idxc - 3 + (op1 * 256 + op2))
-                                label_types[idxc - 3 + (op1 * 256 + op2)] = '} // if'
+                                label_types[idxc - 3 + (op1 * 256 + op2)] = 'end if'
+
+                                label_indexes.append(idxc)
+                                label_types[idxc] = 'else'
 
                             elif opcode == 0x95:
                                 # Conditional jump: Pop a value, and if it is logically FALSE, advance by ((XX * 0x100) + YY) bytes, relative to the first byte of this instruction. 
                                 label_indexes.append(idxc - 3 + (op1 * 256 + op2))
-                                label_types[idxc - 3 + (op1 * 256 + op2)] = '} else {'
+                                label_types[idxc - 3 + (op1 * 256 + op2)] = 'end if'
+
+                            elif opcode == 0x89:
+                                # Push the value of a global variable with a name from namelist[XX].  
+                                if not name_list[op1] in global_vars:
+                                    global_vars.append(name_list[op1 * 256 + op2])
+                            elif opcode == 0x8F:
+                                # Pop one value and use it to set the global variable with name from namelist[XX].    
+                                if not name_list[op1] in global_vars:
+                                    global_vars.append(name_list[op1 * 256 + op2])
 
 
                     # Generate code
                     clear_stack()
                     window_to_tell = None
 
+                    for gv in global_vars:
+                        file.write(spacing)
+                        file.write("global %s\n"%(gv))
+
                     idxc = bc_off + 8
                     while (idxc - bc_off - 8) < bc_length:
                         if idxc in label_indexes:
                             flush_stack(file, spacing)
                             if idxc in label_types:
-                                if label_types[idxc].startswith('}'):
+                                if label_types[idxc].startswith('end') or label_types[idxc] == 'else':
                                     spacing = spacing[0:(len(spacing) - 4)]
 
                                 file.write(spacing)
                                 file.write("%s\n"%(label_types[idxc]))
-                                if label_types[idxc] != '} // for' and label_types[idxc] != '} // if':
+                                if not label_types[idxc].startswith('end'):
                                     spacing = spacing + '    '
 
                             else:
@@ -2327,13 +2359,13 @@ def parse_mmap(data, fileContent, offset):
 
                         if opcode in ONE_BYTE_OPCODES:
                             # One byte operation
-                            file.write("// [0x%04x]: 0x%02x"%(idxc - 1, opcode))
+                            file.write("-- [0x%04x]: 0x%02x"%(idxc - 1, opcode))
 
                             if opcode == 0x01:
                                 flush_stack(file, spacing)
                                 file.write('\n')
                                 file.write(spacing)
-                                file.write('return;')
+                                file.write('exit')
 
                             elif opcode == 0x03:
                                 push('0')
@@ -2366,16 +2398,20 @@ def parse_mmap(data, fileContent, offset):
                             elif opcode == 0x08:
                                 op2 = pop_s()
                                 op1 = pop_s()
-                                push('(' + op1 + ' % ' + op2 + ')')
+                                push('(' + op1 + ' mod ' + op2 + ')')
 
                             elif opcode == 0x09:
                                 push('-' + pop_s())
 
                             elif opcode == 0x0A:
-                                push('((' + pop_s() + '"") + (' + pop_s() + '""))')
+                                op2 = pop_s()
+                                op1 = pop_s()
+                                push('('+ op1 + ' & ' + op2 + ')')
 
                             elif opcode == 0x0B:
-                                push('((' + pop_s() + '"") + " " + (' + pop_s() + '""))')
+                                op2 = pop_s()
+                                op1 = pop_s()
+                                push('(' + op1 + ' && ' + op2 + ')')
 
                             elif opcode == 0x0C:
                                 op2 = pop_s()
@@ -2390,12 +2426,12 @@ def parse_mmap(data, fileContent, offset):
                             elif opcode == 0x0E:
                                 op2 = pop_s()
                                 op1 = pop_s()
-                                push('(' + op1 + ' != ' + op2 + ')')
+                                push('(' + op1 + ' <> ' + op2 + ')')
 
                             elif opcode == 0x0F:
                                 op2 = pop_s()
                                 op1 = pop_s()
-                                push('(' + op1 + ' == ' + op2 + ')')
+                                push('(' + op1 + ' = ' + op2 + ')')
 
                             elif opcode == 0x10:
                                 op2 = pop_s()
@@ -2410,25 +2446,25 @@ def parse_mmap(data, fileContent, offset):
                             elif opcode == 0x12:
                                 op2 = pop_s()
                                 op1 = pop_s()
-                                push('(' + op1 + ' && ' + op2 + ')')
+                                push('(' + op1 + ' and ' + op2 + ')')
 
                             elif opcode == 0x13:
                                 op2 = pop_s()
                                 op1 = pop_s()
-                                push('(' + op1 + ' || ' + op2 + ')')
+                                push('(' + op1 + ' or ' + op2 + ')')
 
                             elif opcode == 0x14:
-                                push('(!' + pop_s() + ')')
+                                push('(not ' + pop_s() + ')')
 
                             elif opcode == 0x15:
                                 op2 = pop_s()
                                 op1 = pop_s()
-                                push('contains(' + op1 + ', ' + op2 + ')')
+                                push('(' + op1 + ' contains ' + op2 + ')')
 
                             elif opcode == 0x16:
                                 op2 = pop_s()
                                 op1 = pop_s()
-                                push('starts_with(' + op1 + ', ' + op2 + ')')
+                                push('(' + op1 + ' starts ' + op2 + ')')
 
 
                             elif opcode == 0x17:
@@ -2442,7 +2478,35 @@ def parse_mmap(data, fileContent, offset):
                                 op_lc_pos = pop_s()    # Last char position
                                 op_fc_pos = pop_s()    # First char position
 
-                                push('slice(' + op_str + ', ' + op_ll_pos + ', ' + op_fl_pos + ', ' + op_li_pos + ', ' + op_fi_pos + ', ' + op_lw_pos + ', ' + op_fw_pos + ', ' + op_lc_pos + ', ' + op_fc_pos + ')')
+                                operation = ''
+
+                                if op_fc_pos != '0':
+                                    operation = operation + ('char %s '%(op_fc_pos))
+                                    if op_lc_pos != '0':
+                                        operation = operation + ('to %s '%(op_lc_pos))
+                                    operation = operation + 'of '
+
+                                if op_fw_pos != '0':
+                                    operation = operation + ('word %s '%(op_fw_pos))
+                                    if op_lw_pos != '0':
+                                        operation = operation + ('to %s '%(op_lw_pos))
+                                    operation = operation + 'of '
+
+                                if op_fi_pos != '0':
+                                    operation = operation + ('item %s '%(op_fi_pos))
+                                    if op_li_pos != '0':
+                                        operation = operation + ('to %s '%(op_li_pos))
+                                    operation = operation + 'of '
+
+                                if op_fl_pos != '0':
+                                    operation = operation + ('line %s '%(op_fl_pos))
+                                    if op_ll_pos != '0':
+                                        operation = operation + ('to %s '%(op_ll_pos))
+                                    operation = operation + 'of '
+
+                                operation = operation + op_str
+
+                                push(operation)
 
 
                             elif opcode == 0x18:
@@ -2456,7 +2520,35 @@ def parse_mmap(data, fileContent, offset):
                                 op_lc_pos = pop_s()    # Last char position
                                 op_fc_pos = pop_s()    # First char position
 
-                                push('highlight(' + op_cid + ', ' + op_ll_pos + ', ' + op_fl_pos + ', ' + op_li_pos + ', ' + op_fi_pos + ', ' + op_lw_pos + ', ' + op_fw_pos + ', ' + op_lc_pos + ', ' + op_fc_pos + ')')
+                                operation = ''
+
+                                if op_fc_pos != '0':
+                                    operation = operation + ('char %s '%(op_fc_pos))
+                                    if op_lc_pos != '0':
+                                        operation = operation + ('to %s '%(op_lc_pos))
+                                    operation = operation + 'of '
+
+                                if op_fw_pos != '0':
+                                    operation = operation + ('word %s '%(op_fw_pos))
+                                    if op_lw_pos != '0':
+                                        operation = operation + ('to %s '%(op_lw_pos))
+                                    operation = operation + 'of '
+
+                                if op_fi_pos != '0':
+                                    operation = operation + ('item %s '%(op_fi_pos))
+                                    if op_li_pos != '0':
+                                        operation = operation + ('to %s '%(op_li_pos))
+                                    operation = operation + 'of '
+
+                                if op_fl_pos != '0':
+                                    operation = operation + ('line %s '%(op_fl_pos))
+                                    if op_ll_pos != '0':
+                                        operation = operation + ('to %s '%(op_ll_pos))
+                                    operation = operation + 'of '
+
+                                operation = 'hilite ' + operation + 'field ' + op_cid
+
+                                push(operation)
 
                             elif opcode == 0x19:
                                 op2 = pop_s()
@@ -2471,7 +2563,8 @@ def parse_mmap(data, fileContent, offset):
                                 push('sprite_within(' + op1 + ', ' + op2 + ')')
 
                             elif opcode == 0x1B:
-                                push('field(' + pop_s() + ')')
+                                pop_s()
+                                push('field ' + pop_s())
 
                             elif opcode == 0x1C:
                                 # Start of "tell" operation
@@ -2485,12 +2578,12 @@ def parse_mmap(data, fileContent, offset):
                                     if params == '':
                                         params = p
                                     else:
-                                        params = p + ', ' + params
+                                        params = params + ' ' + p
                                     p = pop()
 
                                 file.write("\n")
                                 file.write(spacing)
-                                file.write('tell(' + window_to_tell + ', ' + params + ');')
+                                file.write('tell ' + window_to_tell + ' to ' + params)
 
                             elif opcode == 0x1F:
                                 push('transpose(' + pop_s() + ')')
@@ -2501,12 +2594,12 @@ def parse_mmap(data, fileContent, offset):
                             op1 = ord(fdata[idxc])
                             idxc = idxc + 1
 
-                            file.write("// [0x%04x]: 0x%02x 0x%02x"%(idxc - 2, opcode, op1))
+                            file.write("-- [0x%04x]: 0x%02x 0x%02x"%(idxc - 2, opcode, op1))
 
 
                             if opcode == 0x41:
                                 # Push integer of value XX, which must be between 1 and 127, inclusive.
-                                push('0x%02x'%(op1))
+                                push('%s'%(op1))
 
                             elif opcode == 0x42:
                                 # Pop the specified number of values off the top of the stack, create an unparenthesized argument list containing them 
@@ -2537,23 +2630,26 @@ def parse_mmap(data, fileContent, offset):
                             elif opcode == 0x44:
                                 # Push a constant from local constant records onto the stack. These records seem to be six bytes long (regardless of the actual size of the constant value), 
                                 # so pushing the first one is 44 00, the second is 44 06, the third is 44 0C, etc. 
-                                push('%s'%(constants[op1 / bytes_per_const]))
+                                constant_value = constants[op1 / bytes_per_const]
+                                if constant_value in SPECIAL_CONSTANTS:
+                                    constant_value = SPECIAL_CONSTANTS[constant_value]
+                                push('%s'%(constant_value))
 
                             elif opcode == 0x45:
                                 # Push a symbol with a name from namelist[XX]. Note that the name will be stored as "name", not "#name". 
-                                push('symbol("%s")'%(name_list[op1]))
+                                push('%s'%(name_list[op1]))
 
                             elif opcode == 0x46:
                                 # Push a object with a name from namelist[XX]. 
-                                push('object("%s")'%(name_list[op1]))
+                                push('%s'%(name_list[op1]))
 
                             elif opcode == 0x49:
                                 # Push the value of a global variable with a name from namelist[XX].  
-                                push('global["%s"]'%(name_list[op1]))
+                                push('%s'%(name_list[op1]))
 
                             elif opcode == 0x4A:
                                 # Push the value of a property.  
-                                push('property("%s")'%(name_list[op1]))
+                                push('the %s'%(name_list[op1]))
 
                             elif opcode == 0x4B:
                                 # Push the value of a function call parameter. The parameter records seem to be 6 bytes long, so the first is pushed with 4B 00, the second with 4B 06, etc.   
@@ -2567,7 +2663,7 @@ def parse_mmap(data, fileContent, offset):
                                 # Pop one value and use it to set the global variable with name from namelist[XX].    
                                 file.write("\n")
                                 file.write(spacing)
-                                file.write('global["%s"] = %s;'%(name_list[op1], pop_s()))
+                                file.write('put %s into %s'%(pop_s(), name_list[op1]))
 
                             elif opcode == 0x50:
                                 # Pop one value and use it to set a property.
@@ -2579,19 +2675,19 @@ def parse_mmap(data, fileContent, offset):
                                 # Pop one value and use it to set a parameter. 
                                 file.write("\n")
                                 file.write(spacing)
-                                file.write('param%s = %s;'%(op1 / bytes_per_const, pop_s()))
+                                file.write('put %s into param%s'%(pop_s(), op1 / bytes_per_const))
 
                             elif opcode == 0x52:
                                 # Pop one value and use it to set a local variable.
                                 file.write("\n")
                                 file.write(spacing)
-                                file.write('local%s = %s'%(op1 / bytes_per_const, pop_s()))
+                                file.write('put %s into local%s'%(pop_s(), op1 / bytes_per_const))
 
                             elif opcode == 0x54:
                                 # Unconditional backwards jump by XX bytes, relative to the first byte of this instruction. 
                                 file.write("\n")
                                 file.write(spacing)
-                                file.write('// goto label%04x;'%(idxc - 2 - op1))
+                                file.write('-- goto label%04x;'%(idxc - 2 - op1))
                                 flush_stack(file, spacing)
                                 
  
@@ -2600,45 +2696,81 @@ def parse_mmap(data, fileContent, offset):
                                 params = pop_s()
                                 if params.startswith('<'):
                                     # The function must return something
-                                    push('%s(%s)'%(name_list[op1], params[1:]))
+                                    if name_list[op1] in NO_PAREN_FUNCTIONS:
+                                        push('%s %s'%(name_list[op1], params[1:]))
+                                    else:
+                                        push('%s(%s)'%(name_list[op1], params[1:]))
                                 else:
                                     file.write("\n")
                                     file.write(spacing)
-                                    file.write('%s(%s);'%(name_list[op1], params))
+                                    if name_list[op1] in NO_PAREN_FUNCTIONS:
+                                        file.write('%s %s'%(name_list[op1], params))
+                                    else:
+                                        file.write('%s(%s)'%(name_list[op1], params))
 
                             elif opcode == 0x57:
                                 # Call the external function with name from namelist[XX].
                                 params = pop_s()
                                 if params.startswith('<'):
                                     # The function must return something
-                                    push('%s(%s)'%(name_list[op1], params[1:]))
+                                    if name_list[op1] in NO_PAREN_FUNCTIONS:
+                                        push('%s %s'%(name_list[op1], params[1:]))
+                                    else:
+                                        push('%s(%s)'%(name_list[op1], params[1:]))
                                 else:
                                     file.write("\n")
                                     file.write(spacing)
-                                    file.write('%s(%s);'%(name_list[op1], params))
+                                    if name_list[op1] in NO_PAREN_FUNCTIONS:
+                                        file.write('%s %s'%(name_list[op1], params))
+                                    else:
+                                        file.write('%s(%s)'%(name_list[op1], params))
 
                             elif opcode == 0x58:
                                 # Call an object method
                                 obj = pop_s()
+                                if obj.isdigit():
+                                    obj = ('local%s'%(obj))
+
                                 params = pop_s()
                                 if params.startswith('<'):
                                     # The function must return something
-                                    push('%s.%s(%s)'%(obj, name_list[op1], params[1:]))
+                                    push('%s(%s)'%(obj, params[1:]))
                                 else:
                                     file.write("\n")
                                     file.write(spacing)
-                                    file.write('%s.%s(%s)'%(obj, name_list[op1], params))
+                                    file.write('%s(%s)'%(obj, params))
 
                             elif opcode == 0x59:
                                 if op1 == 0x16:
-                                    op_type = int(pop(), 16)
+                                    op_type = int(pop())
                                     op_var = pop_s()
                                     op_value = pop_s()
                                     op_types = ['field']
+
+                                    if op_type < len(op_types):
+                                        op_type = op_types[op_type]
+                                    else:
+                                        op_type = ' UNKNOWN '
+
                                     file.write("\n")
                                     file.write(spacing)
-                                    file.write('set_%s(%s, %s)'%(op_types[op_type], op_var, op_value))
+                                    file.write('put %s into %s %s'%(op_value, op_type, op_var))
 
+                                elif op1 == 0x25:
+                                    op_var = int(pop())
+                                    op_value = pop_s()
+
+                                    file.write("\n")
+                                    file.write(spacing)
+                                    file.write('put %s after local%s'%(op_value, op_var / bytes_per_const))
+
+                                elif op1 == 0x35:
+                                    op_var = int(pop())
+                                    op_value = pop_s()
+
+                                    file.write("\n")
+                                    file.write(spacing)
+                                    file.write('put %s before local%s'%(op_value, op_var / bytes_per_const))
 
                                 else:
                                     file.write("\n")
@@ -2649,12 +2781,6 @@ def parse_mmap(data, fileContent, offset):
 
                             elif opcode == 0x5B:
                                 op_type = 'UNKNOWN'
-                                if op1 == 0x02:
-                                    op_type = 'item'
-                                elif op1 == 0x05:
-                                    op_type = 'word'
-                                elif op1 == 0x06:
-                                    op_type = 'line'
 
                                 op_vind = pop_s()      # The local variable
                                 op_ll_pos = pop_s()    # Last line position
@@ -2666,20 +2792,40 @@ def parse_mmap(data, fileContent, offset):
                                 op_lc_pos = pop_s()    # Last char position
                                 op_fc_pos = pop_s()    # First char position
 
-                                op_vind = int(op_vind, 16)
+                                if op_fl_pos != '0':
+                                    op_type = 'line ' + op_fl_pos
+                                    if op_ll_pos != '0':
+                                        op_type = op_type + ' to ' + op_ll_pos
+
+                                if op_fi_pos != '0':
+                                    op_type = 'item ' + op_fi_pos
+                                    if op_li_pos != '0':
+                                        op_type = op_type + ' to ' + op_li_pos
+
+                                if op_fw_pos != '0':
+                                    op_type = 'word ' + op_fw_pos
+                                    if op_lw_pos != '0':
+                                        op_type = op_type + ' to ' + op_lw_pos
+
+                                if op_fc_pos != '0':
+                                    op_type = 'char ' + op_fc_pos
+                                    if op_lc_pos != '0':
+                                        op_type = op_type + ' to ' + op_lc_pos
+
+                                op_vind = int(op_vind)
                                 op_vname = 'local%s'%(op_vind / bytes_per_const)
 
                                 file.write("\n")
                                 file.write(spacing)
-                                file.write('delete("' + op_type +'", ' + op_vname + ', ' + op_ll_pos + ', ' + op_fl_pos + ', ' + op_li_pos + ', ' + op_fi_pos + ', ' + op_lw_pos + ', ' + op_fw_pos + ', ' + op_lc_pos + ', ' + op_fc_pos + ')')
+                                file.write('delete ' + op_type + ' of ' + op_vname)
 
                             elif opcode == 0x5C:
                                 if op1 == 0x01:
                                     # the number of chars in someText
-                                    op_type = int(pop(), 16)
+                                    op_type = int(pop())
                                     op_var = pop_s()
                                     op_types = ['chars', 'words', 'items', 'lines']
-                                    push('number_of("%s", %s)'%(op_types[op_type - 1], op_var))
+                                    push('the number of %s of %s'%(op_types[op_type - 1], op_var))
 
 
                                 else:
@@ -2689,7 +2835,7 @@ def parse_mmap(data, fileContent, offset):
 
                             elif opcode == 0x5F:
                                 # Push the value of the contextual property with the name at namelist[XX].
-                                push('the("%s")'%(name_list[op1]))
+                                push('the %s'%(name_list[op1]))
 
                             # TODO! Complete this
 
@@ -2712,7 +2858,7 @@ def parse_mmap(data, fileContent, offset):
                             elif opcode == 0x66:
                                 # Pop an empty list and push the value of a read-only property named at namelist[XX]. 
                                 pop()
-                                push('property("%s")'%(name_list[op1]))
+                                push('the %s'%(name_list[op1]))
 
 
                             else:
@@ -2730,11 +2876,11 @@ def parse_mmap(data, fileContent, offset):
                             op2 = ord(fdata[idxc])
                             idxc = idxc + 1
 
-                            file.write("// [0x%04x]: 0x%02x 0x%02x 0x%02x"%(idxc - 3, opcode, op1, op2))
+                            file.write("-- [0x%04x]: 0x%02x 0x%02x 0x%02x"%(idxc - 3, opcode, op1, op2))
 
                             if opcode == 0x81:
                                 # Push the integer ((XX * 0x100) + YY).
-                                push('0x%02x%02x'%(op1, op2))
+                                push('%s'%(op1 * 256 + op2))
 
                             elif opcode == 0x82:
                                 # Pop the specified number of values off the top of the stack, create an unparenthesized argument list containing them 
@@ -2748,55 +2894,59 @@ def parse_mmap(data, fileContent, offset):
 
                             elif opcode == 0x84:
                                 # Push a constant from local constant records onto the stack. 
-                                push('%s'%(constants[(op1 * 256 + op2) / bytes_per_const]))
+                                constant_value = constants[(op1 * 256 + op2) / bytes_per_const]
+                                if constant_value in SPECIAL_CONSTANTS:
+                                    constant_value = SPECIAL_CONSTANTS[constant_value]
+                                push('%s'%(constant_value))
 
                             elif opcode == 0x89:
                                 # Push the value of a global variable with a name from namelist[XX].  
-                                push('global["%s"]'%(name_list[(op1 * 256 + op2)]))
+                                push('%s'%(name_list[(op1 * 256 + op2)]))
 
                             elif opcode == 0x8F:
                                 # Pop one value and use it to set the global variable with name from namelist[XX].    
                                 file.write("\n")
                                 file.write(spacing)
-                                file.write('global["%s"] = %s;'%(name_list[(op1 * 256 + op2)], pop_s()))
+                                file.write('put %s into %s'%(pop_s(), name_list[(op1 * 256 + op2)]))
 
                             elif opcode == 0x90:
                                 # Pop one value and use it to set a property.
                                 file.write("\n")
                                 file.write(spacing)
-                                file.write('set_property("%s", %s);'%(name_list[(op1 * 256 + op2)], pop_s()))
+                                file.write('put %s into %s'%(pop_s(), name_list[(op1 * 256 + op2)]))
 
                             elif opcode == 0x93:
                                 # Unconditional jump: Advance by ((XX * 0x100) + YY) bytes, relative to the first byte of this instruction.
                                 flush_stack(file, spacing)
                                 file.write("\n")
                                 file.write(spacing)
-                                file.write('// goto label%04x;'%(idxc - 3 + (op1 * 256 + op2)))
-                                if label_types[idxc - 3 + (op1 * 256 + op2)] == '} // for':
+                                file.write('-- goto label%04x;'%(idxc - 3 + (op1 * 256 + op2)))
+                                if label_types[idxc - 3 + (op1 * 256 + op2)] == 'end repeat':
                                     file.write('\n')
                                     file.write(spacing)
-                                    file.write('break;')
-                                    if label_types[idxc] == '} else {':
-                                        label_types[idxc] = '} // if'
+                                    file.write('exit repeat')
+                                    if label_types[idxc] == 'else':
+                                        label_types[idxc] = 'end if'
                                     
 
                             elif opcode == 0x95:
                                 # Conditional jump: Pop a value, and if it is logically FALSE, advance by ((XX * 0x100) + YY) bytes, relative to the first byte of this instruction. 
                                 file.write("\n")
                                 file.write(spacing)
-                                file.write('// if (!pop()) goto label%04x;\n'%(idxc - 3 + (op1 * 256 + op2)))
+                                file.write('-- if (!pop()) goto label%04x;\n'%(idxc - 3 + (op1 * 256 + op2)))
                                 file.write(spacing)
-                                if label_types[idxc - 3 + (op1 * 256 + op2)] == '} // for':
-                                    file.write('if (!%s) break;'%(pop_s()))
+                                erpos = idxc - 3 + (op1 * 256 + op2)
+                                if (erpos in label_types) and (label_types[erpos] == 'end repeat'):
+                                    file.write('if not %s then exit repeat'%(pop_s()))
                                 else:
-                                    file.write('if (%s) {'%(pop_s()))
+                                    file.write('if %s then'%(pop_s()))
                                     spacing = spacing + '    '
 
                             elif opcode == 0xa0:
                                 # Pop one value and use it to set a property.
                                 file.write("\n")
                                 file.write(spacing)
-                                file.write('set_property("%s", %s);'%(name_list[(op1 * 256 + op2)], pop_s()))
+                                file.write('put %s into %s'%(pop_s(), name_list[(op1 * 256 + op2)]))
 
                             elif opcode == 0xa1:
                                 # Pop one value and use it to set a parameter. 
@@ -2813,7 +2963,7 @@ def parse_mmap(data, fileContent, offset):
                             elif opcode == 0xa6:
                                 # Pop an empty list and push the value of a read-only property named at namelist[XX]. 
                                 pop()
-                                push('property("%s")'%(name_list[(op1 * 256 + op2)]))
+                                push('%s'%(name_list[(op1 * 256 + op2)]))
 
                             else:
                                 # Unknown operation
@@ -2824,7 +2974,7 @@ def parse_mmap(data, fileContent, offset):
 
                         file.write("\n")
 
-                    file.write("}\n\n")
+                    file.write("end %s\n\n"%(fname))
 
                 file.close()
  
