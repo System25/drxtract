@@ -1360,27 +1360,27 @@ def parse_mmap(data, fileContent, offset):
             # Unknown header data
             unk = struct.unpack(lnam_bit_order+"i", fdata[(indx):(indx+4)])[0]
             indx = indx + 4
-            print "Unknown: %08x"%(unk)
+            print("Unknown: %08x"%(unk))
 
             unk = struct.unpack(lnam_bit_order+"i", fdata[(indx):(indx+4)])[0]
             indx = indx + 4
-            print "Unknown: %08x"%(unk)
+            print("Unknown: %08x"%(unk))
 
             filesize = struct.unpack(lnam_bit_order+"i", fdata[(indx):(indx+4)])[0]
             indx = indx + 4
-            print "filesize: %08x"%(filesize)
+            print("filesize: %08x"%(filesize))
 
             filesize_cp = struct.unpack(lnam_bit_order+"i", fdata[(indx):(indx+4)])[0]
             indx = indx + 4
-            print "filesize_cp: %08x"%(filesize_cp)
+            print("filesize_cp: %08x"%(filesize_cp))
 
             unk = struct.unpack(lnam_bit_order+"h", fdata[(indx):(indx+2)])[0]
             indx = indx + 2
-            print "Unknown: %08x"%(unk)            
+            print("Unknown: %08x"%(unk))            
 
             nnames = struct.unpack(lnam_bit_order+"h", fdata[(indx):(indx+2)])[0]
             indx = indx + 2
-            print "Number of names: %s"%(nnames)            
+            print("Number of names: %s"%(nnames))            
 
 
             if filesize_cp != filesize:
@@ -1458,23 +1458,23 @@ def parse_mmap(data, fileContent, offset):
                 # Unknown header data
                 unk = struct.unpack(bit_order+"i", fdata[(indx):(indx+4)])[0]
                 indx = indx + 4
-                print "Unknown: %08x"%(unk)
+                print("Unknown: %08x"%(unk))
 
                 unk = struct.unpack(bit_order+"i", fdata[(indx):(indx+4)])[0]
                 indx = indx + 4
-                print "Unknown: %08x"%(unk)
+                print("Unknown: %08x"%(unk))
 
                 unk = struct.unpack(bit_order+"i", fdata[(indx):(indx+4)])[0]
                 indx = indx + 4
-                print "Unknown: %08x"%(unk)
+                print("Unknown: %08x"%(unk))
 
                 unk = struct.unpack(bit_order+"i", fdata[(indx):(indx+4)])[0]
                 indx = indx + 4
-                print "Unknown: %08x"%(unk)
+                print("Unknown: %08x"%(unk))
 
                 unk = struct.unpack(bit_order+"i", fdata[(indx):(indx+4)])[0]
                 indx = indx + 4
-                print "Unknown: %08x"%(unk)
+                print("Unknown: %08x"%(unk))
 
                 
                 while len(fdata) >= indx + 12:
