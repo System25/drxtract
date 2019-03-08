@@ -3310,9 +3310,10 @@ def parse_mmap(data, fileContent, offset):
 def parse_riff(fileContent, offset):
     # Check if file format is RIFX
     file_format = struct.unpack("cccc", fileContent[offset:offset+4])
-    file_format = ('%c%c%c%c'%(file_format[0], file_format[1], file_format[2], file_format[3]))
+    # file_format = ('%c%c%c%c'%(file_format[0], file_format[1], file_format[2], file_format[3]))
+    file_format = ('%c%c%c%c'%(file_format[0].decode(), file_format[1].decode(), file_format[2].decode(), file_format[3].decode()))
 
-    print("INFO: File format: %s"%(file_format))
+    print("INFO: File format: %s"%(str(file_format)))
     if RIFX_FILE_FORMAT != file_format:
         print("ERROR: File format is not %s"%(RIFX_FILE_FORMAT))
         sys.exit(-1)
@@ -3326,7 +3327,7 @@ def parse_riff(fileContent, offset):
  
     # Check Macromedia Director MV93 header
     mv93_format = struct.unpack("cccc", fileContent[offset+8:offset+12])
-    mv93_format = ('%c%c%c%c'%(mv93_format[0], mv93_format[1], mv93_format[2], mv93_format[3]))
+    mv93_format = ('%c%c%c%c'%(mv93_format[0].decode(), mv93_format[1].decode(), mv93_format[2].decode(), mv93_format[3].decode()))
     print("INFO: Data format: %s"%(mv93_format))
     if MV93_FILE_TYPE != mv93_format:
         print("ERROR: Data format is not %s"%(MV93_FILE_TYPE))
@@ -3335,7 +3336,7 @@ def parse_riff(fileContent, offset):
     index = offset + 12
     while index < len(fileContent):
         block_type = struct.unpack("cccc", fileContent[index:(index+4)])
-        block_type = ('%c%c%c%c'%(block_type[0], block_type[1], block_type[2], block_type[3]))
+        block_type = ('%c%c%c%c'%(block_type[0].decode(), block_type[1].decode(), block_type[2].decode(), block_type[3].decode()))
         print("==================================")
         print("INFO: Block type: %s"%(block_type))
 
