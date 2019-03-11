@@ -1292,8 +1292,8 @@ def parse_mmap(data, fileContent, offset):
     print("MMAP: Number of files (without nulls) %s"%(no_files_wonull))
     # Padding
     if content[4] != -1 or content[5] != -1:
-        print("ERROR: Bad nmap padding %s %s"%(content[4], content[5]))
-        sys.exit(-1)        
+        print("WARNING: Bad nmap padding %s %s"%(content[4], content[5]))
+        #sys.exit(-1)
 
     print("MMAP[6]: %s"%(content[6]))
 
@@ -3347,7 +3347,7 @@ def parse_riff(fileContent, offset):
             # Parse 'imap' block
             parse_imap(block_data)
 
-        if block_type == MMAP_FILE_FORMAT:
+        elif block_type == MMAP_FILE_FORMAT:
             # Parse 'mmap' block
             parse_mmap(block_data, fileContent, offset)
 
