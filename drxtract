@@ -679,38 +679,45 @@ TWO_BYTE_OPCODES = [
           #                 It must be divided by six to get the actual local variable number. The first argument of the argument list will be a symbol with the name of the method. 
           #                 Note: It is still unclear what difference the value of XX makes. It has been seen as 0x01 and 0x05. More research is needed to know more. (Possibly local variables vs. call parameters?)
 
-    0x59, # UNKNOWN
-    0x5A, # UNKNOWN
-    0x5B, # UNKNOWN
-    0x5C, # UNKNOWN
-    0x5D, # UNKNOWN
+    0x59, # put value [into/after/before] textVar
+    0x5A, # put value (chunkexpression)
+    0x5B, # delete something 3 of textVar
+    0x5C, # multi operation (depends on the parameters)
+    0x5D, # multi operation (depends on the parameters)
     0x5E, # UNKNOWN
-    0x5F, # UNKNOWN
-    0x60, # UNKNOWN
-    0x61, # UNKNOWN
-    0x62, # UNKNOWN
-    0x63, # UNKNOWN
+    0x5F, # (the someProperty)
+    0x60, # set the someProperty to 0
+    0x61, # (the someProperty of someVariable)
+    0x62, # set the someProperty of someVariable to 1
+    0x63, # tell someObject to go to frame 1
     0x64, # UNKNOWN
-    0x65,  # UNKNOWN
-    0x66  # UNKNOWN
+    0x65, # UNKNOWN
+    0x66, # (the pathName)
+    0x67  # UNKNOWN
 
 ]
 
+# TODO! Fill the comments with explanations of the opcodes
 
 THREE_BYTE_OPCODES = [
     0x81, # UNKNOWN
     0x82, # UNKNOWN
     0x83, # UNKNOWN
     0x84, # UNKNOWN
+    0x85, # UNKNOWN
     0x89, # UNKNOWN
     0x8F, # UNKNOWN
     0x90, # UNKNOWN
     0x93, # UNKNOWN
     0x95, # UNKNOWN
+    0x96, # UNKNOWN
+    0x97, # UNKNOWN
+    0x9F, # UNKNOWN
     0xa0, # UNKNOWN
     0xa1, # UNKNOWN
     0xa2, # UNKNOWN
-    0xa6  # UNKNOWN
+    0xa6, # UNKNOWN
+    0xa7  # UNKNOWN
 ]
 
 NO_PAREN_FUNCTIONS = [
@@ -2107,9 +2114,14 @@ def parse_mmap(data, fileContent, offset):
 
             bytes_per_const = 6
             idx = crb_offset + 8
+
+            # In some lingo 
             for i in range(0, con_nconstants):
-                if scr_type == 0x1fc7ea60:
-                    # uint32: Value type ID 
+                print("DEBUG: idx = %s"%(idx))
+                if (unknown_22 & 0xF) == 4:
+                   # I don't really know if this is the reason
+                   # uint32: Value type ID 
+                   print "4 bytes"
                    constant_type = struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
                    idx += 4
                    bytes_per_const = 8
@@ -2123,7 +2135,7 @@ def parse_mmap(data, fileContent, offset):
                 idx += 4
 
                 #print("DEBUG: constant_type = %s"%(constant_type)) 
-                #print("DEBUG: contant_offset = %s"%(constant_offset)) 
+                #print("DEBUG: constant_offset = %s"%(constant_offset))
 
                 if constant_type == 1:
                     # Text constant
@@ -2167,7 +2179,8 @@ def parse_mmap(data, fileContent, offset):
                 # Read the functions record blocks
                 idx = frb_offset + 8
                 for i in range(0, frb_nrecords):
-
+                    
+                    print("DEBUG: Function Record Block: %i (starts in: %x)"%(i, idx)) 
                     # $0000-$0001 	uint16 	Namelist index for the function's name, or 0xFFFF if there is no name(?)
                     namelist_index = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
                     idx += 2
@@ -2188,16 +2201,16 @@ def parse_mmap(data, fileContent, offset):
                     bc_narg = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
                     idx += 2
 
-                    # $000E-$0011 	uint32 	Unknown
-                    unknown_rb1 = struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
+                    # $000E-$0011 	uint32 	Offset of arguments name
+                    argnames_off = struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
                     idx += 4
 
                     # $0012-$0013 	uint16 	Number of local variables
                     bc_nlocal = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
                     idx += 2
 
-                    # $0014-$0017 	uint32 	Unknown
-                    unknown_rb2 = struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
+                    # $0014-$0017 	uint32 	Local variables offset
+                    localnames_off = struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
                     idx += 4
 
                     # $0018-$0019 	uint16 	Count (C)
@@ -2223,26 +2236,44 @@ def parse_mmap(data, fileContent, offset):
                     # $0026-$0029 	uint32 	Unknown
                     unknown_rb6 = struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
                     idx += 4
+                    
+                    # $0030-$0034 	uint32 	Unknown
+                    unknown_rb7 = struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
+                    idx += 4                    
 
                     print("DEBUG: namelist_index = %x"%(namelist_index)) 
                     print("DEBUG: unknown_rb0 = %x"%(unknown_rb0)) 
                     print("DEBUG: bc_length = %x"%(bc_length)) 
                     print("DEBUG: bc_off = %x"%(bc_off)) 
                     print("DEBUG: bc_narg = %x"%(bc_narg)) 
-                    print("DEBUG: unknown_rb1 = %x"%(unknown_rb1)) 
+                    print("DEBUG: argnames_off = %x"%(argnames_off)) 
                     print("DEBUG: bc_nlocal = %x"%(bc_nlocal)) 
-                    print("DEBUG: unknown_rb2 = %x"%(unknown_rb2)) 
+                    print("DEBUG: localnames_off = %x"%(localnames_off)) 
                     print("DEBUG: count_c = %x"%(count_c)) 
                     print("DEBUG: unknown_rb3 = %x"%(unknown_rb3)) 
                     print("DEBUG: unknown_rb4 = %x"%(unknown_rb4)) 
                     print("DEBUG: unknown_rb5 = %x"%(unknown_rb5)) 
                     print("DEBUG: count_d = %x"%(count_d)) 
                     print("DEBUG: unknown_rb6 = %x"%(unknown_rb6)) 
-
+                    print("DEBUG: unknown_rb7 = %x"%(unknown_rb7)) 
+                    
+                    
+                    print("DEBUG: Function Record Block: %i (ends in: %x)"%(i, idx)) 
+                    
                     fname = 'noname'
                     if namelist_index >= 0 and namelist_index < len(name_list):
                         fname = name_list[namelist_index]
 
+                    # Read the local variable names record block
+                    localvs = []
+                    for nl in range(0, bc_nlocal):
+                        idxl = 2*nl + localnames_off + 8
+                        n = struct.unpack(lsrc_bit_order+"h", fdata[idxl:idxl+2])[0]
+                        print("DEBUG: idxl = %x n=%s"%(idxl, n))
+                        print('DEBUG: localvs[%s] = "%s"'%(nl, name_list[n]))
+                        localvs.append(name_list[n])
+                        
+                        
                     args = ''
                     for c in range(0, bc_narg):
                          if args == '':
@@ -2630,6 +2661,9 @@ def parse_mmap(data, fileContent, offset):
                             elif opcode == 0x44:
                                 # Push a constant from local constant records onto the stack. These records seem to be six bytes long (regardless of the actual size of the constant value), 
                                 # so pushing the first one is 44 00, the second is 44 06, the third is 44 0C, etc. 
+                                if (op1 % bytes_per_const) > 0:
+                                    bytes_per_const = (op1 % bytes_per_const)
+                                
                                 constant_value = constants[op1 / bytes_per_const]
                                 if constant_value in SPECIAL_CONSTANTS:
                                     constant_value = SPECIAL_CONSTANTS[constant_value]
@@ -2652,12 +2686,18 @@ def parse_mmap(data, fileContent, offset):
                                 push('the %s'%(name_list[op1]))
 
                             elif opcode == 0x4B:
-                                # Push the value of a function call parameter. The parameter records seem to be 6 bytes long, so the first is pushed with 4B 00, the second with 4B 06, etc.   
+                                # Push the value of a function call parameter. The parameter records seem to be 6 bytes long, so the first is pushed with 4B 00, the second with 4B 06, etc.
+                                if (op1 % bytes_per_const) > 0:
+                                    bytes_per_const = (op1 % bytes_per_const)
+                                
                                 push('param%s'%(op1 / bytes_per_const))
 
                             elif opcode == 0x4C:
                                 # Push the value of a function call parameter. The parameter records seem to be 6 bytes long, so the first is pushed with 4B 00, the second with 4B 06, etc.   
-                                push('local%s'%(op1 / bytes_per_const))
+                                if (op1 % bytes_per_const) > 0:
+                                    bytes_per_const = (op1 % bytes_per_const)
+                                
+                                push('%s'%(localvs[op1 / bytes_per_const]))
 
                             elif opcode == 0x4F:
                                 # Pop one value and use it to set the global variable with name from namelist[XX].    
@@ -2675,13 +2715,19 @@ def parse_mmap(data, fileContent, offset):
                                 # Pop one value and use it to set a parameter. 
                                 file.write("\n")
                                 file.write(spacing)
+                                if (op1 % bytes_per_const) > 0:
+                                    bytes_per_const = (op1 % bytes_per_const)
+                                
                                 file.write('put %s into param%s'%(pop_s(), op1 / bytes_per_const))
 
                             elif opcode == 0x52:
                                 # Pop one value and use it to set a local variable.
                                 file.write("\n")
                                 file.write(spacing)
-                                file.write('put %s into local%s'%(pop_s(), op1 / bytes_per_const))
+                                if (op1 % bytes_per_const) > 0:
+                                    bytes_per_const = (op1 % bytes_per_const)
+                                
+                                file.write('put %s into %s'%(pop_s(), localvs[op1 / bytes_per_const]))
 
                             elif opcode == 0x54:
                                 # Unconditional backwards jump by XX bytes, relative to the first byte of this instruction. 
@@ -2729,7 +2775,7 @@ def parse_mmap(data, fileContent, offset):
                                 # Call an object method
                                 obj = pop_s()
                                 if obj.isdigit():
-                                    obj = ('local%s'%(obj))
+                                    obj = ('%s'%(localvs[obj]))
 
                                 params = pop_s()
                                 if params.startswith('<'):
@@ -2762,7 +2808,10 @@ def parse_mmap(data, fileContent, offset):
 
                                     file.write("\n")
                                     file.write(spacing)
-                                    file.write('put %s after local%s'%(op_value, op_var / bytes_per_const))
+                                    if (op_var % bytes_per_const) > 0:
+                                        bytes_per_const = (op_var % bytes_per_const)
+                                    
+                                    file.write('put %s after %s'%(localvs[op_value, op_var / bytes_per_const]))
 
                                 elif op1 == 0x35:
                                     op_var = int(pop())
@@ -2770,7 +2819,10 @@ def parse_mmap(data, fileContent, offset):
 
                                     file.write("\n")
                                     file.write(spacing)
-                                    file.write('put %s before local%s'%(op_value, op_var / bytes_per_const))
+                                    if (op_var % bytes_per_const) > 0:
+                                        bytes_per_const = (op_var % bytes_per_const)
+                                    
+                                    file.write('put %s before %s'%(localvs[op_value, op_var / bytes_per_const]))
 
                                 else:
                                     file.write("\n")
@@ -2813,7 +2865,10 @@ def parse_mmap(data, fileContent, offset):
                                         op_type = op_type + ' to ' + op_lc_pos
 
                                 op_vind = int(op_vind)
-                                op_vname = 'local%s'%(op_vind / bytes_per_const)
+                                if (op_vind % bytes_per_const) > 0:
+                                    bytes_per_const = (op_vind % bytes_per_const)
+
+                                op_vname = '%s'%(localvs[op_vind / bytes_per_const])
 
                                 file.write("\n")
                                 file.write(spacing)
@@ -2827,18 +2882,44 @@ def parse_mmap(data, fileContent, offset):
                                     op_types = ['chars', 'words', 'items', 'lines']
                                     push('the number of %s of %s'%(op_types[op_type - 1], op_var))
 
+                                else:
+                                    file.write("\n")
+                                    file.write(spacing)
+                                    file.write("ERROR: Missing subcommand! (0x%02x) :("%(op1))
+
+                            elif opcode == 0x5D:
+                                if op1 == 0x07:
+                                    # set the exitLock to TRUE
+                                    file.write("\n")
+                                    file.write(spacing)
+                                    unkown_v0 = pop_s()
+                                    if unkown_v0 != '8':
+                                        print("WARNING: Unknown value: %s"%(unkown_v0))
+                                    file.write("put %s into the exitLock"%(pop_s()))
 
                                 else:
                                     file.write("\n")
                                     file.write(spacing)
                                     file.write("ERROR: Missing subcommand! (0x%02x) :("%(op1))
 
+                                    
                             elif opcode == 0x5F:
                                 # Push the value of the contextual property with the name at namelist[XX].
                                 push('the %s'%(name_list[op1]))
 
                             # TODO! Complete this
+                            elif opcode == 0x61:
+                                # (the someProperty of someVariable)
+                                # Pop a property-owning object from the stack, and push the value of this object's property with the name at namelist[XX].  
+                                push('the %s.%s '%(pop_s(), name_list[op1]))
 
+                            elif opcode == 0x62:
+                                # set the someProperty of someVariable to 1
+                                # Pop [property-owning object, new value] from the stack and set the property of the object with the name at namelist[XX].
+                                file.write("\n")
+                                file.write(spacing)
+                                file.write('put %s into %s.%s '%(pop_s(), pop_s(), name_list[op1]))
+                            
                             elif opcode == 0x63:
                                 # property to tell  
                                 push('%s'%(name_list[op1]))
@@ -2860,6 +2941,28 @@ def parse_mmap(data, fileContent, offset):
                                 pop()
                                 push('the %s'%(name_list[op1]))
 
+                            elif opcode == 0x67:
+                                # Call a method of an object with name from namelist[XX].
+                                params = pop_s()
+                                cindex = op1
+                                if params.startswith('<'):
+                                    # The function must return something
+                                    params = params[1:]
+                                    obj = params[0:params.index(',')]
+                                    params = params[params.index(',')+2:]
+                                    if name_list[cindex] in NO_PAREN_FUNCTIONS:
+                                        push('%s.%s %s'%(obj, name_list[cindex], params))
+                                    else:
+                                        push('%s.%s(%s)'%(obj, name_list[cindex], params))
+                                else:
+                                    obj = params[0:params.index(',')]
+                                    params = params[params.index(',')+2:]
+                                    file.write("\n")
+                                    file.write(spacing)
+                                    if name_list[cindex] in NO_PAREN_FUNCTIONS:
+                                        file.write('%s.%s %s'%(obj, name_list[cindex], params))
+                                    else:
+                                        file.write('%s.%s(%s)'%(obj, name_list[cindex], params))
 
                             else:
                                 # Unknown operation
@@ -2893,11 +2996,17 @@ def parse_mmap(data, fileContent, offset):
                                 push('list(%s)'%(op1 * 256 + op2))
 
                             elif opcode == 0x84:
-                                # Push a constant from local constant records onto the stack. 
+                                # Push a constant from local constant records onto the stack.
+                                if ((op1 * 256 + op2) % bytes_per_const) > 0:
+                                    bytes_per_const = ((op1 * 256 + op2) % bytes_per_const)
                                 constant_value = constants[(op1 * 256 + op2) / bytes_per_const]
                                 if constant_value in SPECIAL_CONSTANTS:
                                     constant_value = SPECIAL_CONSTANTS[constant_value]
                                 push('%s'%(constant_value))
+
+                            elif opcode == 0x85:
+                                # Push a symbol with a name from namelist[XX]. Note that the name will be stored as "name", not "#name". 
+                                push('%s'%(name_list[(op1 * 256 + op2)]))
 
                             elif opcode == 0x89:
                                 # Push the value of a global variable with a name from namelist[XX].  
@@ -2942,6 +3051,46 @@ def parse_mmap(data, fileContent, offset):
                                     file.write('if %s then'%(pop_s()))
                                     spacing = spacing + '    '
 
+                            elif opcode == 0x96:
+                                # Call a function defined in this script with the name at namelist[XX].
+                                params = pop_s()
+                                cindex = op1 * 256 + op2
+                                if params.startswith('<'):
+                                    # The function must return something
+                                    if name_list[cindex] in NO_PAREN_FUNCTIONS:
+                                        push('%s %s'%(name_list[cindex], params[1:]))
+                                    else:
+                                        push('%s(%s)'%(name_list[cindex], params[1:]))
+                                else:
+                                    file.write("\n")
+                                    file.write(spacing)
+                                    if name_list[cindex] in NO_PAREN_FUNCTIONS:
+                                        file.write('%s %s'%(name_list[cindex], params))
+                                    else:
+                                        file.write('%s(%s)'%(name_list[cindex], params))
+
+                            elif opcode == 0x97:
+                                # Call the external function with name from namelist[XX].
+                                params = pop_s()
+                                cindex = op1 * 256 + op2
+                                if params.startswith('<'):
+                                    # The function must return something
+                                    if name_list[cindex] in NO_PAREN_FUNCTIONS:
+                                        push('%s %s'%(name_list[cindex], params[1:]))
+                                    else:
+                                        push('%s(%s)'%(name_list[cindex], params[1:]))
+                                else:
+                                    file.write("\n")
+                                    file.write(spacing)
+                                    if name_list[cindex] in NO_PAREN_FUNCTIONS:
+                                        file.write('%s %s'%(name_list[cindex], params))
+                                    else:
+                                        file.write('%s(%s)'%(name_list[cindex], params))
+
+                            elif opcode == 0x9F:
+                                # Push the value of the contextual property with the name at namelist[XX].
+                                push('the %s'%(name_list[op1 * 256 + op2]))
+
                             elif opcode == 0xa0:
                                 # Pop one value and use it to set a property.
                                 file.write("\n")
@@ -2952,18 +3101,45 @@ def parse_mmap(data, fileContent, offset):
                                 # Pop one value and use it to set a parameter. 
                                 file.write("\n")
                                 file.write(spacing)
+                                if ((op1 * 256 + op2) % bytes_per_const) > 0:
+                                    bytes_per_const = ((op1 * 256 + op2) % bytes_per_const)
                                 file.write('param%s = %s;'%((op1 * 256 + op2) / bytes_per_const, pop_s()))
 
                             elif opcode == 0xa2:
                                 # Pop one value and use it to set a local variable.
                                 file.write("\n")
                                 file.write(spacing)
-                                file.write('local%s = %s;'%((op1 * 256 + op2) / bytes_per_const, pop_s()))
+                                if ((op1 * 256 + op2) % bytes_per_const) > 0:
+                                    bytes_per_const = ((op1 * 256 + op2) % bytes_per_const)
+                                file.write('%s = %s;'%(localvs[(op1 * 256 + op2) / bytes_per_const], pop_s()))
 
                             elif opcode == 0xa6:
                                 # Pop an empty list and push the value of a read-only property named at namelist[XX]. 
                                 pop()
                                 push('%s'%(name_list[(op1 * 256 + op2)]))
+
+                            elif opcode == 0xa7:
+                                # Call a method of an object with name from namelist[XX].
+                                params = pop_s()
+                                cindex = op1 * 256 + op2
+                                if params.startswith('<'):
+                                    params = params[1:]
+                                    obj = params[0:params.index(',')]
+                                    params = params[params.index(',')+2:]
+                                    # The function must return something
+                                    if name_list[cindex] in NO_PAREN_FUNCTIONS:
+                                        push('%s.%s %s'%(obj, name_list[cindex], params))
+                                    else:
+                                        push('%s.%s(%s)'%(obj, name_list[cindex], params))
+                                else:
+                                    obj = params[0:params.index(',')]
+                                    params = params[params.index(',')+2:]
+                                    file.write("\n")
+                                    file.write(spacing)
+                                    if name_list[cindex] in NO_PAREN_FUNCTIONS:
+                                        file.write('%s.%s %s'%(obj, name_list[cindex], params))
+                                    else:
+                                        file.write('%s.%s(%s)'%(obj, name_list[cindex], params))
 
                             else:
                                 # Unknown operation
