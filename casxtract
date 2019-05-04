@@ -1,0 +1,214 @@
+#!/usr/bin/python2
+
+# Author: Abraham Macias Paredes
+# E-mail: system252001@yahoo.es
+# License: GNU GPL v2 (see LICENSE file for details).
+
+#
+# Script to extract Macromedia Director casting files from a "bin" directory
+# into a "cas" directory.
+# 
+
+import sys
+import os
+import struct
+import re
+import logging
+from shutil import copyfile
+
+logging.basicConfig(level=logging.DEBUG)
+
+
+# Default bit order for MAC
+bit_order_type = 'mac'
+bit_order = ">"
+
+BINDIR = 'bin'
+CASDIR = 'cas'
+
+# -- Casting data types --
+# Director 5 types
+DIR5_IMAGE_TYPE = 1
+DIR5_CLUT_TYPE = 4
+DIR5_SND_TYPE = 6
+
+# Director 4 types
+DIR4_IMAGE_TYPE = 0x1C0000
+DIR4_SND_TYPE = 0x010000
+
+
+# ====================================================================================================================================
+def parse_key_file(key_file):
+    key_data = {}
+
+    with open(key_file, mode='rb') as file:
+        fdata = file.read()
+
+        indx = 0
+
+        # Unknown header data
+        unk = struct.unpack(bit_order+"i", fdata[(indx):(indx+4)])[0]
+        indx = indx + 4
+        logging.debug("Unknown: %08x"%(unk))
+
+        unk = struct.unpack(bit_order+"i", fdata[(indx):(indx+4)])[0]
+        indx = indx + 4
+        logging.debug("Unknown: %08x"%(unk))
+
+        unk = struct.unpack(bit_order+"i", fdata[(indx):(indx+4)])[0]
+        indx = indx + 4
+        logging.debug("Unknown: %08x"%(unk))
+
+
+        while len(fdata) >= indx + 12:
+            nfile = struct.unpack(bit_order+"i", fdata[(indx+0):(indx+4)])[0]
+            cas_index = struct.unpack(bit_order+"i", fdata[(indx+4):(indx+8)])[0]
+
+            file_ext = struct.unpack("cccc", fdata[indx+8:indx+12])
+            file_ext = ('%c%c%c%c'%(file_ext[0], file_ext[1], file_ext[2], file_ext[3]))
+            if sys.argv[1] == 'pc':
+                file_ext = file_ext[3] + file_ext[2] + file_ext[1] + file_ext[0]
+
+            indx = indx + 12
+            
+            cas_index = ('%08x'%cas_index)
+            
+            if not cas_index in key_data:
+                key_data[cas_index] = []
+            
+            key_data[cas_index].append("%s.%s"%(nfile, file_ext))
+            
+            key_value = "KEY['%s'] = '%s.%s'"%(cas_index, nfile, file_ext)
+            logging.debug(key_value)
+
+    return key_data
+
+# ====================================================================================================================================
+def parse_cas_file(cas_file):
+    cas_data = []
+
+    with open(cas_file, mode='rb') as file:
+        fdata = file.read()
+
+        indx = 0
+        i = 0;
+        while len(fdata) >= indx + 4:
+            cas_index = struct.unpack(">i", fdata[(indx):(indx+4)])[0]
+            indx = indx + 4
+            cas_index = "%08x"%(cas_index)
+            cas_data.append(cas_index)
+            logging.debug('CAS[%i] = %s'%(i, cas_index))
+            i = i + 1
+            
+    return cas_data
+
+
+# ====================================================================================================================================
+def parse_cast_file(cast_file, kelm, dest_dir):
+
+    with open(cast_file, mode='rb') as file:
+        fdata = file.read()
+
+        idx = 0
+        cast_bit_order = '>'
+        data_type = struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+        idx += 4
+
+        copyfile(cast_file, os.path.join(dest_dir, os.path.basename(cast_file)))
+        logging.debug("%s: data_type = %s"%(cast_file, data_type))
+        
+
+        if data_type == DIR5_IMAGE_TYPE or data_type == DIR4_IMAGE_TYPE:
+            # Director 5 image type
+            logging.info("%s: is a image file"%(cast_file))
+            if kelm is None or len(kelm) <= 0:
+                logging.warn("%s: has no related image data!"%(cast_file))
+            else:
+                for f in kelm:
+                    src = os.path.join(os.path.dirname(cast_file), f)
+                    dst = os.path.join(dest_dir, f)
+                    if os.path.isfile(src):
+                        copyfile(src, dst)
+                    else:
+                        logging.warn("There is no %s file (maybe empty file)"%(src))
+                    
+                    if f.endswith('.BITD'):
+                        os.system('%s/bitd2bmp %s %s %s %s'%(
+                            os.path.dirname(sys.argv[0]), # Scripts path
+                            sys.argv[1], # pc or mac
+                            dest_dir, # work directory
+                            os.path.basename(cast_file), # cast file name
+                            f # BITD file name
+                        ))
+            
+            
+            
+        else:
+            logging.warn("%s: data_type unknown (%s)!"%(cast_file, data_type))
+
+
+# ====================================================================================================================================
+if __name__ == '__main__':
+    if len(sys.argv) < 3:
+        logging.debug("USAGE: casxtract [pc|mac] <base directory>")
+
+    else:
+        if sys.argv[1] != 'pc' and sys.argv[1] != 'mac':
+            logging.error(" First argument must be 'pc' or 'mac'")
+            sys.exit(-1)
+
+        if sys.argv[1] == 'pc':
+            bit_order_type = 'pc'
+            bit_order = "<"
+
+        if not os.path.isdir(sys.argv[2]):
+            logging.error(" '%s' is not a file"%(sys.argv[2]))
+            sys.exit(-1)
+
+        if not os.path.isdir(os.path.join(sys.argv[2], BINDIR)):
+            logging.error(" '%s' is not a directory"%(os.path.join(sys.argv[2], BINDIR)))
+            sys.exit(-1)
+
+        if not os.path.isdir(os.path.join(sys.argv[2], CASDIR)):
+            os.mkdir(os.path.join(sys.argv[2], CASDIR))
+        
+        # Look for KEY* and CAS* files (not ext_ ones)
+        key_file = None
+        cas_file = None
+        for f in os.listdir(os.path.join(sys.argv[2], BINDIR)):
+            if f.endswith('KEY*') and not f.startswith("ext_"):
+                key_file = f
+            
+            if f.endswith('CAS*') and not f.startswith("ext_"):
+                cas_file = f
+                
+        if key_file is None:
+            logging.error('Can not find KEY* file!')
+            sys.exit(-1)
+
+        if cas_file is None:
+            logging.error('Can not find CAS* file!')
+            sys.exit(-1) 
+
+        cas_elements = parse_cas_file(os.path.join(sys.argv[2], BINDIR, cas_file))
+        key_elements = parse_key_file(os.path.join(sys.argv[2], BINDIR, key_file))
+        
+        logging.info('There is %i elements in the casting!'%(len(cas_elements)))
+        
+        # Extract casting elements
+        for elm in range(0, len(cas_elements)):
+            # Create directory
+            if not os.path.isdir(os.path.join(sys.argv[2], CASDIR, str(elm))):
+                os.mkdir(os.path.join(sys.argv[2], CASDIR, str(elm)))
+            
+            # Read CASt file
+            kelm = []
+            cas_index = (cas_elements[elm])
+            if cas_index in key_elements:
+                kelm = key_elements[cas_index]
+            
+            fname = '%i.CASt'%(int(cas_elements[elm], 16))
+            parse_cast_file(os.path.join(sys.argv[2], BINDIR, fname), kelm,
+                            os.path.join(sys.argv[2], CASDIR, str(elm)))
+            
+

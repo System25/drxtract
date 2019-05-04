@@ -1,0 +1,1484 @@
+#!/usr/bin/python2
+
+# Author: Abraham Macias Paredes
+# E-mail: system252001@yahoo.es
+# License: GNU GPL v2 (see LICENSE file for details).
+
+#
+# Script to extract Macromedia Director image files.
+# 
+
+import sys
+import os
+import struct
+import re
+import logging
+from shutil import copyfile
+
+logging.basicConfig(level=logging.DEBUG)
+
+
+# Default bit order for MAC
+bit_order_type = 'mac'
+bit_order = ">"
+
+DIR5_IMAGE_TYPE = 1
+DIR4_IMAGE_TYPE = 0x1C0000
+
+
+
+# ============================================ Default color palettes ================================================================
+DEFAULT_MAC_16COLORS_PALETTE = (
+  255, 255, 255, 0, # white
+  255, 255, 0, 0,   # yellow
+  255, 160, 0, 0,   # orange
+  255, 0, 0, 0,     # red
+  255, 0, 255, 0,   # magenta
+  128, 0, 128, 0,   # purple
+  0, 0, 255, 0,     # blue
+  0, 255, 255, 0,   # cyan
+
+  0, 128, 0, 0,     # green
+  0, 100, 0, 0,     # dark green
+  165, 42, 42, 0,   # brown
+  210, 180, 140, 0, # tan
+  211, 211, 211, 0, # light gray
+  128, 128, 128, 0, # gray
+  169, 169, 169, 0, # dark gray
+  0, 0, 0, 0        # black
+ )
+
+
+DEFAULT_WINDOWS_16COLORS_PALETTE = (
+  255, 255, 255, 0, # white
+  0, 255, 255, 0,   # aqua
+  255, 0, 255, 0,   # fuchsia
+  0, 0, 255, 0,     # blue
+  255, 255, 0, 0,   # yellow
+  0, 255, 0, 0,     # lime
+  255, 0, 0, 0,     # red
+  128, 128, 128, 0, # gray
+
+  192, 192, 192, 0, # silver
+  0, 128, 128, 0,   # teal
+  128, 0, 128, 0,   # purple
+  0, 0, 128, 0,     # navy
+  128, 128, 0, 0,   # olive
+  0, 128, 0, 0,     # green
+  128, 0, 0, 0,     # maroon
+  0, 0, 0, 0        # black
+ )
+
+DEFAUL_MAC_256COLORS_PALETTE = (
+ 0xFF, 0xFF, 0xFF, 0x00,
+ 0xCC, 0xFF, 0xFF, 0x00,
+ 0x99, 0xFF, 0xFF, 0x00,
+ 0x66, 0xFF, 0xFF, 0x00,
+ 0x33, 0xFF, 0xFF, 0x00,
+ 0x00, 0xFF, 0xFF, 0x00,
+ 0xFF, 0xCC, 0xFF, 0x00,
+ 0xCC, 0xCC, 0xFF, 0x00,
+ 0x99, 0xCC, 0xFF, 0x00,
+ 0x66, 0xCC, 0xFF, 0x00,
+ 0x33, 0xCC, 0xFF, 0x00,
+ 0x00, 0xCC, 0xFF, 0x00,
+ 0xFF, 0x99, 0xFF, 0x00,
+ 0xCC, 0x99, 0xFF, 0x00,
+ 0x99, 0x99, 0xFF, 0x00,
+ 0x66, 0x99, 0xFF, 0x00,
+ 0x33, 0x99, 0xFF, 0x00,
+ 0x00, 0x99, 0xFF, 0x00,
+ 0xFF, 0x66, 0xFF, 0x00,
+ 0xCC, 0x66, 0xFF, 0x00,
+ 0x99, 0x66, 0xFF, 0x00,
+ 0x66, 0x66, 0xFF, 0x00,
+ 0x33, 0x66, 0xFF, 0x00,
+ 0x00, 0x66, 0xFF, 0x00,
+ 0xFF, 0x33, 0xFF, 0x00,
+ 0xCC, 0x33, 0xFF, 0x00,
+ 0x99, 0x33, 0xFF, 0x00,
+ 0x66, 0x33, 0xFF, 0x00,
+ 0x33, 0x33, 0xFF, 0x00,
+ 0x00, 0x33, 0xFF, 0x00,
+ 0xFF, 0x00, 0xFF, 0x00,
+ 0xCC, 0x00, 0xFF, 0x00,
+ 0x99, 0x00, 0xFF, 0x00,
+ 0x66, 0x00, 0xFF, 0x00,
+ 0x33, 0x00, 0xFF, 0x00,
+ 0x00, 0x00, 0xFF, 0x00,
+ 0xFF, 0xFF, 0xCC, 0x00,
+ 0xCC, 0xFF, 0xCC, 0x00,
+ 0x99, 0xFF, 0xCC, 0x00,
+ 0x66, 0xFF, 0xCC, 0x00,
+ 0x33, 0xFF, 0xCC, 0x00,
+ 0x00, 0xFF, 0xCC, 0x00,
+ 0xFF, 0xCC, 0xCC, 0x00,
+ 0xCC, 0xCC, 0xCC, 0x00,
+ 0x99, 0xCC, 0xCC, 0x00,
+ 0x66, 0xCC, 0xCC, 0x00,
+ 0x33, 0xCC, 0xCC, 0x00,
+ 0x00, 0xCC, 0xCC, 0x00,
+ 0xFF, 0x99, 0xCC, 0x00,
+ 0xCC, 0x99, 0xCC, 0x00,
+ 0x99, 0x99, 0xCC, 0x00,
+ 0x66, 0x99, 0xCC, 0x00,
+ 0x33, 0x99, 0xCC, 0x00,
+ 0x00, 0x99, 0xCC, 0x00,
+ 0xFF, 0x66, 0xCC, 0x00,
+ 0xCC, 0x66, 0xCC, 0x00,
+ 0x99, 0x66, 0xCC, 0x00,
+ 0x66, 0x66, 0xCC, 0x00,
+ 0x33, 0x66, 0xCC, 0x00,
+ 0x00, 0x66, 0xCC, 0x00,
+ 0xFF, 0x33, 0xCC, 0x00,
+ 0xCC, 0x33, 0xCC, 0x00,
+ 0x99, 0x33, 0xCC, 0x00,
+ 0x66, 0x33, 0xCC, 0x00,
+ 0x33, 0x33, 0xCC, 0x00,
+ 0x00, 0x33, 0xCC, 0x00,
+ 0xFF, 0x00, 0xCC, 0x00,
+ 0xCC, 0x00, 0xCC, 0x00,
+ 0x99, 0x00, 0xCC, 0x00,
+ 0x66, 0x00, 0xCC, 0x00,
+ 0x33, 0x00, 0xCC, 0x00,
+ 0x00, 0x00, 0xCC, 0x00,
+ 0xFF, 0xFF, 0x99, 0x00,
+ 0xCC, 0xFF, 0x99, 0x00,
+ 0x99, 0xFF, 0x99, 0x00,
+ 0x66, 0xFF, 0x99, 0x00,
+ 0x33, 0xFF, 0x99, 0x00,
+ 0x00, 0xFF, 0x99, 0x00,
+ 0xFF, 0xCC, 0x99, 0x00,
+ 0xCC, 0xCC, 0x99, 0x00,
+ 0x99, 0xCC, 0x99, 0x00,
+ 0x66, 0xCC, 0x99, 0x00,
+ 0x33, 0xCC, 0x99, 0x00,
+ 0x00, 0xCC, 0x99, 0x00,
+ 0xFF, 0x99, 0x99, 0x00,
+ 0xCC, 0x99, 0x99, 0x00,
+ 0x99, 0x99, 0x99, 0x00,
+ 0x66, 0x99, 0x99, 0x00,
+ 0x33, 0x99, 0x99, 0x00,
+ 0x00, 0x99, 0x99, 0x00,
+ 0xFF, 0x66, 0x99, 0x00,
+ 0xCC, 0x66, 0x99, 0x00,
+ 0x99, 0x66, 0x99, 0x00,
+ 0x66, 0x66, 0x99, 0x00,
+ 0x33, 0x66, 0x99, 0x00,
+ 0x00, 0x66, 0x99, 0x00,
+ 0xFF, 0x33, 0x99, 0x00,
+ 0xCC, 0x33, 0x99, 0x00,
+ 0x99, 0x33, 0x99, 0x00,
+ 0x66, 0x33, 0x99, 0x00,
+ 0x33, 0x33, 0x99, 0x00,
+ 0x00, 0x33, 0x99, 0x00,
+ 0xFF, 0x00, 0x99, 0x00,
+ 0xCC, 0x00, 0x99, 0x00,
+ 0x99, 0x00, 0x99, 0x00,
+ 0x66, 0x00, 0x99, 0x00,
+ 0x33, 0x00, 0x99, 0x00,
+ 0x00, 0x00, 0x99, 0x00,
+ 0xFF, 0xFF, 0x66, 0x00,
+ 0xCC, 0xFF, 0x66, 0x00,
+ 0x99, 0xFF, 0x66, 0x00,
+ 0x66, 0xFF, 0x66, 0x00,
+ 0x33, 0xFF, 0x66, 0x00,
+ 0x00, 0xFF, 0x66, 0x00,
+ 0xFF, 0xCC, 0x66, 0x00,
+ 0xCC, 0xCC, 0x66, 0x00,
+ 0x99, 0xCC, 0x66, 0x00,
+ 0x66, 0xCC, 0x66, 0x00,
+ 0x33, 0xCC, 0x66, 0x00,
+ 0x00, 0xCC, 0x66, 0x00,
+ 0xFF, 0x99, 0x66, 0x00,
+ 0xCC, 0x99, 0x66, 0x00,
+ 0x99, 0x99, 0x66, 0x00,
+ 0x66, 0x99, 0x66, 0x00,
+ 0x33, 0x99, 0x66, 0x00,
+ 0x00, 0x99, 0x66, 0x00,
+ 0xFF, 0x66, 0x66, 0x00,
+ 0xCC, 0x66, 0x66, 0x00,
+ 0x99, 0x66, 0x66, 0x00,
+ 0x66, 0x66, 0x66, 0x00,
+ 0x33, 0x66, 0x66, 0x00,
+ 0x00, 0x66, 0x66, 0x00,
+ 0xFF, 0x33, 0x66, 0x00,
+ 0xCC, 0x33, 0x66, 0x00,
+ 0x99, 0x33, 0x66, 0x00,
+ 0x66, 0x33, 0x66, 0x00,
+ 0x33, 0x33, 0x66, 0x00,
+ 0x00, 0x33, 0x66, 0x00,
+ 0xFF, 0x00, 0x66, 0x00,
+ 0xCC, 0x00, 0x66, 0x00,
+ 0x99, 0x00, 0x66, 0x00,
+ 0x66, 0x00, 0x66, 0x00,
+ 0x33, 0x00, 0x66, 0x00,
+ 0x00, 0x00, 0x66, 0x00,
+ 0xFF, 0xFF, 0x33, 0x00,
+ 0xCC, 0xFF, 0x33, 0x00,
+ 0x99, 0xFF, 0x33, 0x00,
+ 0x66, 0xFF, 0x33, 0x00,
+ 0x33, 0xFF, 0x33, 0x00,
+ 0x00, 0xFF, 0x33, 0x00,
+ 0xFF, 0xCC, 0x33, 0x00,
+ 0xCC, 0xCC, 0x33, 0x00,
+ 0x99, 0xCC, 0x33, 0x00,
+ 0x66, 0xCC, 0x33, 0x00,
+ 0x33, 0xCC, 0x33, 0x00,
+ 0x00, 0xCC, 0x33, 0x00,
+ 0xFF, 0x99, 0x33, 0x00,
+ 0xCC, 0x99, 0x33, 0x00,
+ 0x99, 0x99, 0x33, 0x00,
+ 0x66, 0x99, 0x33, 0x00,
+ 0x33, 0x99, 0x33, 0x00,
+ 0x00, 0x99, 0x33, 0x00,
+ 0xFF, 0x66, 0x33, 0x00,
+ 0xCC, 0x66, 0x33, 0x00,
+ 0x99, 0x66, 0x33, 0x00,
+ 0x66, 0x66, 0x33, 0x00,
+ 0x33, 0x66, 0x33, 0x00,
+ 0x00, 0x66, 0x33, 0x00,
+ 0xFF, 0x33, 0x33, 0x00,
+ 0xCC, 0x33, 0x33, 0x00,
+ 0x99, 0x33, 0x33, 0x00,
+ 0x66, 0x33, 0x33, 0x00,
+ 0x33, 0x33, 0x33, 0x00,
+ 0x00, 0x33, 0x33, 0x00,
+ 0xFF, 0x00, 0x33, 0x00,
+ 0xCC, 0x00, 0x33, 0x00,
+ 0x99, 0x00, 0x33, 0x00,
+ 0x66, 0x00, 0x33, 0x00,
+ 0x33, 0x00, 0x33, 0x00,
+ 0x00, 0x00, 0x33, 0x00,
+ 0xFF, 0xFF, 0x00, 0x00,
+ 0xCC, 0xFF, 0x00, 0x00,
+ 0x99, 0xFF, 0x00, 0x00,
+ 0x66, 0xFF, 0x00, 0x00,
+ 0x33, 0xFF, 0x00, 0x00,
+ 0x00, 0xFF, 0x00, 0x00,
+ 0xFF, 0xCC, 0x00, 0x00,
+ 0xCC, 0xCC, 0x00, 0x00,
+ 0x99, 0xCC, 0x00, 0x00,
+ 0x66, 0xCC, 0x00, 0x00,
+ 0x33, 0xCC, 0x00, 0x00,
+ 0x00, 0xCC, 0x00, 0x00,
+ 0xFF, 0x99, 0x00, 0x00,
+ 0xCC, 0x99, 0x00, 0x00,
+ 0x99, 0x99, 0x00, 0x00,
+ 0x66, 0x99, 0x00, 0x00,
+ 0x33, 0x99, 0x00, 0x00,
+ 0x00, 0x99, 0x00, 0x00,
+ 0xFF, 0x66, 0x00, 0x00,
+ 0xCC, 0x66, 0x00, 0x00,
+ 0x99, 0x66, 0x00, 0x00,
+ 0x66, 0x66, 0x00, 0x00,
+ 0x33, 0x66, 0x00, 0x00,
+ 0x00, 0x66, 0x00, 0x00,
+ 0xFF, 0x33, 0x00, 0x00,
+ 0xCC, 0x33, 0x00, 0x00,
+ 0x99, 0x33, 0x00, 0x00,
+ 0x66, 0x33, 0x00, 0x00,
+ 0x33, 0x33, 0x00, 0x00,
+ 0x00, 0x33, 0x00, 0x00,
+ 0xFF, 0x00, 0x00, 0x00,
+ 0xCC, 0x00, 0x00, 0x00,
+ 0x99, 0x00, 0x00, 0x00,
+ 0x66, 0x00, 0x00, 0x00,
+ 0x33, 0x00, 0x00, 0x00,
+ 0x00, 0x00, 0xEE, 0x00,
+ 0x00, 0x00, 0xDD, 0x00,
+ 0x00, 0x00, 0xBB, 0x00,
+ 0x00, 0x00, 0xAA, 0x00,
+ 0x00, 0x00, 0x88, 0x00,
+ 0x00, 0x00, 0x77, 0x00,
+ 0x00, 0x00, 0x55, 0x00,
+ 0x00, 0x00, 0x44, 0x00,
+ 0x00, 0x00, 0x22, 0x00,
+ 0x00, 0x00, 0x11, 0x00,
+ 0x00, 0xEE, 0x00, 0x00,
+ 0x00, 0xDD, 0x00, 0x00,
+ 0x00, 0xBB, 0x00, 0x00,
+ 0x00, 0xAA, 0x00, 0x00,
+ 0x00, 0x88, 0x00, 0x00,
+ 0x00, 0x77, 0x00, 0x00,
+ 0x00, 0x55, 0x00, 0x00,
+ 0x00, 0x44, 0x00, 0x00,
+ 0x00, 0x22, 0x00, 0x00,
+ 0x00, 0x11, 0x00, 0x00,
+ 0xEE, 0x00, 0x00, 0x00,
+ 0xDD, 0x00, 0x00, 0x00,
+ 0xBB, 0x00, 0x00, 0x00,
+ 0xAA, 0x00, 0x00, 0x00,
+ 0x88, 0x00, 0x00, 0x00,
+ 0x77, 0x00, 0x00, 0x00,
+ 0x55, 0x00, 0x00, 0x00,
+ 0x44, 0x00, 0x00, 0x00,
+ 0x22, 0x00, 0x00, 0x00,
+ 0x11, 0x00, 0x00, 0x00,
+ 0xEE, 0xEE, 0xEE, 0x00,
+ 0xDD, 0xDD, 0xDD, 0x00,
+ 0xBB, 0xBB, 0xBB, 0x00,
+ 0xAA, 0xAA, 0xAA, 0x00,
+ 0x88, 0x88, 0x88, 0x00,
+ 0x77, 0x77, 0x77, 0x00,
+ 0x55, 0x55, 0x55, 0x00,
+ 0x44, 0x44, 0x44, 0x00,
+ 0x22, 0x22, 0x22, 0x00,
+ 0x11, 0x11, 0x11, 0x00,
+ 0x00, 0x00, 0x00, 0x00,
+
+)
+
+DEFAULT_WINDOWS_256COLORS_PALETTE = (
+     0xFF, 0xFF, 0xFF, 0x00,
+     0xFF, 0xFF, 0x00, 0x00,
+     0xFF, 0x00, 0xFF, 0x00,
+     0xFF, 0x00, 0x00, 0x00,
+     0x00, 0xFF, 0xFF, 0x00,
+     0x00, 0xFF, 0x00, 0x00,
+     0x00, 0x00, 0xFF, 0x00,
+     0x80, 0x80, 0x80, 0x00,
+     0xA4, 0xA0, 0xA0, 0x00,
+     0xF0, 0xFB, 0xFF, 0x00,
+     0x33, 0x33, 0x33, 0x00,
+     0x00, 0x66, 0x99, 0x00,
+     0x33, 0x66, 0x33, 0x00,
+     0x99, 0x33, 0x00, 0x00,
+     0xFF, 0x00, 0xCC, 0x00,
+     0x00, 0x00, 0x88, 0x00,
+     0x66, 0xCC, 0xFF, 0x00,
+     0xCC, 0x99, 0xFF, 0x00,
+     0xDD, 0xDD, 0xDD, 0x00,
+     0x00, 0x99, 0xFF, 0x00,
+     0xFF, 0x66, 0xFF, 0x00,
+     0xCC, 0x66, 0xFF, 0x00,
+     0x99, 0x66, 0xFF, 0x00,
+     0x66, 0x66, 0xFF, 0x00,
+     0x33, 0x66, 0xFF, 0x00,
+     0x00, 0x66, 0xFF, 0x00,
+     0xFF, 0x33, 0xFF, 0x00,
+     0xCC, 0x33, 0xFF, 0x00,
+     0x99, 0x33, 0xFF, 0x00,
+     0x66, 0x33, 0xFF, 0x00,
+     0x33, 0x33, 0xFF, 0x00,
+     0x00, 0x33, 0xFF, 0x00,
+     0xCC, 0x00, 0xFF, 0x00,
+     0x99, 0x00, 0xFF, 0x00,
+     0x66, 0x00, 0xFF, 0x00,
+     0x33, 0x00, 0xFF, 0x00,
+     0xFF, 0xFF, 0xCC, 0x00,
+     0xCC, 0xFF, 0xCC, 0x00,
+     0x99, 0xFF, 0xCC, 0x00,
+     0x66, 0xFF, 0xCC, 0x00,
+     0x33, 0xFF, 0xCC, 0x00,
+     0x00, 0xFF, 0xCC, 0x00,
+     0xFF, 0xCC, 0xCC, 0x00,
+     0xCC, 0xCC, 0xCC, 0x00,
+     0x99, 0xCC, 0xCC, 0x00,
+     0x66, 0xCC, 0xCC, 0x00,
+     0x33, 0xCC, 0xCC, 0x00,
+     0x00, 0xCC, 0xCC, 0x00,
+     0xFF, 0x99, 0xCC, 0x00,
+     0xCC, 0x99, 0xCC, 0x00,
+     0x99, 0x99, 0xCC, 0x00,
+     0x66, 0x99, 0xCC, 0x00,
+     0x33, 0x99, 0xCC, 0x00,
+     0x00, 0x99, 0xCC, 0x00,
+     0xFF, 0x66, 0xCC, 0x00,
+     0xCC, 0x66, 0xCC, 0x00,
+     0x99, 0x66, 0xCC, 0x00,
+     0x66, 0x66, 0xCC, 0x00,
+     0x33, 0x66, 0xCC, 0x00,
+     0x00, 0x66, 0xCC, 0x00,
+     0xFF, 0x33, 0xCC, 0x00,
+     0xCC, 0x33, 0xCC, 0x00,
+     0x99, 0x33, 0xCC, 0x00,
+     0x66, 0x33, 0xCC, 0x00,
+     0x33, 0x33, 0xCC, 0x00,
+     0x00, 0x33, 0xCC, 0x00,
+     0xFF, 0x08, 0xD4, 0x00,
+     0xCC, 0x00, 0xCC, 0x00,
+     0x99, 0x00, 0xCC, 0x00,
+     0x66, 0x00, 0xCC, 0x00,
+     0x33, 0x00, 0xCC, 0x00,
+     0x00, 0x00, 0xCC, 0x00,
+     0xFF, 0xFF, 0x99, 0x00,
+     0xCC, 0xFF, 0x99, 0x00,
+     0x99, 0xFF, 0x99, 0x00,
+     0x66, 0xFF, 0x99, 0x00,
+     0x33, 0xFF, 0x99, 0x00,
+     0x00, 0xFF, 0x99, 0x00,
+     0xFF, 0xCC, 0x99, 0x00,
+     0xCC, 0xCC, 0x99, 0x00,
+     0x99, 0xCC, 0x99, 0x00,
+     0x66, 0xCC, 0x99, 0x00,
+     0x33, 0xCC, 0x99, 0x00,
+     0x00, 0xCC, 0x99, 0x00,
+     0xFF, 0x99, 0x99, 0x00,
+     0xCC, 0x99, 0x99, 0x00,
+     0x99, 0x99, 0x99, 0x00,
+     0x66, 0x99, 0x99, 0x00,
+     0x33, 0x99, 0x99, 0x00,
+     0x00, 0x99, 0x99, 0x00,
+     0xFF, 0x66, 0x99, 0x00,
+     0xCC, 0x66, 0x99, 0x00,
+     0x99, 0x66, 0x99, 0x00,
+     0x66, 0x66, 0x99, 0x00,
+     0x33, 0x66, 0x99, 0x00,
+     0x00, 0x66, 0xA1, 0x00,
+     0xFF, 0x33, 0x99, 0x00,
+     0xCC, 0x33, 0x99, 0x00,
+     0x99, 0x33, 0x99, 0x00,
+     0x66, 0x33, 0x99, 0x00,
+     0x33, 0x33, 0x99, 0x00,
+     0x00, 0x33, 0x99, 0x00,
+     0xFF, 0x00, 0x99, 0x00,
+     0xCC, 0x00, 0x99, 0x00,
+     0x99, 0x00, 0x99, 0x00,
+     0x66, 0x00, 0x99, 0x00,
+     0x33, 0x00, 0x99, 0x00,
+     0x00, 0x00, 0x99, 0x00,
+     0xFF, 0xFF, 0x66, 0x00,
+     0xCC, 0xFF, 0x66, 0x00,
+     0x99, 0xFF, 0x66, 0x00,
+     0x66, 0xFF, 0x66, 0x00,
+     0x33, 0xFF, 0x66, 0x00,
+     0x00, 0xFF, 0x66, 0x00,
+     0xFF, 0xCC, 0x66, 0x00,
+     0xCC, 0xCC, 0x66, 0x00,
+     0x99, 0xCC, 0x66, 0x00,
+     0x66, 0xCC, 0x66, 0x00,
+     0x33, 0xCC, 0x66, 0x00,
+     0x00, 0xCC, 0x66, 0x00,
+     0xFF, 0x99, 0x66, 0x00,
+     0xCC, 0x99, 0x66, 0x00,
+     0x99, 0x99, 0x66, 0x00,
+     0x66, 0x99, 0x66, 0x00,
+     0x33, 0x99, 0x66, 0x00,
+     0x00, 0x99, 0x66, 0x00,
+     0xFF, 0x66, 0x66, 0x00,
+     0xCC, 0x66, 0x66, 0x00,
+     0x99, 0x66, 0x66, 0x00,
+     0x66, 0x66, 0x66, 0x00,
+     0x33, 0x66, 0x66, 0x00,
+     0x00, 0x66, 0x66, 0x00,
+     0xFF, 0x33, 0x66, 0x00,
+     0xCC, 0x33, 0x66, 0x00,
+     0x99, 0x33, 0x66, 0x00,
+     0x66, 0x33, 0x66, 0x00,
+     0x33, 0x33, 0x66, 0x00,
+     0x00, 0x33, 0x66, 0x00,
+     0xFF, 0x00, 0x66, 0x00,
+     0xCC, 0x00, 0x66, 0x00,
+     0x99, 0x00, 0x66, 0x00,
+     0x66, 0x00, 0x66, 0x00,
+     0x33, 0x00, 0x66, 0x00,
+     0x00, 0x00, 0x66, 0x00,
+     0xFF, 0xFF, 0x33, 0x00,
+     0xCC, 0xFF, 0x33, 0x00,
+     0x99, 0xFF, 0x33, 0x00,
+     0x66, 0xFF, 0x33, 0x00,
+     0x33, 0xFF, 0x33, 0x00,
+     0x00, 0xFF, 0x33, 0x00,
+     0xFF, 0xCC, 0x33, 0x00,
+     0xCC, 0xCC, 0x33, 0x00,
+     0x99, 0xCC, 0x33, 0x00,
+     0x66, 0xCC, 0x33, 0x00,
+     0x33, 0xCC, 0x33, 0x00,
+     0x00, 0xCC, 0x33, 0x00,
+     0xFF, 0x99, 0x33, 0x00,
+     0xCC, 0x99, 0x33, 0x00,
+     0x99, 0x99, 0x33, 0x00,
+     0x66, 0x99, 0x33, 0x00,
+     0x33, 0x99, 0x33, 0x00,
+     0x00, 0x99, 0x33, 0x00,
+     0xFF, 0x66, 0x33, 0x00,
+     0xCC, 0x66, 0x33, 0x00,
+     0x99, 0x66, 0x33, 0x00,
+     0x66, 0x66, 0x33, 0x00,
+     0x33, 0x6E, 0x33, 0x00,
+     0x00, 0x66, 0x33, 0x00,
+     0xFF, 0x33, 0x33, 0x00,
+     0xCC, 0x33, 0x33, 0x00,
+     0x99, 0x33, 0x33, 0x00,
+     0x66, 0x33, 0x33, 0x00,
+     0x3B, 0x33, 0x33, 0x00,
+     0x00, 0x33, 0x33, 0x00,
+     0xFF, 0x00, 0x33, 0x00,
+     0xCC, 0x00, 0x33, 0x00,
+     0x99, 0x00, 0x33, 0x00,
+     0x66, 0x00, 0x33, 0x00,
+     0x33, 0x00, 0x33, 0x00,
+     0x00, 0x00, 0x33, 0x00,
+     0xCC, 0xFF, 0x00, 0x00,
+     0x99, 0xFF, 0x00, 0x00,
+     0x66, 0xFF, 0x00, 0x00,
+     0x33, 0xFF, 0x00, 0x00,
+     0xFF, 0xCC, 0x00, 0x00,
+     0xCC, 0xCC, 0x00, 0x00,
+     0x99, 0xCC, 0x00, 0x00,
+     0x66, 0xCC, 0x00, 0x00,
+     0x33, 0xCC, 0x00, 0x00,
+     0x00, 0xCC, 0x00, 0x00,
+     0xFF, 0x99, 0x00, 0x00,
+     0xCC, 0x99, 0x00, 0x00,
+     0x99, 0x99, 0x00, 0x00,
+     0x66, 0x99, 0x00, 0x00,
+     0x33, 0x99, 0x00, 0x00,
+     0x00, 0x99, 0x00, 0x00,
+     0xFF, 0x66, 0x00, 0x00,
+     0xCC, 0x66, 0x00, 0x00,
+     0x99, 0x66, 0x00, 0x00,
+     0x66, 0x66, 0x00, 0x00,
+     0x33, 0x66, 0x00, 0x00,
+     0x00, 0x66, 0x00, 0x00,
+     0xFF, 0x33, 0x00, 0x00,
+     0xCC, 0x33, 0x00, 0x00,
+     0xA1, 0x33, 0x00, 0x00,
+     0x66, 0x33, 0x00, 0x00,
+     0x33, 0x33, 0x00, 0x00,
+     0x00, 0x33, 0x00, 0x00,
+     0xCC, 0x00, 0x00, 0x00,
+     0x99, 0x00, 0x00, 0x00,
+     0x66, 0x00, 0x00, 0x00,
+     0x33, 0x00, 0x00, 0x00,
+     0x00, 0x00, 0xEE, 0x00,
+     0x00, 0x00, 0xDD, 0x00,
+     0x00, 0x00, 0xAA, 0x00,
+     0x00, 0x00, 0x90, 0x00,
+     0x00, 0x00, 0x77, 0x00,
+     0x00, 0x00, 0x55, 0x00,
+     0x00, 0x00, 0x44, 0x00,
+     0x00, 0x00, 0x22, 0x00,
+     0x00, 0x00, 0x11, 0x00,
+     0x00, 0xEE, 0x00, 0x00,
+     0x00, 0xDD, 0x00, 0x00,
+     0x00, 0xAA, 0x00, 0x00,
+     0x00, 0x88, 0x00, 0x00,
+     0x00, 0x77, 0x00, 0x00,
+     0x00, 0x55, 0x00, 0x00,
+     0x00, 0x44, 0x00, 0x00,
+     0x00, 0x22, 0x00, 0x00,
+     0x00, 0x11, 0x00, 0x00,
+     0xEE, 0x00, 0x00, 0x00,
+     0xDD, 0x00, 0x00, 0x00,
+     0xAA, 0x00, 0x00, 0x00,
+     0x88, 0x00, 0x00, 0x00,
+     0x77, 0x00, 0x00, 0x00,
+     0x55, 0x00, 0x00, 0x00,
+     0x44, 0x00, 0x00, 0x00,
+     0x22, 0x00, 0x00, 0x00,
+     0x11, 0x00, 0x00, 0x00,
+     0x30, 0x22, 0x22, 0x00,
+     0x99, 0x99, 0xFF, 0x00,
+     0xFF, 0xCC, 0xFF, 0x00,
+     0xFF, 0xD4, 0x99, 0x00,
+     0x99, 0xD4, 0x99, 0x00,
+     0x99, 0xFF, 0xFF, 0x00,
+     0xF0, 0xF0, 0xF0, 0x00,
+     0xF0, 0xC8, 0xA4, 0x00,
+     0xC0, 0xDC, 0xC0, 0x00,
+     0xC0, 0xC0, 0xC0, 0x00,
+     0xBF, 0xBF, 0x00, 0x00,
+     0xBF, 0x00, 0xBF, 0x00,
+     0xBF, 0x00, 0x00, 0x00,
+     0x00, 0xBF, 0xBF, 0x00,
+     0x00, 0xBF, 0x00, 0x00,
+     0x00, 0x00, 0xBF, 0x00,
+     0x00, 0x00, 0x00, 0x00,
+)
+
+
+
+# ====================================================================================================================================
+def parse_cast_file(cast_file):
+    castData = None
+
+    with open(cast_file, mode='rb') as file:
+        fdata = file.read()
+
+        idx = 0
+        cast_bit_order = '>'
+        data_type = struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+        idx += 4
+
+        logging.debug("%s: data_type = %s"%(cast_file, data_type))
+        
+
+        if data_type == DIR5_IMAGE_TYPE:
+            # Director 5 image type
+            logging.info("%s: is a image file"%(cast_file))
+            
+            unknown_00 = struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            logging.debug("unknown_00 = %08x"%(unknown_00))
+            
+            unknown_01 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            logging.debug("unknown_01 = %08x"%(unknown_01))
+            
+            unknown_02 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            logging.debug("unknown_02 = %08x"%(unknown_02))
+            
+            unknown_03 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            logging.debug("unknown_03 = %08x"%(unknown_03))
+            
+            unknown_04 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            logging.debug("unknown_04 = %08x"%(unknown_04))
+            
+            unknown_05 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            logging.debug("unknown_05 = %08x"%(unknown_05))
+            
+            unknown_06 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            logging.debug("unknown_06 = %08x"%(unknown_06))
+            
+            nint =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+            logging.debug("number of integers = %d"%(nint))
+            
+            for i in range(0, nint):
+                unknown_int =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+                idx += 4
+                logging.debug("unknown_int[%d] = %08x"%(i, unknown_int))
+            
+            fnamepad =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            logging.debug("fnamepad = %s"%(fnamepad)) 
+
+
+            fnamechars = struct.unpack("B", fdata[idx])[0]
+            logging.debug("fnamechars = %s"%(fnamechars)) 
+            idx += 1
+            bmp_file_name = fdata[idx:idx+fnamechars]
+            idx += fnamechars
+
+            idx += (fnamepad - (fnamechars+1))
+
+            logging.info("bmp_file_name = %s"%(bmp_file_name))
+
+            bmp_bpp_val =  struct.unpack(cast_bit_order+"B", fdata[idx])[0]
+            idx += 1                
+
+            bmp_bpp = 8
+            if bmp_bpp_val == 0x80:
+                # 8 bit per pixel image
+                bmp_bpp = 8
+                
+            elif bmp_bpp_val == 0x81:
+                # 4 bit per pixel image
+                bmp_bpp = 4
+
+            elif bmp_bpp_val == 0x82:
+                # 8 bit per pixel image
+                bmp_bpp = 8
+
+            elif bmp_bpp_val == 0x84:
+                # 16 bit per pixel image
+                bmp_bpp = 16
+
+            elif bmp_bpp_val == 0x85:
+                # 16 bit per pixel image (MAC format)
+                bmp_bpp = 16
+
+            elif bmp_bpp_val == 0x8A:
+                # 24 bit per pixel image
+                bmp_bpp = 24
+
+            else:
+                logging.warn("Unknown BPP value: %s"%(bmp_bpp_val))
+
+            logging.debug("bmp_bpp = %s"%(bmp_bpp)) 
+
+
+            unknown_11 =  struct.unpack(cast_bit_order+"B", fdata[idx])[0]
+            idx += 1                
+            logging.debug("unknown_11 = %s"%(unknown_11)) 
+
+            h_padding =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+            logging.debug("h_padding = %s"%(h_padding)) 
+
+            w_padding =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+            logging.debug("w_padding = %s"%(w_padding)) 
+
+            bmp_height =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2                
+            logging.debug("bmp_height = %s"%(bmp_height)) 
+
+            bmp_width =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2                
+            logging.debug("bmp_width = %s"%(bmp_width)) 
+
+            bmp_height -= h_padding
+            bmp_width -= w_padding
+
+            unknown_12 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            logging.debug("unknown_12 = %s"%(unknown_12)) 
+
+            unknown_13 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            logging.debug("unknown_13 = %s"%(unknown_13)) 
+
+            unknown_14 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            logging.debug("unknown_14 = %s"%(unknown_14)) 
+
+            unknown_15 =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+            logging.debug("unknown_15 = %s"%(unknown_15)) 
+
+            unknown_16 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            logging.debug("unknown_16 = %s"%(unknown_16))
+
+            castData = {}
+            castData['bmp_height'] = bmp_height
+            castData['bmp_width'] = bmp_width
+            castData['bmp_bpp'] = bmp_bpp
+            castData['bmp_file_name'] = bmp_file_name
+
+        elif  data_type == DIR4_IMAGE_TYPE: 
+            logging.debug("Reading image data...")
+            unknown_00 = struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+
+            logging.debug("unknown_00 = %s"%(unknown_00)) 
+
+
+            bmp_bpp_val =  struct.unpack("B", fdata[idx])[0]
+            idx += 1                
+
+            # Force 8BPP
+            bmp_bpp = 8
+
+            logging.debug("bmp_bpp = %s"%(bmp_bpp)) 
+
+
+            unknown_11 =  struct.unpack("B", fdata[idx])[0]
+            idx += 1                
+            logging.debug("unknown_11 = %s"%(unknown_11)) 
+
+
+            h_padding =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+            logging.debug("h_padding = %s"%(h_padding)) 
+
+            w_padding =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+            logging.debug("w_padding = %s"%(w_padding)) 
+
+            bmp_height =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2                
+
+            bmp_width =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2                
+
+            logging.debug("bmp_height = %s"%(bmp_height)) 
+            logging.debug("bmp_width = %s"%(bmp_width)) 
+
+            bmp_height -= h_padding
+            bmp_width -= w_padding
+
+            unknown_12 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            logging.debug("unknown_12 = %s"%(unknown_12)) 
+
+            unknown_13 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            logging.debug("unknown_13 = %s"%(unknown_13)) 
+
+            unknown_14 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            logging.debug("unknown_14 = %s"%(unknown_14)) 
+
+            unknown_15 =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+            logging.debug("unknown_15 = %s"%(unknown_15)) 
+
+            unknown_16 =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+            logging.debug("unknown_16 = %s"%(unknown_16)) 
+
+            if idx < len(fdata) - 1:
+                # 00 00 00 14
+                unknown_02 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+                idx += 4
+                if unknown_02 != 0x14:
+                    logging.error("Can't locate a region in the CASt file")
+                    sys.exit(-1)
+
+                unknown_03 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+                idx += 4
+                unknown_04 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+                idx += 4
+                unknown_05 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+                idx += 4
+                unknown_06 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+                idx += 4
+                unknown_07_h =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+                idx += 2
+
+                logging.debug("unknown_02 = %s"%(unknown_02)) 
+                logging.debug("unknown_03 = %s"%(unknown_03)) 
+                logging.debug("unknown_04 = %s"%(unknown_04)) 
+                logging.debug("unknown_05 = %s"%(unknown_05)) 
+                logging.debug("unknown_06 = %s"%(unknown_06)) 
+                logging.debug("unknown_07_h = %s"%(unknown_07_h)) 
+
+                if unknown_07_h > 0:
+                    unknown_07_l =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+                    idx += 2
+
+                    logging.debug("unknown_07_l = %s"%(unknown_07_l)) 
+
+
+                    for k in range(0, unknown_07_h):
+                        unknown_08 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+                        logging.debug("unknown_08 = %s"%(unknown_08))
+                        idx += 4
+
+                unknown_10 =  struct.unpack("B", fdata[idx])[0]
+                idx += 1
+
+
+                logging.debug("unknown_10 = %s"%(unknown_10)) 
+
+            bmp_file_name = None
+            if idx < len(fdata) - 1:
+                fnamepad = struct.unpack("B", fdata[idx])[0]
+                logging.debug("fnamepad = %s"%(fnamepad)) 
+                idx += 1
+
+                fnamechars = struct.unpack("B", fdata[idx])[0]
+                logging.debug("fnamechars = %s"%(fnamechars)) 
+                idx += 1
+                bmp_file_name = fdata[idx:idx+fnamechars]
+                idx += fnamechars
+
+                idx += (fnamepad - (fnamechars+1))
+
+                if bmp_file_name == '':
+                    bmp_file_name = None
+                else:
+                    logging.debug("bmp_file_name = %s"%(bmp_file_name)) 
+
+            castData = {}
+            castData['bmp_height'] = bmp_height
+            castData['bmp_width'] = bmp_width
+            castData['bmp_bpp'] = bmp_bpp
+            castData['bmp_file_name'] = bmp_file_name
+
+                
+            
+        else:
+            logging.error("%s: data_type unknown (%s)!"%(cast_file, data_type))
+            sys.exit(1)
+        
+    return castData
+
+# ====================================================================================================================================
+def save_4bit_bmp(bmp_width, bmp_height, file, previous_clut, fdata):
+    bmp_bpp = 4
+    values = (bmp_width*bmp_height+(16*4)+40+14, # The size of the BMP file in bytes
+              0, # Reserved
+              0, # Reserved
+              ((16*4)+40+14) # Data offset
+             )
+    s = struct.Struct('<ihhi')
+    packed_data = s.pack(*values)
+    file.write(packed_data)
+
+    ncolors = 16
+
+    # Write BITMAPINFOHEADER
+    values = (40, # the size of this header (40 bytes)
+              bmp_width, # the bitmap width in pixels (signed integer)
+              bmp_height, # the bitmap height in pixels (signed integer)
+              1, # the number of color planes (must be 1)
+              bmp_bpp, # the number of bits per pixel, which is the color depth of the image. Typical values are 1, 4, 8, 16, 24 and 32.
+              0, # the compression method being used
+              0, # the image size. This is the size of the raw bitmap data; a dummy 0 can be given for BI_RGB bitmaps.
+              0, # the horizontal resolution of the image. (pixel per meter, signed integer)
+              0, # the vertical resolution of the image. (pixel per meter, signed integer)
+              ncolors, # the number of colors in the color palette, or 0 to default to 2n
+              ncolors  # the number of important colors used, or 0 when every color is important; generally ignored
+             )
+    s = struct.Struct('<iiihhiiiiii')
+    packed_data = s.pack(*values)
+    file.write(packed_data)
+
+    # Write the color palette
+    if previous_clut is not None:
+        s = struct.Struct('B'*(ncolors*4))
+        packed_data = s.pack(*previous_clut[0:(ncolors*4)])
+        file.write(packed_data)
+
+    else:
+        # Default windows 16 colors palete
+        s = struct.Struct('B'*(ncolors*4))
+        if sys.argv[1] == 'pc':
+            packed_data = s.pack(*DEFAULT_WINDOWS_16COLORS_PALETTE)
+        else:
+            packed_data = s.pack(*DEFAULT_MAC_16COLORS_PALETTE)
+
+        file.write(packed_data)
+
+    # get the pixel information
+    # RLE encoded bytes contains 2 pixel colors
+    w = (bmp_width/2)
+
+    castData = [0 for x in range(w*bmp_height)]
+    x = 0
+    y = bmp_height - 1
+    idx = 0
+    while (idx < len(fdata)) and (y>=0):
+        val = struct.unpack("B", fdata[idx])[0]
+        if (val & 0x80) != 0:
+            # RLE encoded
+            run_length = 257 - val
+            run_value = struct.unpack("B", fdata[idx+1])[0]
+            idx = idx + 2
+            for i in range(0, run_length):
+                castData[y*w + x] = run_value
+                x += 1
+                if x >= w:
+                    x = 0
+                    y -= 1
+            
+
+        elif val != 0:
+            # Not RLE encoded
+            run_length = (val + 1)
+            idx = idx + 1
+            for i in range(0, run_length):
+                castData[y*w + x] = struct.unpack("B", fdata[idx])[0]
+                idx = idx + 1
+                x += 1
+                if x >= w:
+                    x = 0
+                    y -= 1
+
+        else: # val is zero
+            run_value = struct.unpack("B", fdata[idx+1])[0]
+            idx = idx + 2
+
+            castData[y*w + x] = run_value
+            x += 1
+            if x >= w:
+                x = 0
+                y -= 1
+
+    if y!=-1 or x!=0:
+        logging.warn("Not enought data to decode. Probably the image is not properly generated. (y=%s, x=%s)"%(y, x))
+
+    if idx != len(fdata):
+        logging.warn("there is more data to decode. Probably the image is not properly generated. (%s != %s)"%(idx, len(fdata)))
+
+
+    # Write the pixel information
+    file.write(struct.pack("B"*(w*bmp_height), *castData))
+    file.close()
+
+# ====================================================================================================================================
+def save_8bit_bmp(bmp_width, bmp_height, bmp_wlimit, file, previous_clut, fdata):
+    bmp_bpp = 8
+    values = (bmp_width*bmp_height+(256*4)+40+14, # The size of the BMP file in bytes
+              0, # Reserved
+              0, # Reserved
+              ((256*4)+40+14) # Data offset
+             )
+    s = struct.Struct('<ihhi')
+    packed_data = s.pack(*values)
+    file.write(packed_data)
+
+    ncolors = 256
+
+    # Write BITMAPINFOHEADER
+    values = (40, # the size of this header (40 bytes)
+              bmp_width, # the bitmap width in pixels (signed integer)
+              bmp_height, # the bitmap height in pixels (signed integer)
+              1, # the number of color planes (must be 1)
+              bmp_bpp, # the number of bits per pixel, which is the color depth of the image. Typical values are 1, 4, 8, 16, 24 and 32.
+              0, # the compression method being used
+              0, # the image size. This is the size of the raw bitmap data; a dummy 0 can be given for BI_RGB bitmaps.
+              0, # the horizontal resolution of the image. (pixel per meter, signed integer)
+              0, # the vertical resolution of the image. (pixel per meter, signed integer)
+              ncolors, # the number of colors in the color palette, or 0 to default to 2n
+              ncolors  # the number of important colors used, or 0 when every color is important; generally ignored
+             )
+    s = struct.Struct('<iiihhiiiiii')
+    packed_data = s.pack(*values)
+    file.write(packed_data)
+
+    # Write the color palette
+    if previous_clut is not None:
+        s = struct.Struct('B'*(256*4))
+        packed_data = s.pack(*previous_clut)
+        file.write(packed_data)
+
+    else:
+        # Default windows 256 colors palete
+        s = struct.Struct('B'*(256*4))
+        if sys.argv[1] == 'pc':
+            packed_data = s.pack(*DEFAULT_WINDOWS_256COLORS_PALETTE)
+        else:
+            packed_data = s.pack(*DEFAUL_MAC_256COLORS_PALETTE)
+
+        file.write(packed_data)
+
+    # get the pixel information
+    # RLE encoded bytes contains 1 pixel color
+    w = bmp_width
+
+    if len(fdata) == w*bmp_height:
+        logging.info("The size of the data matches the image resolution. Not RLE compressed!")
+        # Write the pixel information
+        y = bmp_height - 1
+        while y>=0:
+            idx = y*w
+            file.write(fdata[idx:(idx+w)])
+            y -= 1
+        file.close()
+        return
+
+
+    castData = [0 for x in range(w*bmp_height)]
+    x = 0
+    y = bmp_height - 1
+    idx = 0
+    previous_encoded = True
+    previous_run_length = 0
+    while (idx < len(fdata)) and (y>=0):
+        val = struct.unpack("B", fdata[idx])[0]
+        if (val & 0x80) != 0:
+            # RLE encoded
+            run_length = 257 - val
+            if idx+1 >= len(fdata):
+                logging.error("Unexpected end of data! (data length=%s)"%(len(fdata)))
+                break
+            run_value = struct.unpack("B", fdata[idx+1])[0]
+            idx = idx + 2
+
+            # Jump to next row when necessary
+            if ((x + run_length) > bmp_wlimit):
+                x = 0
+                y -= 1
+
+            if y < 0:
+                break
+
+            for i in range(0, run_length):
+                castData[y*w + x] = run_value
+                x += 1
+                if x >= w:
+                    x = 0
+                    y -= 1
+                    if y < 0:
+                        break
+            
+            previous_encoded = True
+            previous_run_length = run_length
+
+        else:
+            # Not RLE encoded
+            run_length = val + 1
+            idx = idx + 1
+            if idx >= len(fdata):
+                logging.error("Bad run length! (value=%s)"%(run_length))
+                break
+
+            # Jump to next row when necessary
+            if ((x + run_length) > bmp_wlimit) or ( not previous_encoded and (run_length+previous_run_length) < 128 ):
+                # (not previous_encoded and (run_length+previous_run_length) < 128) condition
+                # detects when there is something like:
+                #   00 AA 00 BB
+                #
+                # Because that could be compressed as:
+                #   01 AA BB
+                #
+                # And that means that [00 BB] must be at the begining of a new line
+                previous_encoded = True
+                previous_run_length = 0
+
+                x = 0
+                y -= 1
+
+            else:
+                previous_encoded = False
+                previous_run_length = run_length
+
+
+            if y < 0:
+                break
+
+            for i in range(0, run_length):
+                castData[y*w + x] = struct.unpack("B", fdata[idx])[0]
+                idx = idx + 1
+                if idx >= len(fdata):
+                    logging.error("Bad run length! (value=%s)"%(run_length))
+                    break
+
+                x += 1
+                if x >= w:
+                    previous_encoded = True
+                    previous_run_length = 0
+
+                    x = 0
+                    y -= 1
+                    if y < 0:
+                        break
+
+
+
+    if y!=-1 or x!=0:
+        logging.warning("Not enought data to decode. Probably the image is not properly generated. (y=%s, x=%s)"%(y, x))
+
+    if idx != len(fdata):
+        logging.warning("there is more data to decode. Probably the image is not properly generated. (%s != %s)"%(idx, len(fdata)))
+
+    # Write the pixel information
+    file.write(struct.pack("B"*(bmp_width*bmp_height), *castData))
+    file.close()
+
+# ====================================================================================================================================
+def save_16bit_bmp(bmp_width, bmp_height, file, fdata):
+    bmp_bpp = 16
+    hsize = 124
+    values = (bmp_width*bmp_height*2+hsize+14, # The size of the BMP file in bytes
+              0, # Reserved
+              0, # Reserved
+              (hsize+14) # Data offset
+             )
+    s = struct.Struct('<ihhi')
+    packed_data = s.pack(*values)
+    file.write(packed_data)
+
+    # Write BITMAPINFOHEADER
+    values = (hsize, # the size of this header (hsize bytes)
+              bmp_width, # the bitmap width in pixels (signed integer)
+              bmp_height, # the bitmap height in pixels (signed integer)
+              1, # the number of color planes (must be 1)
+              bmp_bpp, # the number of bits per pixel, which is the color depth of the image. Typical values are 1, 4, 8, 16, 24 and 32.
+              3, # the compression method being used (BI_BITFIELDS)
+              0, # the image size. This is the size of the raw bitmap data; a dummy 0 can be given for BI_RGB bitmaps.
+              0, # the horizontal resolution of the image. (pixel per meter, signed integer)
+              0, # the vertical resolution of the image. (pixel per meter, signed integer)
+              0, # the number of colors in the color palette, or 0 to default to 2n
+              0, # the number of important colors used, or 0 when every color is important; generally ignored
+              0x00007C00, # Red channel bitmask
+              0x000003E0, # Green channel bitmask
+              0x0000001F, # Blue channel bitmask
+              0x00000000, # Alpha channel bitmask
+              0x73524742, # "BGRs"
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, # CIEXYZTRIPLE Color Space endpoints
+              0, # Red Gamma
+              0, # Green Gamma
+              0, # Blue Gamma
+             )
+    s = struct.Struct('<iiihhIIIIIIIIIIIIIIIIIIIIIIIIIII')
+    packed_data = s.pack(*values)
+    file.write(packed_data)
+
+    # get the pixel information
+    # RLE encoded bytes are:
+    #   - RLE encoded lower byte
+    #   - RLE encoded upper byte
+
+    w = bmp_width*2
+    h = bmp_height
+
+    castData = [0 for x in range(w*bmp_height)]
+    x = 0
+    y = bmp_height - 1
+    idx = 0
+    while (idx < len(fdata)) and (y>=0):
+        val = struct.unpack("B", fdata[idx])[0]
+        if (val & 0x80) != 0:
+            # RLE encoded
+            run_length = 257 - val
+            run_value = struct.unpack("B", fdata[idx+1])[0]
+            idx = idx + 2
+
+            # Jump to next byte when necessary
+            if ((x + run_length) > bmp_width) and (x < bmp_width):
+                x = bmp_width
+
+            # Jump to next row when necessary
+            if ((x + run_length) > w):
+                x = 0
+                y -= 1
+
+            for i in range(0, run_length):
+                castData[y*w + x] = run_value
+                x += 1
+            
+
+        else:
+            # Not RLE encoded
+            run_length = val + 1
+            idx = idx + 1
+
+            # Jump to next byte when necessary
+            if ((x + run_length) > bmp_width) and (x < bmp_width):
+                x = bmp_width
+
+            # Jump to next row when necessary
+            if ((x + run_length) > w):
+                x = 0
+                y -= 1
+
+            for i in range(0, run_length):
+                castData[y*w + x] = struct.unpack("B", fdata[idx])[0]
+                idx = idx + 1
+                x += 1
+                if x >= w:
+                    x = 0
+                    y -= 1
+
+    if y!=0 or x!=w:
+        logging.warn("Not enought data to decode. Probably the image is not properly generated. (y=%s, x=%s)"%(y, x))
+
+    if idx != len(fdata):
+        logging.warn("there is more data to decode. Probably the image is not properly generated. (%s != %s)"%(idx, len(fdata)))
+
+
+    # Order lower and upper bytes
+    castDatamix = [0 for x in range(bmp_width*2*bmp_height)]
+    w2 = bmp_width*2
+    w1 = bmp_width
+    w0 = 0
+    for y in range(0, bmp_height):
+        yw1 = y*w1
+        yw2 = y*w2
+        for x in range(0, bmp_width):
+            castDatamix[yw2 + x*2 + 0] = castData[yw2 + w1 + x]  # Upper
+            castDatamix[yw2 + x*2 + 1] = castData[yw2 + w0 + x]  # Lower
+
+    # Write the pixel information
+    file.write(struct.pack("B"*(bmp_width*2*bmp_height), *castDatamix))
+    file.close()
+
+# ====================================================================================================================================
+def save_24bit_bmp(bmp_width, bmp_height, file, fdata):
+    bmp_bpp = 24
+    values = (bmp_width*bmp_height*3+40+14, # The size of the BMP file in bytes
+              0, # Reserved
+              0, # Reserved
+              (40+14) # Data offset
+             )
+    s = struct.Struct('<ihhi')
+    packed_data = s.pack(*values)
+    file.write(packed_data)
+
+    ncolors = 0
+
+    # Write BITMAPINFOHEADER
+    values = (40, # the size of this header (40 bytes)
+              bmp_width, # the bitmap width in pixels (signed integer)
+              bmp_height, # the bitmap height in pixels (signed integer)
+              1, # the number of color planes (must be 1)
+              bmp_bpp, # the number of bits per pixel, which is the color depth of the image. Typical values are 1, 4, 8, 16, 24 and 32.
+              0, # the compression method being used
+              0, # the image size. This is the size of the raw bitmap data; a dummy 0 can be given for BI_RGB bitmaps.
+              0, # the horizontal resolution of the image. (pixel per meter, signed integer)
+              0, # the vertical resolution of the image. (pixel per meter, signed integer)
+              ncolors, # the number of colors in the color palette, or 0 to default to 2n
+              ncolors  # the number of important colors used, or 0 when every color is important; generally ignored
+             )
+    s = struct.Struct('<iiihhiiiiii')
+    packed_data = s.pack(*values)
+    file.write(packed_data)
+
+    # get the pixel information
+    # RLE encoded bytes are:
+    #   - RLE encoded Alpha channel for 1 row
+    #   - RLE encoded Blue channel for 1 row
+    #   - RLE encoded Green channel for 1 row
+    #   - RLE encoded Red channel for 1 row
+
+    w = bmp_width*4
+    h = bmp_height
+
+    castData = [0 for x in range(w*bmp_height)]
+    x = 0
+    y = bmp_height - 1
+    idx = 0
+    while (idx < len(fdata)) and (y>=0):
+        val = struct.unpack("B", fdata[idx])[0]
+        if (val & 0x80) != 0:
+            # RLE encoded
+            run_length = 257 - val
+            run_value = struct.unpack("B", fdata[idx+1])[0]
+            idx = idx + 2
+            for i in range(0, run_length):
+                castData[y*w + x] = run_value
+                x += 1
+                if x >= w:
+                    x = 0
+                    y -= 1
+            
+
+        elif val != 0:
+            # Not RLE encoded
+            run_length = val + 1
+            idx = idx + 1
+            for i in range(0, run_length):
+                castData[y*w + x] = struct.unpack("B", fdata[idx])[0]
+                idx = idx + 1
+                x += 1
+                if x >= w:
+                    x = 0
+                    y -= 1
+
+        else: # val is zero
+            run_value = struct.unpack("B", fdata[idx+1])[0]
+            idx = idx + 2
+            castData[y*w + x] = run_value
+            x += 1
+            if x >= w:
+                x = 0
+                y -= 1
+
+    if y!=-1 or x!=0:
+        logging.warn("Not enought data to decode. Probably the image is not properly generated. (y=%s, x=%s)"%(y, x))
+
+    if idx != len(fdata):
+        logging.warn("there is more data to decode. Probably the image is not properly generated. (%s != %s)"%(idx, len(fdata)))
+
+
+    # Order RGB bytes and discard Alpha channel
+    castDatamix = [0 for x in range(bmp_width*3*bmp_height)]
+    w4 = bmp_width*4
+    w3 = bmp_width*3
+    w2 = bmp_width*2
+    w1 = bmp_width
+    w0 = 0
+    for y in range(0, bmp_height):
+        yw4 = y*w4
+        yw3 = y*w3
+        for x in range(0, bmp_width):
+            castDatamix[yw3 + x*3 + 0] = castData[yw4 + w3 + x]  # Red
+            castDatamix[yw3 + x*3 + 1] = castData[yw4 + w2 + x]  # Green
+            castDatamix[yw3 + x*3 + 2] = castData[yw4 + w1 + x]  # Blue
+
+    # Write the pixel information
+    file.write(struct.pack("B"*(bmp_width*3*bmp_height), *castDatamix))
+    file.close()
+
+
+
+# ====================================================================================================================================
+def bitd2bmp(castData, bitd_file):
+    clutData = None
+    
+    with open(bitd_file, mode='rb') as file:
+        fdata = file.read()
+        
+        file_ext = 'bmp'
+
+        bmp_height = castData['bmp_height']
+        bmp_width = castData['bmp_width']
+        bmp_bpp = castData['bmp_bpp']
+        bmp_file_name = castData['bmp_file_name']
+
+        file_name = "%s.%s"%(os.path.basename(bitd_file)[:-5], file_ext)
+        if bmp_file_name is not None:
+            file_name = bmp_file_name
+            if not file_name.upper().endswith('.BMP'):
+                file_name = "%s.%s"%(file_name, file_ext)
+
+        # Remove strange chars
+        file_namer = re.sub(r"[^A-Za-z0-9\-_\.]", "_", file_name)
+        if file_namer != file_name:
+            try:
+                # Maybe is a japanese file name
+                file_name = file_name.decode('shift-jis')
+            except:
+                file_name = file_namer
+        file_name = file_name.replace("/", "_")
+
+
+        try:
+            logging.info(u"Saving file content to: %s"%(file_name))
+        except:
+            file_name = file_namer
+            logging.info(u"Saving file content to: %s"%(file_name))
+
+
+        with open(os.path.join(sys.argv[2], file_name), 'wb') as file:
+            # Write Windows bitmap file header
+            file.write('BM')
+
+            # bmp_width must be divisible by 4
+            bmp_wlimit = bmp_width
+            if (bmp_width & 3) != 0:
+                bmp_width += 4-(bmp_width & 3)
+                logging.info("Change bmp_width to %s"%(bmp_width))
+                bmp_wlimit += 1
+
+            if bmp_bpp == 4:
+                # 4 bits per pixel image
+                save_4bit_bmp(bmp_width, bmp_height, file, clutData, fdata)
+
+            elif bmp_bpp == 8:
+                # 8 bits per pixel image
+                save_8bit_bmp(bmp_width, bmp_height, bmp_wlimit, file, clutData, fdata)
+
+            elif bmp_bpp == 16:
+                # 16 bits per pixel image
+                save_16bit_bmp(bmp_width, bmp_height, file, fdata)
+
+            elif bmp_bpp == 24:
+                # 24 bits per pixel image
+                save_24bit_bmp(bmp_width, bmp_height, file, fdata)
+
+            else:
+                logging.error("Bad BPP value (%s)"%(bmp_bpp))
+                sys.exit(-1)
+
+
+# ====================================================================================================================================
+if __name__ == '__main__':
+    if len(sys.argv) < 5:
+        logging.debug("USAGE: dir5bitd2bmp [pc|mac] <work directory> <cast file name> <bitd file name>")
+
+    else:
+        if sys.argv[1] != 'pc' and sys.argv[1] != 'mac':
+            logging.error(" First argument must be 'pc' or 'mac'")
+            sys.exit(-1)
+
+        if sys.argv[1] == 'pc':
+            bit_order_type = 'pc'
+            bit_order = "<"
+
+        if not os.path.isdir(sys.argv[2]):
+            logging.error(" '%s' is not a directory"%(sys.argv[2]))
+            sys.exit(-1)
+
+        if not os.path.isfile(os.path.join(sys.argv[2], sys.argv[3])):
+            logging.error(" '%s' is not a file"%(os.path.join(sys.argv[2], sys.argv[3])))
+            sys.exit(-1)
+        
+        if not sys.argv[3].endswith('.CASt'):
+            logging.error(" '%s' does not end in .CASt"%(sys.argv[3]))
+            sys.exit(-1)
+
+        if not os.path.isfile(os.path.join(sys.argv[2], sys.argv[4])):
+            logging.error(" '%s' is not a file"%(os.path.join(sys.argv[2], sys.argv[4])))
+            sys.exit(-1)
+        
+        if not sys.argv[4].endswith('.BITD'):
+            logging.error(" '%s' does not end in .BITD"%(sys.argv[4]))
+            sys.exit(-1)
+            
+        # Get cast file data
+        img_data = parse_cast_file(os.path.join(sys.argv[2], sys.argv[3]))
+        bitd2bmp(img_data, os.path.join(sys.argv[2], sys.argv[4]))
+        
