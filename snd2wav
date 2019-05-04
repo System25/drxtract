@@ -1,0 +1,402 @@
+#!/usr/bin/python2
+
+# Author: Abraham Macias Paredes
+# E-mail: system252001@yahoo.es
+# License: GNU GPL v2 (see LICENSE file for details).
+
+#
+# Script to extract Macromedia Director sound files.
+# 
+
+import sys
+import os
+import struct
+import re
+import logging
+import wave
+from shutil import copyfile
+
+logging.basicConfig(level=logging.DEBUG)
+
+
+# Default bit order for MAC
+bit_order_type = 'mac'
+bit_order = ">"
+
+DIR5_SND_TYPE = 6
+DIR4_SND_TYPE = 0x010000
+
+
+
+# ====================================================================================================================================
+def parse_cast_file(cast_file):
+    castData = None
+
+    with open(cast_file, mode='rb') as file:
+        fdata = file.read()
+
+        idx = 0
+        cast_bit_order = '>'
+        data_type = struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+        idx += 4
+
+        logging.debug("%s: data_type = %s"%(cast_file, data_type))
+        
+
+        if data_type == DIR5_SND_TYPE:
+            # Director 5 sound type
+            logging.debug("Reading sound data...")
+            unknown_00 = struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_01 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_02 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_03 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_04 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_05 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_06 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_07 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_08 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_09 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_10 =  struct.unpack("B", fdata[idx])[0]
+            idx += 1
+
+            logging.debug("unknown_00 = %s"%(unknown_00)) 
+            logging.debug("unknown_01 = %s"%(unknown_01)) 
+            logging.debug("unknown_02 = %s"%(unknown_02)) 
+            logging.debug("unknown_03 = %s"%(unknown_03)) 
+            logging.debug("unknown_04 = %s"%(unknown_04)) 
+            logging.debug("unknown_05 = %s"%(unknown_05)) 
+            logging.debug("unknown_06 = %s"%(unknown_06)) 
+            logging.debug("unknown_07 = %s"%(unknown_07)) 
+            logging.debug("unknown_08 = %s"%(unknown_08)) 
+            logging.debug("unknown_09 = %s"%(unknown_09)) 
+            logging.debug("unknown_10 = %s"%(unknown_10)) 
+
+            fnamepad = struct.unpack("B", fdata[idx])[0]
+            logging.debug("fnamepad = %s"%(fnamepad)) 
+            idx += 1
+
+            fnamechars = struct.unpack("B", fdata[idx])[0]
+            logging.debug("fnamechars = %s"%(fnamechars)) 
+            idx += 1
+            snd_file_name = fdata[idx:idx+fnamechars]
+            idx += fnamechars
+
+            idx += (fnamepad - (fnamechars+1))
+
+            logging.debug("snd_file_name = %s"%(snd_file_name))
+
+
+            castData = {}
+            castData['snd_file_name'] = snd_file_name
+ 
+
+        elif  data_type == DIR4_SND_TYPE: 
+            logging.debug("Reading sound data...")
+            unknown_16 =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+            logging.debug("DEBUG: unknown_16 = %s"%(unknown_16)) 
+
+            unknown_17 = struct.unpack("B", fdata[idx])[0]
+            idx += 1
+            logging.debug("DEBUG: unknown_17 = %s"%(unknown_17)) 
+
+            if idx < len(fdata) - 1:
+                # 00 00 00 14
+                unknown_02 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+                idx += 4
+                if unknown_02 != 0x14:
+                    logging.error("Can't locate a region in the CASt file")
+                    sys.exit(-1)
+
+                unknown_03 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+                idx += 4
+                unknown_04 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+                idx += 4
+                unknown_05 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+                idx += 4
+                unknown_06 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+                idx += 4
+                unknown_07_h =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+                idx += 2
+
+                logging.debug("unknown_02 = %s"%(unknown_02)) 
+                logging.debug("unknown_03 = %s"%(unknown_03)) 
+                logging.debug("unknown_04 = %s"%(unknown_04)) 
+                logging.debug("unknown_05 = %s"%(unknown_05)) 
+                logging.debug("unknown_06 = %s"%(unknown_06)) 
+                logging.debug("unknown_07_h = %s"%(unknown_07_h)) 
+
+                if unknown_07_h > 0:
+                    unknown_07_l =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+                    idx += 2
+
+                    logging.debug("unknown_07_l = %s"%(unknown_07_l)) 
+
+
+                    for k in range(0, unknown_07_h):
+                        unknown_08 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+                        logging.debug("unknown_08 = %s"%(unknown_08))
+                        idx += 4
+
+                unknown_10 =  struct.unpack("B", fdata[idx])[0]
+                idx += 1
+
+
+                logging.debug("unknown_10 = %s"%(unknown_10)) 
+
+            snd_file_name = None
+            if idx < len(fdata) - 1:
+                fnamepad = struct.unpack("B", fdata[idx])[0]
+                logging.debug("fnamepad = %s"%(fnamepad)) 
+                idx += 1
+
+                fnamechars = struct.unpack("B", fdata[idx])[0]
+                logging.debug("fnamechars = %s"%(fnamechars)) 
+                idx += 1
+                snd_file_name = fdata[idx:idx+fnamechars]
+                idx += fnamechars
+
+                idx += (fnamepad - (fnamechars+1))
+
+                if snd_file_name == '':
+                    snd_file_name = None
+                else:
+                    logging.debug("snd_file_name = %s"%(snd_file_name)) 
+
+            castData = {}
+            castData['snd_file_name'] = snd_file_name
+            
+        else:
+            logging.error("%s: data_type unknown (%s)!"%(cast_file, data_type))
+            sys.exit(1)
+        
+    return castData
+
+
+
+# ====================================================================================================================================
+def snd2wav(castData, snd_file):
+    clutData = None
+    
+    with open(snd_file, mode='rb') as file:
+        fdata = file.read()
+        
+        file_ext = 'wav'
+
+        snd_file_name = castData['snd_file_name']
+
+        file_name = "%s.%s"%(os.path.basename(snd_file)[:-4], file_ext)
+        if snd_file_name is not None:
+            file_name = snd_file_name
+            if not file_name.upper().endswith('.WAV'):
+                file_name = "%s.%s"%(file_name, file_ext)
+
+        # Remove strange chars
+        file_namer = re.sub(r"[^A-Za-z0-9\-_\.]", "_", file_name)
+        if file_namer != file_name:
+            try:
+                # Maybe is a japanese file name
+                file_name = file_name.decode('shift-jis')
+            except:
+                file_name = file_namer
+        file_name = file_name.replace("/", "_")
+
+        try:
+            logging.debug(u"FILE: Saving file content to: %s"%(file_name))
+        except:
+            file_name = file_namer
+            logging.debug(u"FILE: Saving file content to: %s"%(file_name))
+
+
+        wavef = wave.open(os.path.join(sys.argv[2], file_name),'w')
+        idx = 0
+        cast_bit_order = '>'
+
+        # Read SND file header
+        # 00 02 00 00 
+        unknown_00 = struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+        idx += 4
+        # 00 01 80 51
+        unknown_01 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+        idx += 4
+        # 00 00 00 00
+        unknown_02 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+        idx += 4
+        # 00 0E 00 00
+        unknown_03 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+        idx += 4
+
+        unknown_04 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+        idx += 4
+
+        # Number of channels
+        num_channels =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+        idx += 2
+
+        if num_channels != 1 and num_channels != 2:
+            # Unknown short format, lets use default values
+            # PCM 8 bits mono 16000Hz
+            num_channels =  1
+            bps = 8 
+            sample_rate = 16000
+
+            unknown_05 =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+
+            unknown_06 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_07 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_08 =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+
+            unknown_09 = 0
+            unknown_10 = 0
+            unknown_11 = 0
+            unknown_12 = 0
+            unknown_13 = 0
+            unknown_14 = 0
+            unknown_15 = 0
+            unknown_16 = 0
+            unknown_17 = 0
+            unknown_18 = 0
+
+        else:
+            # Sample rate
+            sample_rate =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+
+
+            unknown_05 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_06 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_07 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_08 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_09 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_10 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_11 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_12 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_13 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_14 =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+
+            # Bits per sample
+            bps =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+
+            unknown_15 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_16 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_17 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            unknown_18 =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+
+        logging.debug("num_channels = %s"%(num_channels)) 
+        logging.debug("sample_rate = %s"%(sample_rate)) 
+        logging.debug("bps = %s"%(bps)) 
+
+        logging.debug("unknown_01 = %s"%(unknown_01)) 
+        logging.debug("unknown_02 = %s"%(unknown_02)) 
+        logging.debug("unknown_03 = %s"%(unknown_03)) 
+        logging.debug("unknown_04 = %s"%(unknown_04)) 
+        logging.debug("unknown_05 = %s"%(unknown_05)) 
+        logging.debug("unknown_06 = %s"%(unknown_06)) 
+        logging.debug("unknown_07 = %s"%(unknown_07)) 
+        logging.debug("unknown_08 = %s"%(unknown_08)) 
+        logging.debug("unknown_09 = %s"%(unknown_09)) 
+        if unknown_04 == 0:
+            logging.debug("unknown_10 = %s"%(unknown_10)) 
+            logging.debug("unknown_11 = %s"%(unknown_11)) 
+            logging.debug("unknown_12 = %s"%(unknown_12)) 
+            logging.debug("unknown_13 = %s"%(unknown_13)) 
+            logging.debug("unknown_14 = %s"%(unknown_14)) 
+            logging.debug("unknown_15 = %s"%(unknown_15)) 
+            logging.debug("unknown_16 = %s"%(unknown_16)) 
+            logging.debug("unknown_17 = %s"%(unknown_17)) 
+            logging.debug("unknown_18 = %s"%(unknown_18)) 
+
+
+        # Write wave file
+        wavef.setnchannels(num_channels)
+        wavef.setsampwidth(bps/8) 
+        wavef.setframerate(sample_rate)
+
+        if bps == 8:
+            # 8 bit per sample
+            wavef.writeframesraw( fdata[idx:] )
+
+        elif bps == 16:
+            # 16 bit per sample
+            # Convert from big endian word to little endian word
+            while idx < len(fdata[idx:]):
+                sample =  struct.unpack(">H", fdata[idx:idx+2])[0]
+                idx += 2
+                data = struct.pack('<H', sample)
+                wavef.writeframesraw( data )
+
+        else:
+            logging.error("Bad number of bits per sample! (%s)"%(bps))
+            sys.exit(-1)
+
+        wavef.writeframes('')
+        wavef.close()
+
+
+# ====================================================================================================================================
+if __name__ == '__main__':
+    if len(sys.argv) < 5:
+        logging.debug("USAGE: snd2wav [pc|mac] <work directory> <cast file name> <bitd file name>")
+
+    else:
+        if sys.argv[1] != 'pc' and sys.argv[1] != 'mac':
+            logging.error(" First argument must be 'pc' or 'mac'")
+            sys.exit(-1)
+
+        if sys.argv[1] == 'pc':
+            bit_order_type = 'pc'
+            bit_order = "<"
+
+        if not os.path.isdir(sys.argv[2]):
+            logging.error(" '%s' is not a directory"%(sys.argv[2]))
+            sys.exit(-1)
+
+        if not os.path.isfile(os.path.join(sys.argv[2], sys.argv[3])):
+            logging.error(" '%s' is not a file"%(os.path.join(sys.argv[2], sys.argv[3])))
+            sys.exit(-1)
+        
+        if not sys.argv[3].endswith('.CASt'):
+            logging.error(" '%s' does not end in .CASt"%(sys.argv[3]))
+            sys.exit(-1)
+
+        if not os.path.isfile(os.path.join(sys.argv[2], sys.argv[4])):
+            logging.error(" '%s' is not a file"%(os.path.join(sys.argv[2], sys.argv[4])))
+            sys.exit(-1)
+        
+        if not sys.argv[4].endswith('.snd '):
+            logging.error(" '%s' does not end in '.snd '"%(sys.argv[4]))
+            sys.exit(-1)
+            
+        # Get cast file data
+        snd_data = parse_cast_file(os.path.join(sys.argv[2], sys.argv[3]))
+        snd2wav(snd_data, os.path.join(sys.argv[2], sys.argv[4]))
+        

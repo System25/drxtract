@@ -119,12 +119,13 @@ def parse_cast_file(cast_file, kelm, dest_dir):
         
 
         if data_type == DIR5_IMAGE_TYPE or data_type == DIR4_IMAGE_TYPE:
-            # Director 5 image type
+            # Director image type
             logging.info("%s: is a image file"%(cast_file))
             if kelm is None or len(kelm) <= 0:
                 logging.warn("%s: has no related image data!"%(cast_file))
             else:
                 for f in kelm:
+                    logging.debug("Related file: %s"%(f))
                     src = os.path.join(os.path.dirname(cast_file), f)
                     dst = os.path.join(dest_dir, f)
                     if os.path.isfile(src):
@@ -141,7 +142,29 @@ def parse_cast_file(cast_file, kelm, dest_dir):
                             f # BITD file name
                         ))
             
-            
+        elif data_type == DIR5_SND_TYPE or data_type == DIR4_SND_TYPE:
+            # Director sound type
+            logging.info("%s: is a sound file"%(cast_file))
+            if kelm is None or len(kelm) <= 0:
+                logging.warn("%s: has no related sound data!"%(cast_file))
+            else:
+                for f in kelm:
+                    logging.debug("Related file: %s"%(f))
+                    src = os.path.join(os.path.dirname(cast_file), f)
+                    dst = os.path.join(dest_dir, f)
+                    if os.path.isfile(src):
+                        copyfile(src, dst)
+                    else:
+                        logging.warn("There is no %s file (maybe empty file)"%(src))
+                    
+                    if f.endswith('.snd '):
+                        os.system('%s/snd2wav %s %s %s "%s"'%(
+                            os.path.dirname(sys.argv[0]), # Scripts path
+                            sys.argv[1], # pc or mac
+                            dest_dir, # work directory
+                            os.path.basename(cast_file), # cast file name
+                            f # snd file name
+                        ))
             
         else:
             logging.warn("%s: data_type unknown (%s)!"%(cast_file, data_type))
