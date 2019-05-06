@@ -1,0 +1,114 @@
+#!/usr/bin/python2
+
+# Author: Abraham Macias Paredes
+# E-mail: system252001@yahoo.es
+# License: GNU GPL v2 (see LICENSE file for details).
+
+#
+# Script to decompile lingo scripts.
+# 
+
+import sys
+import os
+import struct
+import re
+import logging
+from shutil import copyfile
+
+logging.basicConfig(level=logging.DEBUG)
+
+
+# Default bit order for MAC
+bit_order_type = 'mac'
+bit_order = ">"
+
+DIR5_LSCR_TYPE = 0xB
+DIR4_LSCR_TYPE = 0x00040000
+
+
+
+
+
+# ====================================================================================================================================
+def parse_cast_file(cast_file):
+    castData = None
+
+    with open(cast_file, mode='rb') as file:
+        fdata = file.read()
+
+        idx = 0
+        cast_bit_order = '>'
+        data_type = struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+        idx += 4
+
+        logging.debug("%s: data_type = %s"%(cast_file, data_type))
+        
+
+        if data_type == DIR5_LSCR_TYPE:
+            # Director 5 script reference
+            logging.info("Reading script reference data...")
+            
+            
+
+            castData = {}
+
+
+        elif  data_type == DIR4_LSCR_TYPE: 
+            logging.debug("Reading script reference data...")
+
+
+            castData = {}
+
+            
+        else:
+            logging.error("%s: data_type unknown (%s)!"%(cast_file, data_type))
+            sys.exit(1)
+        
+    return castData
+
+
+
+
+# ====================================================================================================================================
+def lscr2lingo(castData, lscr_file):
+    pass
+
+
+# ====================================================================================================================================
+if __name__ == '__main__':
+    if len(sys.argv) < 5:
+        logging.debug("USAGE: lscr2lingo [pc|mac] <work directory> <cast file name> <lscr file name>")
+
+    else:
+        if sys.argv[1] != 'pc' and sys.argv[1] != 'mac':
+            logging.error(" First argument must be 'pc' or 'mac'")
+            sys.exit(-1)
+
+        if sys.argv[1] == 'pc':
+            bit_order_type = 'pc'
+            bit_order = "<"
+
+        if not os.path.isdir(sys.argv[2]):
+            logging.error(" '%s' is not a directory"%(sys.argv[2]))
+            sys.exit(-1)
+
+        if not os.path.isfile(os.path.join(sys.argv[2], sys.argv[3])):
+            logging.error(" '%s' is not a file"%(os.path.join(sys.argv[2], sys.argv[3])))
+            sys.exit(-1)
+        
+        if not sys.argv[3].endswith('.CASt'):
+            logging.error(" '%s' does not end in .CASt"%(sys.argv[3]))
+            sys.exit(-1)
+
+        if not os.path.isfile(os.path.join(sys.argv[2], sys.argv[4])):
+            logging.error(" '%s' is not a file"%(os.path.join(sys.argv[2], sys.argv[4])))
+            sys.exit(-1)
+        
+        if not sys.argv[4].endswith('.Lscr'):
+            logging.error(" '%s' does not end in .Lscr"%(sys.argv[4]))
+            sys.exit(-1)
+            
+        # Get cast file data
+        lscr_data = parse_cast_file(os.path.join(sys.argv[2], sys.argv[3]))
+        lscr2lingo(lscr_data, os.path.join(sys.argv[2], sys.argv[4]))
+        

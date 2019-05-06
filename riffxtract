@@ -32,6 +32,8 @@ IMAP_FILE_FORMAT = 'imap'
 MMAP_FILE_FORMAT = 'mmap'
 FREE_FILE_FORMAT = 'free'
 
+# Save other blocks (for investigation purposes)
+SAVE_OTHER_BLOCKS = False
 
 # ====================================================================================================================================
 def parse_imap(data):
@@ -221,7 +223,7 @@ def parse_riff(fileContent, offset):
             if block_type[c] > "\0":
                 bt.append(block_type[c])
             else:
-                bt.append('*')
+                bt.append('_')
         block_type = ('%c%c%c%c'%(bt[0], bt[1], bt[2], bt[3]))
         logging.debug("==================================")
         logging.info(" Block type: %s"%(block_type))
@@ -235,14 +237,12 @@ def parse_riff(fileContent, offset):
         if block_type == IMAP_FILE_FORMAT:
             # Parse 'imap' block
             parse_imap(block_data)
-            nfiles = nfiles + 1
 
         elif block_type == MMAP_FILE_FORMAT:
             # Parse 'mmap' block
             parse_mmap(block_data, fileContent, offset)
-            nfiles = nfiles + 1
 
-        else:
+        elif SAVE_OTHER_BLOCKS:
             logging.info(" Other block type: %s. Saving!"%(block_type))
             
             # Save file content
@@ -272,9 +272,9 @@ def parse_riff(fileContent, offset):
                 file.write(block_data)
                 file.close()
 
-            nfiles = nfiles + 1
             
-
+            
+        nfiles = nfiles + 1
         index = index + 8 + block_size
 
 

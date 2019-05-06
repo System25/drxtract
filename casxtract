@@ -31,10 +31,12 @@ CASDIR = 'cas'
 DIR5_IMAGE_TYPE = 1
 DIR5_CLUT_TYPE = 4
 DIR5_SND_TYPE = 6
+DIR5_LSCR_TYPE = 0xB
 
 # Director 4 types
 DIR4_IMAGE_TYPE = 0x1C0000
 DIR4_SND_TYPE = 0x010000
+DIR4_LSCR_TYPE = 0x00040000
 
 
 # ====================================================================================================================================
@@ -91,7 +93,7 @@ def parse_cas_file(cas_file):
         fdata = file.read()
 
         indx = 0
-        i = 0;
+        i = 0
         while len(fdata) >= indx + 4:
             cas_index = struct.unpack(">i", fdata[(indx):(indx+4)])[0]
             indx = indx + 4
@@ -102,9 +104,54 @@ def parse_cas_file(cas_file):
             
     return cas_data
 
+# ====================================================================================================================================
+def parse_lctx_file(lctx_file):
+    lctx_data = []
+
+    with open(lctx_file, mode='rb') as file:
+        fdata = file.read()
+
+        indx = 0
+        unk = struct.unpack(">i", fdata[(indx):(indx+4)])[0]
+        indx = indx + 4
+        logging.debug("Unknown: %08x"%(unk))
+        
+        unk = struct.unpack(">i", fdata[(indx):(indx+4)])[0]
+        indx = indx + 4
+        logging.debug("Unknown: %08x"%(unk))
+        
+        nscripts = struct.unpack(">i", fdata[(indx):(indx+4)])[0]
+        indx = indx + 4
+        logging.debug("N Scripts: %08x"%(nscripts))
+        
+        nscripts2 = struct.unpack(">i", fdata[(indx):(indx+4)])[0]
+        indx = indx + 4
+        logging.debug("N Scripts: %08x"%(nscripts2))
+        
+        scr_idx = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+        indx = indx + 2
+        logging.debug("Scripts Index: %08x"%(scr_idx))
+        
+        indx = scr_idx
+        for i in range(0, nscripts):
+            unk = struct.unpack(">i", fdata[(indx):(indx+4)])[0]
+            indx = indx + 4
+            logging.debug("Unknown: %08x"%(unk))
+            
+            scrfile = struct.unpack(">i", fdata[(indx):(indx+4)])[0]
+            indx = indx + 4
+            logging.debug("Script file: %08x"%(scrfile))
+            lctx_data.append(scrfile)
+            
+            unk = struct.unpack(">i", fdata[(indx):(indx+4)])[0]
+            indx = indx + 4
+            logging.debug("Unknown: %08x"%(unk))
+            
+            
+    return lctx_data
 
 # ====================================================================================================================================
-def parse_cast_file(cast_file, kelm, dest_dir):
+def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements):
 
     with open(cast_file, mode='rb') as file:
         fdata = file.read()
@@ -165,6 +212,34 @@ def parse_cast_file(cast_file, kelm, dest_dir):
                             os.path.basename(cast_file), # cast file name
                             f # snd file name
                         ))
+                        
+        elif data_type == DIR5_LSCR_TYPE or data_type == DIR4_LSCR_TYPE:
+            # Director Lingo Script reference
+            logging.info("%s: is a script reference file"%(cast_file))
+            idx = 0x1A # Offset of script index
+            if data_type == DIR5_LSCR_TYPE:
+                idx = 0x1C
+                
+            scridx = struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            logging.debug("Script index: %d"%(scridx))
+            script_file = "%s.Lscr"%(lctx_elements[scridx - 1])
+            logging.debug("Script file: %s"%(script_file))
+            
+            src = os.path.join(os.path.dirname(cast_file), script_file)
+            dst = os.path.join(dest_dir, script_file)
+            if os.path.isfile(src):
+                copyfile(src, dst)
+            else:
+                logging.warn("There is no %s file (maybe empty file)"%(src))
+            
+            os.system('%s/lscr2lingo %s %s %s "%s"'%(
+                os.path.dirname(sys.argv[0]), # Scripts path
+                sys.argv[1], # pc or mac
+                dest_dir, # work directory
+                os.path.basename(cast_file), # cast file name
+                script_file # script file name
+            ))
             
         else:
             logging.warn("%s: data_type unknown (%s)!"%(cast_file, data_type))
@@ -198,6 +273,7 @@ if __name__ == '__main__':
         # Look for KEY* and CAS* files (not ext_ ones)
         key_file = None
         cas_file = None
+        lctx_file = None
         for f in os.listdir(os.path.join(sys.argv[2], BINDIR)):
             if f.endswith('KEY*') and not f.startswith("ext_"):
                 key_file = f
@@ -205,16 +281,24 @@ if __name__ == '__main__':
             if f.endswith('CAS*') and not f.startswith("ext_"):
                 cas_file = f
                 
+            if f.endswith('Lctx') and not f.startswith("ext_"):
+                lctx_file = f
+                
         if key_file is None:
-            logging.error('Can not find KEY* file!')
+            logging.error('Can not find a KEY* file!')
             sys.exit(-1)
 
         if cas_file is None:
-            logging.error('Can not find CAS* file!')
+            logging.error('Can not find a CAS* file!')
             sys.exit(-1) 
 
+        if lctx_file is None:
+            logging.error('Can not find a Lctx file!')
+            sys.exit(-1) 
+            
         cas_elements = parse_cas_file(os.path.join(sys.argv[2], BINDIR, cas_file))
         key_elements = parse_key_file(os.path.join(sys.argv[2], BINDIR, key_file))
+        lctx_elements = parse_lctx_file(os.path.join(sys.argv[2], BINDIR, lctx_file))
         
         logging.info('There is %i elements in the casting!'%(len(cas_elements)))
         
@@ -232,6 +316,7 @@ if __name__ == '__main__':
             
             fname = '%i.CASt'%(int(cas_elements[elm], 16))
             parse_cast_file(os.path.join(sys.argv[2], BINDIR, fname), kelm,
-                            os.path.join(sys.argv[2], CASDIR, str(elm)))
+                            os.path.join(sys.argv[2], CASDIR, str(elm)),
+                           lctx_elements)
             
 
