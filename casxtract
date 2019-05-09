@@ -151,7 +151,7 @@ def parse_lctx_file(lctx_file):
     return lctx_data
 
 # ====================================================================================================================================
-def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements):
+def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
 
     with open(cast_file, mode='rb') as file:
         fdata = file.read()
@@ -233,12 +233,13 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements):
             else:
                 logging.warn("There is no %s file (maybe empty file)"%(src))
             
-            os.system('%s/lscr2lingo %s %s %s "%s"'%(
+            os.system('%s/lscr2lingo %s %s %s %s %s'%(
                 os.path.dirname(sys.argv[0]), # Scripts path
                 sys.argv[1], # pc or mac
                 dest_dir, # work directory
                 os.path.basename(cast_file), # cast file name
-                script_file # script file name
+                script_file, # script file name
+                lnam_file
             ))
             
         else:
@@ -260,7 +261,7 @@ if __name__ == '__main__':
             bit_order = "<"
 
         if not os.path.isdir(sys.argv[2]):
-            logging.error(" '%s' is not a file"%(sys.argv[2]))
+            logging.error(" '%s' is not a directory"%(sys.argv[2]))
             sys.exit(-1)
 
         if not os.path.isdir(os.path.join(sys.argv[2], BINDIR)):
@@ -274,6 +275,7 @@ if __name__ == '__main__':
         key_file = None
         cas_file = None
         lctx_file = None
+        lnam_file = None
         for f in os.listdir(os.path.join(sys.argv[2], BINDIR)):
             if f.endswith('KEY*') and not f.startswith("ext_"):
                 key_file = f
@@ -281,8 +283,11 @@ if __name__ == '__main__':
             if f.endswith('CAS*') and not f.startswith("ext_"):
                 cas_file = f
                 
-            if f.endswith('Lctx') and not f.startswith("ext_"):
+            if (f.endswith('Lctx') or f.endswith('LctX')) and not f.startswith("ext_"):
                 lctx_file = f
+                
+            if f.endswith('Lnam') and not f.startswith("ext_"):
+                lnam_file = f
                 
         if key_file is None:
             logging.error('Can not find a KEY* file!')
@@ -294,6 +299,10 @@ if __name__ == '__main__':
 
         if lctx_file is None:
             logging.error('Can not find a Lctx file!')
+            sys.exit(-1)
+
+        if lnam_file is None:
+            logging.error('Can not find a Lnam file!')
             sys.exit(-1) 
             
         cas_elements = parse_cas_file(os.path.join(sys.argv[2], BINDIR, cas_file))
@@ -317,6 +326,6 @@ if __name__ == '__main__':
             fname = '%i.CASt'%(int(cas_elements[elm], 16))
             parse_cast_file(os.path.join(sys.argv[2], BINDIR, fname), kelm,
                             os.path.join(sys.argv[2], CASDIR, str(elm)),
-                           lctx_elements)
+                           lctx_elements, os.path.join(sys.argv[2], BINDIR, lnam_file))
             
 
