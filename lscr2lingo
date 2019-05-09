@@ -1478,7 +1478,7 @@ def lscr2lingo(castData, lscr_file, name_list):
 # ====================================================================================================================================
 if __name__ == '__main__':
     if len(sys.argv) < 6:
-        logging.debug("USAGE: lscr2lingo [pc|mac] <work directory> <cast file name> <lscr file name> <lnam file path>")
+        print("USAGE: lscr2lingo [pc|mac] <work directory> <cast file name> <lscr file name> <lnam file path>")
 
     else:
         if sys.argv[1] != 'pc' and sys.argv[1] != 'mac':

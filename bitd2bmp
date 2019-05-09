@@ -1447,7 +1447,7 @@ def bitd2bmp(castData, bitd_file):
 # ====================================================================================================================================
 if __name__ == '__main__':
     if len(sys.argv) < 5:
-        logging.debug("USAGE: bitd2bmp [pc|mac] <work directory> <cast file name> <bitd file name>")
+        lprint("USAGE: bitd2bmp [pc|mac] <work directory> <cast file name> <bitd file name>")
 
     else:
         if sys.argv[1] != 'pc' and sys.argv[1] != 'mac':

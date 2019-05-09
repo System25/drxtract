@@ -280,7 +280,7 @@ def parse_riff(fileContent, offset):
 
 if __name__ == '__main__':
     if len(sys.argv) < 4:
-        logging.debug("USAGE: riffxtract [pc|mac] <file.drx> <directory>")
+        print("USAGE: riffxtract [pc|mac] <file.drx> <directory>")
 
     else:
         if sys.argv[1] != 'pc' and sys.argv[1] != 'mac':

@@ -249,7 +249,7 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
 # ====================================================================================================================================
 if __name__ == '__main__':
     if len(sys.argv) < 3:
-        logging.debug("USAGE: casxtract [pc|mac] <base directory>")
+        print("USAGE: casxtract [pc|mac] <base directory>")
 
     else:
         if sys.argv[1] != 'pc' and sys.argv[1] != 'mac':
