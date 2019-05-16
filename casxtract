@@ -32,6 +32,7 @@ DIR5_IMAGE_TYPE = 1
 DIR5_CLUT_TYPE = 4
 DIR5_SND_TYPE = 6
 DIR5_LSCR_TYPE = 0xB
+DIR5_PUSH_BUTTON_TYPE = 7
 
 # Director 4 types
 DIR4_IMAGE_TYPE = 0x1C0000
@@ -324,8 +325,11 @@ if __name__ == '__main__':
                 kelm = key_elements[cas_index]
             
             fname = '%i.CASt'%(int(cas_elements[elm], 16))
-            parse_cast_file(os.path.join(sys.argv[2], BINDIR, fname), kelm,
-                            os.path.join(sys.argv[2], CASDIR, str(elm)),
-                           lctx_elements, os.path.join(sys.argv[2], BINDIR, lnam_file))
-            
+            if os.path.isfile(os.path.join(sys.argv[2], BINDIR, fname)):
+                logging.info('Casting element number %i is %s file!'%(elm, fname))
+                parse_cast_file(os.path.join(sys.argv[2], BINDIR, fname), kelm,
+                                os.path.join(sys.argv[2], CASDIR, str(elm)),
+                               lctx_elements, os.path.join(sys.argv[2], BINDIR, lnam_file))
+            else:
+                logging.warn('File %s for casting element %i does not exists!'%(fname, elm))
 

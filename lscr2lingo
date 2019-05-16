@@ -271,6 +271,77 @@ def parse_cast_file(cast_file):
             # Director 5 script reference
             logging.info("Reading script reference data...")
             
+            unknown_00 = struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            logging.debug("unknown_00 = %08x"%(unknown_00))
+            
+            unknown_01 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            logging.debug("unknown_01 = %08x"%(unknown_01))
+            
+            unknown_02 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            logging.debug("unknown_02 = %08x"%(unknown_02))
+            
+            scrsubtype =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            if scrsubtype == 0x0400C300:
+                logging.debug("scrsubtype = Behavior")
+            elif scrsubtype == 0x0E00C300:
+                logging.debug("scrsubtype = Movie")
+            else:
+                logging.debug("scrsubtype = %08x"%(scrsubtype))
+            
+            unknown_04 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            logging.debug("unknown_04 = %08x"%(unknown_04))
+            
+            unknown_05 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            logging.debug("unknown_05 = %08x"%(unknown_05))
+            
+            scridx =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            logging.debug("Script index: %d"%(scridx))
+            
+            nstruct =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+            logging.debug("number of structures contained = %d"%(nstruct))
+            
+            struct_indx = []
+            for i in range(0, nstruct+1):
+                stindx =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+                idx += 4
+                logging.debug("stindx[%d] = %08x"%(i, stindx))
+                struct_indx.append(stindx)
+            
+            base_dir = idx
+            for i in range(0, nstruct):
+                stlen = struct_indx[i+1] - struct_indx[i]
+                logging.debug("The %d element of the structure is %d bytes long"%(i, stlen))
+                if stlen > 0:
+                    stdata = fdata[idx:idx+stlen]
+                    idx += stlen
+                    
+                    if i == 0:
+                        # The first element is the Script content
+                        file_ext = "lingo"
+                        nfiles = cast_file[0:cast_file.find('.')]
+                        file_name = "%s.%s"%(nfiles, file_ext)
+                        
+                        logging.debug(u"FILE: Saving script file to: %s"%(file_name))
+                        
+                        with open(file_name, 'wb') as file:
+                            file.write(stdata)
+                    elif i == 1:
+                        # The second element is the Casting element name
+                        nchars = struct.unpack("B", stdata[0])[0]
+                        logging.debug("nchars = %s"%(nchars)) 
+                        cast_elm_name = stdata[1:nchars+1]
+                        logging.debug(u"Casting element name: %s"%(cast_elm_name))
+                    else:
+                        logging.info("Unknown element")
+
             
 
             castData = {}
