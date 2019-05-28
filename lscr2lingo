@@ -18,6 +18,9 @@ from shutil import copyfile
 
 logging.basicConfig(level=logging.DEBUG)
 
+# For debugging purposes
+WRITE_OPCODES = False
+WRITE_JUMPS = False
 
 # Default bit order for MAC
 bit_order_type = 'mac'
@@ -425,7 +428,7 @@ def lscr2lingo(castData, lscr_file, name_list):
             logging.error("bad filesize (%s, %s, %s)"%(filesize1, filesize0, len(fdata))) 
             sys.exit(-1)
 
-        # $0040-$0041 	uint16 	Offset to the function records block  
+        # $0040-$0041 uint16 Offset to the function records block  
         frb_offset = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
         idx += 2
 
@@ -447,7 +450,7 @@ def lscr2lingo(castData, lscr_file, name_list):
             logging.error("bad offset to the function records block (%s, %s)"%(frb_offset, frb_offset_cp))
             sys.exit(-1)
 
-        # $0048-$0049 	uint16 	Number of function records 
+        # $0048-$0049 uint16 Number of function records 
         frb_nrecords = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
         idx += 2
 
@@ -466,14 +469,14 @@ def lscr2lingo(castData, lscr_file, name_list):
             logging.error("bad offset to the function records block (%s, %s)"%(frb_offset, frb_offset_cp)) 
             sys.exit(-1)
 
-        # $004E-$004F    uint16 	Number of constants 
+        # $004E-$004F    uint16  Number of constants 
         con_nconstants = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
         idx += 2
 
         unknown_20 =  struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
         idx += 2
 
-        # $0052-$0053 	uint16 	Offset to the constant records block 
+        # $0052-$0053  uint16 Offset to the constant records block 
         crb_offset = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
         idx += 2
 
@@ -487,7 +490,7 @@ def lscr2lingo(castData, lscr_file, name_list):
         unknown_23 =  struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
         idx += 2
 
-        # $005A-$005B 	uint16 	Base address for constant data
+        # $005A-$005B uint16 Base address for constant data
         con_offset = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
         idx += 2
 
@@ -508,7 +511,7 @@ def lscr2lingo(castData, lscr_file, name_list):
         # In some lingo 
         for i in range(0, con_nconstants):
             logging.debug("idx = %s"%(idx))
-            if (unknown_22 & 0xF) == 4:
+            if (unknown_22 & 0xFF00) != 0:
                # I don't really know if this is the reason
                # uint32: Value type ID 
                logging.debug("4 bytes")
@@ -567,70 +570,80 @@ def lscr2lingo(castData, lscr_file, name_list):
 
         with open(file_name, 'wb') as file:
 
+            # Read the functions record blocks once to get all the local function names
+            idx = frb_offset
+            lfnames = []
+            for i in range(0, frb_nrecords):
+                # $0000-$0001  uint16  Namelist index for the function's name, or 0xFFFF if there is no name(?)
+                namelist_index = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+                idx += 42
+                
+                fname = 'noname'
+                if namelist_index >= 0 and namelist_index < len(name_list):
+                    fname = name_list[namelist_index]
+                logging.debug('lfnames[%d]=%s'%(i, fname))
+                lfnames.append(fname)
+
             # Read the functions record blocks
             idx = frb_offset
             for i in range(0, frb_nrecords):
 
                 logging.debug("Function Record Block: %i (starts in: %x)"%(i, idx)) 
-                # $0000-$0001 	uint16 	Namelist index for the function's name, or 0xFFFF if there is no name(?)
+                # $0000-$0001  uint16  Namelist index for the function's name, or 0xFFFF if there is no name(?)
                 namelist_index = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
                 idx += 2
 
-                # $0002-$0003 	uint16 	Unknown
+                # $0002-$0003  uint16  Unknown
                 unknown_rb0 = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
                 idx += 2
 
-                # $0004-$0007 	uint32 	Length of the function bytecode in bytes
+                # $0004-$0007  uint32  Length of the function bytecode in bytes
                 bc_length = struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
                 idx += 4
 
-                # $0008-$000B 	uint32 	Offset to the function bytecode
+                # $0008-$000B  uint32  Offset to the function bytecode
                 bc_off = struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
                 idx += 4
 
-                # $000C-$000D 	uint16 	Number of arguments
+                # $000C-$000D  uint16 Number of arguments
                 bc_narg = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
                 idx += 2
 
-                # $000E-$0011 	uint32 	Offset of arguments name
+                # $000E-$0011  uint32  Offset of arguments name
                 argnames_off = struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
                 idx += 4
 
-                # $0012-$0013 	uint16 	Number of local variables
+                # $0012-$0013  uint16  Number of local variables
                 bc_nlocal = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
                 idx += 2
 
-                # $0014-$0017 	uint32 	Local variables offset
+                # $0014-$0017  uint32  Local variables offset
                 localnames_off = struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
                 idx += 4
 
-                # $0018-$0019 	uint16 	Count (C)
+                # $0018-$0019  uint16  Count (C)
                 count_c = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
                 idx += 2
 
-                # $001A-$001D 	uint32 	Unknown
+                # $001A-$001D  uint32  Unknown
                 unknown_rb3 = struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
                 idx += 4
 
-                # $001E-$0021 	uint32 	Unknown
+                # $001E-$0021  uint32  Unknown
                 unknown_rb4 = struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
                 idx += 4
 
-                # $0022-$0023 	uint16 	Unknown
+                # $0022-$0023  uint16  Unknown
                 unknown_rb5 = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
                 idx += 2
 
-                # $0024-$0025 	uint16 	Count (D)
+                # $0024-$0025  uint16  Count (D)
                 count_d = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
                 idx += 2
 
-                # $0026-$0029 	uint32 	Unknown
+                # $0026-$0029  uint32  Unknown
                 unknown_rb6 = struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
                 idx += 4
-
-                # $0030-$0034 	uint32 	Unknown
-                unknown_rb7 = struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
-                idx += 4                    
 
                 logging.debug("namelist_index = %x"%(namelist_index)) 
                 logging.debug("unknown_rb0 = %x"%(unknown_rb0)) 
@@ -646,7 +659,6 @@ def lscr2lingo(castData, lscr_file, name_list):
                 logging.debug("unknown_rb5 = %x"%(unknown_rb5)) 
                 logging.debug("count_d = %x"%(count_d)) 
                 logging.debug("unknown_rb6 = %x"%(unknown_rb6)) 
-                logging.debug("unknown_rb7 = %x"%(unknown_rb7)) 
 
 
                 logging.debug("Function Record Block: %i (ends in: %x)"%(i, idx)) 
@@ -664,13 +676,21 @@ def lscr2lingo(castData, lscr_file, name_list):
                     logging.debug('localvs[%s] = "%s"'%(nl, name_list[n]))
                     localvs.append(name_list[n])
 
+                # Read the parameter names record block
+                paramns = []
+                for nl in range(0, bc_narg):
+                    idxl = 2*nl + argnames_off
+                    n = struct.unpack(lsrc_bit_order+"h", fdata[idxl:idxl+2])[0]
+                    logging.debug("idxl = %x n=%s"%(idxl, n))
+                    logging.debug('paramns[%s] = "%s"'%(nl, name_list[n]))
+                    paramns.append(name_list[n])
 
                 args = ''
                 for c in range(0, bc_narg):
                      if args == '':
-                          args = ('param%s'%(c))
+                          args = ('%s'%(paramns[c]))
                      else:
-                          args = args + ', ' + ('param%s'%(c))
+                          args = args + ', ' + ('%s'%(paramns[c]))
 
                 file.write("on %s %s\n"%(fname, args))
 
@@ -781,13 +801,15 @@ def lscr2lingo(castData, lscr_file, name_list):
 
                     if opcode in ONE_BYTE_OPCODES:
                         # One byte operation
-                        file.write("-- [0x%04x]: 0x%02x"%(idxc - 1, opcode))
+                        if WRITE_OPCODES:
+                            file.write("-- [0x%04x]: 0x%02x"%(idxc - 1, opcode))
 
                         if opcode == 0x01:
                             flush_stack(file, spacing)
-                            file.write('\n')
-                            file.write(spacing)
-                            file.write('exit')
+                            if (idxc - bc_off) < bc_length:
+                                file.write('\n')
+                                file.write(spacing)
+                                file.write('exit\n')
 
                         elif opcode == 0x03:
                             push('0')
@@ -1016,7 +1038,8 @@ def lscr2lingo(castData, lscr_file, name_list):
                         op1 = ord(fdata[idxc])
                         idxc = idxc + 1
 
-                        file.write("-- [0x%04x]: 0x%02x 0x%02x"%(idxc - 2, opcode, op1))
+                        if WRITE_OPCODES:
+                            file.write("-- [0x%04x]: 0x%02x 0x%02x"%(idxc - 2, opcode, op1))
 
 
                         if opcode == 0x41:
@@ -1081,7 +1104,7 @@ def lscr2lingo(castData, lscr_file, name_list):
                             if (op1 % bytes_per_const) > 0:
                                 bytes_per_const = (op1 % bytes_per_const)
 
-                            push('param%s'%(op1 / bytes_per_const))
+                            push('%s'%(paramns[op1 / bytes_per_const]))
 
                         elif opcode == 0x4C:
                             # Push the value of a function call parameter. The parameter records seem to be 6 bytes long, so the first is pushed with 4B 00, the second with 4B 06, etc.   
@@ -1109,7 +1132,7 @@ def lscr2lingo(castData, lscr_file, name_list):
                             if (op1 % bytes_per_const) > 0:
                                 bytes_per_const = (op1 % bytes_per_const)
 
-                            file.write('put %s into param%s'%(pop_s(), op1 / bytes_per_const))
+                            file.write('put %s into %s'%(pop_s(), paramns[op1 / bytes_per_const]))
 
                         elif opcode == 0x52:
                             # Pop one value and use it to set a local variable.
@@ -1121,29 +1144,24 @@ def lscr2lingo(castData, lscr_file, name_list):
                             file.write('put %s into %s'%(pop_s(), localvs[op1 / bytes_per_const]))
 
                         elif opcode == 0x54:
-                            # Unconditional backwards jump by XX bytes, relative to the first byte of this instruction. 
-                            file.write("\n")
-                            file.write(spacing)
-                            file.write('-- goto label%04x;'%(idxc - 2 - op1))
+                            # Unconditional backwards jump by XX bytes, relative to the first byte of this instruction.
+                            if WRITE_JUMPS:
+                                file.write("\n")
+                                file.write(spacing)
+                                file.write('-- goto label%04x;'%(idxc - 2 - op1))
                             flush_stack(file, spacing)
 
 
                         elif opcode == 0x56:
-                            # Call a function defined in this script with the name at namelist[XX].
+                            # Call a function defined in this script with the name at lfnames[XX].
                             params = pop_s()
                             if params.startswith('<'):
                                 # The function must return something
-                                if name_list[op1] in NO_PAREN_FUNCTIONS:
-                                    push('%s %s'%(name_list[op1], params[1:]))
-                                else:
-                                    push('%s(%s)'%(name_list[op1], params[1:]))
+                                push('%s(%s)'%(lfnames[op1], params[1:]))
                             else:
                                 file.write("\n")
                                 file.write(spacing)
-                                if name_list[op1] in NO_PAREN_FUNCTIONS:
-                                    file.write('%s %s'%(name_list[op1], params))
-                                else:
-                                    file.write('%s(%s)'%(name_list[op1], params))
+                                file.write('%s(%s)'%(lfnames[op1], params))
 
                         elif opcode == 0x57:
                             # Call the external function with name from namelist[XX].
@@ -1202,7 +1220,7 @@ def lscr2lingo(castData, lscr_file, name_list):
                                 if (op_var % bytes_per_const) > 0:
                                     bytes_per_const = (op_var % bytes_per_const)
 
-                                file.write('put %s after %s'%(localvs[op_value, op_var / bytes_per_const]))
+                                file.write('put %s after %s'%(op_value, localvs[op_var / bytes_per_const]))
 
                             elif op1 == 0x35:
                                 op_var = int(pop())
@@ -1370,7 +1388,8 @@ def lscr2lingo(castData, lscr_file, name_list):
                         op2 = ord(fdata[idxc])
                         idxc = idxc + 1
 
-                        file.write("-- [0x%04x]: 0x%02x 0x%02x 0x%02x"%(idxc - 3, opcode, op1, op2))
+                        if WRITE_OPCODES:
+                            file.write("-- [0x%04x]: 0x%02x 0x%02x 0x%02x"%(idxc - 3, opcode, op1, op2))
 
                         if opcode == 0x81:
                             # Push the integer ((XX * 0x100) + YY).
@@ -1418,9 +1437,10 @@ def lscr2lingo(castData, lscr_file, name_list):
                         elif opcode == 0x93:
                             # Unconditional jump: Advance by ((XX * 0x100) + YY) bytes, relative to the first byte of this instruction.
                             flush_stack(file, spacing)
-                            file.write("\n")
-                            file.write(spacing)
-                            file.write('-- goto label%04x;'%(idxc - 3 + (op1 * 256 + op2)))
+                            if WRITE_JUMPS:
+                                file.write("\n")
+                                file.write(spacing)
+                                file.write('-- goto label%04x;'%(idxc - 3 + (op1 * 256 + op2)))
                             if label_types[idxc - 3 + (op1 * 256 + op2)] == 'end repeat':
                                 file.write('\n')
                                 file.write(spacing)
@@ -1430,10 +1450,12 @@ def lscr2lingo(castData, lscr_file, name_list):
 
 
                         elif opcode == 0x95:
-                            # Conditional jump: Pop a value, and if it is logically FALSE, advance by ((XX * 0x100) + YY) bytes, relative to the first byte of this instruction. 
+                            # Conditional jump: Pop a value, and if it is logically FALSE, advance by ((XX * 0x100) + YY) bytes, relative to the first byte of this instruction.
+                            if WRITE_JUMPS:
+                                file.write("\n")
+                                file.write(spacing)
+                                file.write('-- if (!pop()) goto label%04x;'%(idxc - 3 + (op1 * 256 + op2)))
                             file.write("\n")
-                            file.write(spacing)
-                            file.write('-- if (!pop()) goto label%04x;\n'%(idxc - 3 + (op1 * 256 + op2)))
                             file.write(spacing)
                             erpos = idxc - 3 + (op1 * 256 + op2)
                             if (erpos in label_types) and (label_types[erpos] == 'end repeat'):
@@ -1443,22 +1465,16 @@ def lscr2lingo(castData, lscr_file, name_list):
                                 spacing = spacing + '    '
 
                         elif opcode == 0x96:
-                            # Call a function defined in this script with the name at namelist[XX].
+                            # Call a function defined in this script with the name at lfnames[XX].
                             params = pop_s()
                             cindex = op1 * 256 + op2
                             if params.startswith('<'):
                                 # The function must return something
-                                if name_list[cindex] in NO_PAREN_FUNCTIONS:
-                                    push('%s %s'%(name_list[cindex], params[1:]))
-                                else:
-                                    push('%s(%s)'%(name_list[cindex], params[1:]))
+                                push('%s(%s)'%(lfnames[cindex], params[1:]))
                             else:
                                 file.write("\n")
                                 file.write(spacing)
-                                if name_list[cindex] in NO_PAREN_FUNCTIONS:
-                                    file.write('%s %s'%(name_list[cindex], params))
-                                else:
-                                    file.write('%s(%s)'%(name_list[cindex], params))
+                                file.write('%s(%s)'%(lfnames[cindex], params))
 
                         elif opcode == 0x97:
                             # Call the external function with name from namelist[XX].
@@ -1492,9 +1508,10 @@ def lscr2lingo(castData, lscr_file, name_list):
                             # Pop one value and use it to set a parameter. 
                             file.write("\n")
                             file.write(spacing)
-                            if ((op1 * 256 + op2) % bytes_per_const) > 0:
-                                bytes_per_const = ((op1 * 256 + op2) % bytes_per_const)
-                            file.write('param%s = %s;'%((op1 * 256 + op2) / bytes_per_const, pop_s()))
+                            pindex = (op1 * 256 + op2)
+                            if (pindex % bytes_per_const) > 0:
+                                bytes_per_const = (pindex % bytes_per_const)
+                            file.write('%s = %s;'%(paramns[pindex / bytes_per_const], pop_s()))
 
                         elif opcode == 0xa2:
                             # Pop one value and use it to set a local variable.
@@ -1539,7 +1556,8 @@ def lscr2lingo(castData, lscr_file, name_list):
                             file.write(spacing)
                             file.write('unknown_op3(0x%02x, 0x%02x, 0x%02x);'%(opcode, op1, op2))
 
-                    file.write("\n")
+                    if WRITE_OPCODES:
+                        file.write("\n")
 
                 file.write("end %s\n\n"%(fname))
 
