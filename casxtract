@@ -14,6 +14,8 @@ import os
 import struct
 import re
 import logging
+import json
+import base64
 from shutil import copyfile
 
 logging.basicConfig(level=logging.DEBUG)
@@ -157,11 +159,100 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
     with open(cast_file, mode='rb') as file:
         fdata = file.read()
 
+        castData = {}
+        
         idx = 0
         cast_bit_order = '>'
         data_type = struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
         idx += 4
+        
+        contentSize = struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+        idx += 4
+        logging.debug("contentSize = %08x"%(contentSize))
 
+        unknown_01 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+        idx += 4
+        logging.debug("unknown_01 = %08x"%(unknown_01))
+
+        # Look for content marker
+        contentMarker =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+        idx += 4
+        logging.debug("contentMarker? = %08x"%(contentMarker))
+        
+        while contentMarker != 0x00000014 and (len(fdata) - idx) > 4:
+            contentMarker =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            logging.debug("contentMarker? = %08x"%(contentMarker))
+        
+        if contentMarker == 0x00000014:
+            # Content found!
+            castData['content'] = {}
+            castData['content']['basic'] = []
+            
+            basic_data00 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            logging.debug("basic_data00 = %08x"%(basic_data00))
+
+            basic_data01 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            logging.debug("basic_data01 = %08x"%(basic_data01))
+
+            basic_data02 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            logging.debug("basic_data02 = %08x"%(basic_data02))
+
+            basic_data03 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            logging.debug("basic_data03: %d"%(basic_data03))
+            
+            castData['content']['basic'].append('0x%08x'%(basic_data00))
+            castData['content']['basic'].append('0x%08x'%(basic_data01))
+            castData['content']['basic'].append('0x%08x'%(basic_data02))
+            castData['content']['basic'].append('0x%08x'%(basic_data03))
+
+            nstruct =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+            logging.debug("number of structures contained = %d"%(nstruct))
+
+            if nstruct > 0:
+                castData['content']['extra'] = []
+            
+                struct_indx = []
+                for i in range(0, nstruct+1):
+                    stindx =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+                    idx += 4
+                    logging.debug("stindx[%d] = %08x"%(i, stindx))
+                    struct_indx.append(stindx)
+
+                base_dir = idx
+                for i in range(0, nstruct):
+                    stlen = struct_indx[i+1] - struct_indx[i]
+                    logging.debug("The %d element of the structure is %d bytes long"%(i, stlen))
+                    if stlen > 0:
+                        stdata = fdata[idx:idx+stlen]
+                        idx += stlen
+                        
+                        encodedBytes = base64.b64encode(stdata)
+                        encodedStr = str(encodedBytes)
+                        
+                        castData['content']['extra'].append(encodedStr)
+                    else:
+                        castData['content']['extra'].append('')
+
+                # Check if there is a CAST member script
+                if len(castData['content']['extra']) > 0 and castData['content']['extra'][0] != '':
+                    with open(os.path.join(dest_dir, 'member.lingo'), 'wb') as cfile:
+                        cfile.write(base64.b64decode(castData['content']['extra'][0]))
+
+                # Check if there is a CAST member name
+                if len(castData['content']['extra']) > 1 and castData['content']['extra'][1] != '':
+                    stdata = base64.b64decode(castData['content']['extra'][1])
+                    nchars = struct.unpack("B", stdata[0])[0]
+                    cast_elm_name = stdata[1:nchars+1]
+                    castData['name'] = cast_elm_name
+                else:
+                    castData['name'] = ''
+        
         copyfile(cast_file, os.path.join(dest_dir, os.path.basename(cast_file)))
         logging.debug("%s: data_type = %s"%(cast_file, data_type))
         
@@ -169,60 +260,106 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
         if data_type == DIR5_IMAGE_TYPE or data_type == DIR4_IMAGE_TYPE:
             # Director image type
             logging.info("%s: is a image file"%(cast_file))
-            if kelm is None or len(kelm) <= 0:
-                logging.warn("%s: has no related image data!"%(cast_file))
+            castData['type'] = 'image'
+            
+            bmp_bpp_val =  struct.unpack(cast_bit_order+"B", fdata[idx])[0]
+            idx += 1
+
+            bmp_bpp = 8
+            if bmp_bpp_val == 0x80:
+                # 8 bit per pixel image
+                bmp_bpp = 8
+                
+            elif bmp_bpp_val == 0x81:
+                # 4 bit per pixel image
+                bmp_bpp = 4
+
+            elif bmp_bpp_val == 0x82:
+                # 8 bit per pixel image
+                bmp_bpp = 8
+
+            elif bmp_bpp_val == 0x84:
+                # 16 bit per pixel image
+                bmp_bpp = 16
+
+            elif bmp_bpp_val == 0x85:
+                # 16 bit per pixel image (MAC format)
+                bmp_bpp = 16
+
+            elif bmp_bpp_val == 0x8A:
+                # 24 bit per pixel image
+                bmp_bpp = 24
+
             else:
-                for f in kelm:
-                    logging.debug("Related file: %s"%(f))
-                    src = os.path.join(os.path.dirname(cast_file), f)
-                    dst = os.path.join(dest_dir, f)
-                    if os.path.isfile(src):
-                        copyfile(src, dst)
-                    else:
-                        logging.warn("There is no %s file (maybe empty file)"%(src))
-                    
-                    if f.endswith('.BITD'):
-                        os.system('%s/bitd2bmp %s %s %s %s'%(
-                            os.path.dirname(sys.argv[0]), # Scripts path
-                            sys.argv[1], # pc or mac
-                            dest_dir, # work directory
-                            os.path.basename(cast_file), # cast file name
-                            f # BITD file name
-                        ))
+                logging.warn("Unknown BPP value: %s"%(bmp_bpp_val))
+
+            logging.debug("bmp_bpp = %s"%(bmp_bpp)) 
+
+
+            unknown_11 =  struct.unpack(cast_bit_order+"B", fdata[idx])[0]
+            idx += 1                
+            logging.debug("unknown_11 = %s"%(unknown_11)) 
+
+            h_padding =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+            logging.debug("h_padding = %s"%(h_padding)) 
+
+            w_padding =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+            logging.debug("w_padding = %s"%(w_padding)) 
+
+            bmp_height =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2                
+            logging.debug("bmp_height = %s"%(bmp_height)) 
+
+            bmp_width =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2                
+            logging.debug("bmp_width = %s"%(bmp_width)) 
+
+            unknown_12 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            logging.debug("unknown_12 = %s"%(unknown_12)) 
+
+            unknown_13 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            logging.debug("unknown_13 = %s"%(unknown_13)) 
+
+            unknown_14 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            logging.debug("unknown_14 = %s"%(unknown_14)) 
+
+            unknown_15 =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+            logging.debug("unknown_15 = %s"%(unknown_15)) 
+
+            unknown_16 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            logging.debug("unknown_16 = %s"%(unknown_16))
+
+            castData['content']['bitmap'] = {}
+            castData['content']['bitmap']['height'] = bmp_height
+            castData['content']['bitmap']['width'] = bmp_width
+            castData['content']['bitmap']['h_padding'] = h_padding
+            castData['content']['bitmap']['w_padding'] = w_padding
+            castData['content']['bitmap']['bpp'] = bmp_bpp
+            
+            
+            
+            
+
             
         elif data_type == DIR5_SND_TYPE or data_type == DIR4_SND_TYPE:
             # Director sound type
             logging.info("%s: is a sound file"%(cast_file))
-            if kelm is None or len(kelm) <= 0:
-                logging.warn("%s: has no related sound data!"%(cast_file))
-            else:
-                for f in kelm:
-                    logging.debug("Related file: %s"%(f))
-                    src = os.path.join(os.path.dirname(cast_file), f)
-                    dst = os.path.join(dest_dir, f)
-                    if os.path.isfile(src):
-                        copyfile(src, dst)
-                    else:
-                        logging.warn("There is no %s file (maybe empty file)"%(src))
-                    
-                    if f.endswith('.snd '):
-                        os.system('%s/snd2wav %s %s %s "%s"'%(
-                            os.path.dirname(sys.argv[0]), # Scripts path
-                            sys.argv[1], # pc or mac
-                            dest_dir, # work directory
-                            os.path.basename(cast_file), # cast file name
-                            f # snd file name
-                        ))
-                        
+            castData['type'] = 'sound'
+
+
         elif data_type == DIR5_LSCR_TYPE or data_type == DIR4_LSCR_TYPE:
             # Director Lingo Script reference
             logging.info("%s: is a script reference file"%(cast_file))
-            idx = 0x1A # Offset of script index
-            if data_type == DIR5_LSCR_TYPE:
-                idx = 0x1C
-                
-            scridx = struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
-            idx += 4
+            castData['type'] = 'script'
+            
+            scridx = basic_data03
             logging.debug("Script index: %d"%(scridx))
             script_file = "%s.Lscr"%(lctx_elements[scridx - 1])
             logging.debug("Script file: %s"%(script_file))
@@ -242,9 +379,57 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
                 script_file, # script file name
                 lnam_file
             ))
+        
+        elif data_type == DIR5_PUSH_BUTTON_TYPE:
+            logging.info("%s: is a push button"%(cast_file))
+            castData['type'] = 'push_button'
             
         else:
             logging.warn("%s: data_type unknown (%s)!"%(cast_file, data_type))
+            castData['type'] = 'unknown'
+        
+        # Write CAST data to JSON file
+        with open(os.path.join(dest_dir, 'data.json'), 'wb') as jsfile:
+            jsfile.write(json.dumps(castData))
+        
+        if kelm is None or len(kelm) <= 0:
+            logging.info("%s: has no related image data!"%(cast_file))
+        else:
+            for f in kelm:
+                logging.debug("Related file: %s"%(f))
+                src = os.path.join(os.path.dirname(cast_file), f)
+                dst = os.path.join(dest_dir, f)
+                if os.path.isfile(src):
+                    copyfile(src, dst)
+                else:
+                    logging.warn("There is no %s file (maybe empty file)"%(src))
+
+                if f.endswith('.BITD'):
+                    os.system('%s/bitd2bmp %s %s %s %s'%(
+                        os.path.dirname(sys.argv[0]), # Scripts path
+                        sys.argv[1], # pc or mac
+                        dest_dir, # work directory
+                        os.path.basename(cast_file), # cast file name
+                        f # BITD file name
+                    ))
+                    
+                if f.endswith('.snd '):
+                    os.system('%s/snd2wav %s %s %s "%s"'%(
+                        os.path.dirname(sys.argv[0]), # Scripts path
+                        sys.argv[1], # pc or mac
+                        dest_dir, # work directory
+                        os.path.basename(cast_file), # cast file name
+                        f # snd file name
+                    ))
+                    
+                if f.endswith('.STXT'):
+                    os.system('%s/stxt2txt %s %s "%s"'%(
+                        os.path.dirname(sys.argv[0]), # Scripts path
+                        sys.argv[1], # pc or mac
+                        dest_dir, # work directory
+                        f # stxt file name
+                    ))
+
 
 
 # ====================================================================================================================================

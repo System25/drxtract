@@ -1,0 +1,99 @@
+#!/usr/bin/python2
+
+# Author: Abraham Macias Paredes
+# E-mail: system252001@yahoo.es
+# License: GNU GPL v2 (see LICENSE file for details).
+
+#
+# Script to extract Macromedia Director string files.
+# 
+
+import sys
+import os
+import struct
+import re
+import logging
+import json
+from shutil import copyfile
+
+logging.basicConfig(level=logging.DEBUG)
+
+
+# Default bit order for MAC
+bit_order_type = 'mac'
+bit_order = ">"
+
+
+# ====================================================================================================================================
+def stxt2txt(castData, stxt_file):
+    txt_data = None
+    logging.debug("bit_order_type = %s"%(bit_order_type))
+    
+    with open(stxt_file, mode='rb') as file:
+        fdata = file.read()
+        
+        file_name = "%s.%s"%(os.path.basename(stxt_file)[:-5], 'txt')
+        logging.debug(u"FILE: Saving file content to: %s"%(file_name))
+        idx = 0
+
+        # Read STXT file header
+        idxb = struct.unpack(bit_order+"i", fdata[idx:idx+4])[0]
+        idx += 4
+        logging.debug("base index = %08x"%(idxb))
+
+        nchars =  struct.unpack(bit_order+"i", fdata[idx:idx+4])[0]
+        idx += 4
+        logging.debug("number of characters: %d"%(nchars))
+
+        unknown_00 =  struct.unpack(bit_order+"i", fdata[idx:idx+4])[0]
+        idx += 4
+        logging.debug("unknown_00 = %08x"%(unknown_00))
+        
+        
+        txt_data = fdata[idxb:idxb+nchars]
+
+        with open(os.path.join(sys.argv[2], file_name), 'wb') as file:
+            # Write string to file
+            file.write(txt_data)
+
+
+
+# ====================================================================================================================================
+if __name__ == '__main__':
+    if len(sys.argv) < 4:
+        print("USAGE: stxt2txt [pc|mac] <work directory> <stxt file name>")
+
+    else:
+        if sys.argv[1] != 'pc' and sys.argv[1] != 'mac':
+            logging.error(" First argument must be 'pc' or 'mac'")
+            sys.exit(-1)
+
+        if sys.argv[1] == 'pc':
+            # Always MAC bit order
+            #bit_order_type = 'pc'
+            #bit_order = "<"
+            pass
+
+        if not os.path.isdir(sys.argv[2]):
+            logging.error(" '%s' is not a directory"%(sys.argv[2]))
+            sys.exit(-1)
+
+        if not os.path.isfile(os.path.join(sys.argv[2], sys.argv[3])):
+            logging.error(" '%s' is not a file"%(os.path.join(sys.argv[2], sys.argv[3])))
+            sys.exit(-1)
+
+        if not os.path.isfile(os.path.join(sys.argv[2], sys.argv[3])):
+            logging.error(" '%s' is not a file"%(os.path.join(sys.argv[2], sys.argv[3])))
+            sys.exit(-1)
+        
+        if not sys.argv[3].endswith('.STXT'):
+            logging.error(" '%s' does not end in '.STXT'"%(sys.argv[3]))
+            sys.exit(-1)
+            
+        # Get cast file data
+        castData = {}
+        with open(os.path.join(sys.argv[2], 'data.json'), mode='rb') as file:
+            castData = json.load(file)
+
+        stxt2txt(castData, os.path.join(sys.argv[2], sys.argv[3]))
+        
