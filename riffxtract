@@ -33,7 +33,7 @@ MMAP_FILE_FORMAT = 'mmap'
 FREE_FILE_FORMAT = 'free'
 
 # Save other blocks (for investigation purposes)
-SAVE_OTHER_BLOCKS = False
+SAVE_OTHER_BLOCKS = True
 
 # ====================================================================================================================================
 def parse_imap(data):
@@ -51,6 +51,8 @@ def parse_imap(data):
 def parse_mmap(data, fileContent, offset):
     # This file types will be ignored
     types_to_ignore = [IMAP_FILE_FORMAT, MMAP_FILE_FORMAT, FREE_FILE_FORMAT]
+    global SAVE_OTHER_BLOCKS
+    SAVE_OTHER_BLOCKS = False
 
     # Unknown block data
     content = struct.unpack(bit_order+"hhiiiii", data[0:24])
@@ -80,10 +82,10 @@ def parse_mmap(data, fileContent, offset):
     # Read file length
     file_length = struct.unpack(bit_order+"i", data[28:32])[0]
     logging.debug("NMAP: Meta file length (must be the whole data length): %s"%(file_length))
-    if len(fileContent) != file_length + 8 + offset:
-        logging.error(" Bad file length!")
-        sys.exit(-1)
 
+    if len(fileContent) != file_length + 8 + offset:
+        logging.warning(" Bad file length! Using %d as file length"%(len(fileContent)))
+        
     # Read file offset
     file_offset = struct.unpack(bit_order+"i", data[32:36])[0]
     logging.debug("NMAP: Meta file offset: %s"%(file_offset))
@@ -198,9 +200,10 @@ def parse_riff(fileContent, offset):
     # Read file length
     file_length = struct.unpack(bit_order+"i", fileContent[offset+4:offset+8])[0]
     logging.info(" File contains %s bytes of information."%(file_length))
+    
     if len(fileContent) != file_length + 8 + offset:
-        logging.error(" Bad file length!")
-        sys.exit(-1)
+        logging.warning(" Using %d as file length"%(len(fileContent)))
+        
  
     # Check Macromedia Director MV93 header
     mv93_format = struct.unpack("cccc", fileContent[offset+8:offset+12])
@@ -220,7 +223,7 @@ def parse_riff(fileContent, offset):
         block_type = struct.unpack("cccc", fileContent[index:(index+4)])
         bt = []
         for c in range(0,4):
-            if block_type[c] > "\0":
+            if block_type[c] > "\0" and block_type[c] >= ' ' and block_type[c] <= 'z':
                 bt.append(block_type[c])
             else:
                 bt.append('_')
@@ -250,7 +253,7 @@ def parse_riff(fileContent, offset):
             if sys.argv[1] == 'pc':
                 file_ext = block_type[3] + block_type[2] + block_type[1] + block_type[0]
 
-            file_name = "ext_%s.%s"%(nfiles, file_ext)
+            file_name = "%s.%s"%(nfiles, file_ext)
             # Remove strange chars
             file_namer = re.sub(r"[^A-Za-z0-9\-_\.]", "_", file_name)
             if file_namer != file_name:

@@ -31,10 +31,14 @@ CASDIR = 'cas'
 # -- Casting data types --
 # Director 5 types
 DIR5_IMAGE_TYPE = 1
+DIR5_TEXT_INPUT_TYPE = 3
 DIR5_CLUT_TYPE = 4
 DIR5_SND_TYPE = 6
-DIR5_LSCR_TYPE = 0xB
 DIR5_PUSH_BUTTON_TYPE = 7
+DIR5_SHAPE_TYPE = 8
+DIR5_LSCR_TYPE = 11
+DIR5_TEXT_TYPE = 12
+
 
 # Director 4 types
 DIR4_IMAGE_TYPE = 0x1C0000
@@ -76,15 +80,20 @@ def parse_key_file(key_file):
 
             indx = indx + 12
             
-            cas_index = ('%08x'%cas_index)
+            if not ord(file_ext[0]) in range(65, 91):
+                # Not an ASCII char
+                continue
             
-            if not cas_index in key_data:
-                key_data[cas_index] = []
-            
-            key_data[cas_index].append("%s.%s"%(nfile, file_ext))
-            
-            key_value = "KEY['%s'] = '%s.%s'"%(cas_index, nfile, file_ext)
-            logging.debug(key_value)
+            if cas_index > 0 and nfile > 0:
+                cas_index = ('%08x'%cas_index)
+
+                if not cas_index in key_data:
+                    key_data[cas_index] = []
+
+                key_data[cas_index].append("%s.%s"%(nfile, file_ext))
+
+                key_value = "KEY['%s'] = '%s.%s'"%(cas_index, nfile, file_ext)
+                logging.debug(key_value)
 
     return key_data
 
@@ -106,6 +115,414 @@ def parse_cas_file(cas_file):
             i = i + 1
             
     return cas_data
+
+# ====================================================================================================================================
+# Reads from VWLB file the markers channel of the score and its frame
+def parse_vwlb_file(vwlb_file):
+    vwlb_data = []
+    
+    with open(vwlb_file, mode='rb') as file:
+        fdata = file.read()
+
+        indx = 0
+        nmarkers = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+        indx = indx + 2
+        logging.debug("N Markers: %d"%(nmarkers))
+        
+        mnidx = 2 + 4 * (nmarkers + 1)
+        
+        for i in range(0, nmarkers):
+            marker = {}
+            
+            frame = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+            indx = indx + 2
+            logging.debug("Frame: %d"%(frame))
+            marker['frame'] = frame
+            
+            name_start = mnidx + struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+            indx = indx + 2
+            logging.debug("name_start: %d"%(name_start))
+            
+            name_end = mnidx + struct.unpack(">h", fdata[(indx+2):(indx+4)])[0]
+            logging.debug("name_end: %d"%(name_end))
+            
+            name = fdata[name_start:name_end]
+            logging.debug("Name: %s"%(name))
+            marker['name'] = name
+            
+            vwlb_data.append(marker)
+            
+    return vwlb_data
+
+# ====================================================================================================================================
+# Reads from VWSC channel data the score elements
+def parse_vwsc_channels(channelData):
+    cdata = []
+    
+    indx = 0
+    i = 0
+    SPRITE_DATA_SIZE = 24
+    while indx < len(channelData):
+        # Read sprite info
+        bdsize = struct.unpack(">h", channelData[(indx):(indx+2)])[0]
+        indx = indx + 2
+        logging.debug("Sprite[%d] Basic data size: %d"%(i, bdsize))
+        if bdsize != 6:
+            logging.warn("Sprite[%d] Bad script basic data size!"%(i))
+        
+        rowd = struct.unpack(">h", channelData[(indx):(indx+2)])[0]
+        indx = indx + 2
+        logging.debug("Sprite[%d] row displacement: %04x"%(i, rowd))
+        row = (rowd / SPRITE_DATA_SIZE) - 1
+        logging.debug("Sprite[%d] row: %d"%(i, row))
+        
+        scriptId = struct.unpack(">h", channelData[(indx):(indx+2)])[0]
+        indx = indx + 2
+        logging.debug("Sprite[%d] scriptId: %d"%(i, scriptId))
+        
+        if (scriptId & 0xFF) != 0:
+            logging.warn("Sprite[%d] Strange script ID value"%(i))
+        
+        spriteType = struct.unpack(">h", channelData[(indx):(indx+2)])[0]
+        indx = indx + 2
+        logging.debug("Sprite[%d] spriteType: %d"%(i, spriteType))
+        
+        castId = struct.unpack(">h", channelData[(indx):(indx+2)])[0]
+        indx = indx + 2
+        logging.debug("Sprite[%d] castId: %d"%(i, castId))
+        
+        dsize = struct.unpack(">h", channelData[(indx):(indx+2)])[0]
+        indx = indx + 2
+        logging.debug("Sprite[%d] script data size: %d"%(i, dsize))
+        
+        if dsize != 10:
+            logging.warn("Sprite[%d] Bad script data size!"%(i))
+        
+        unknown_05 = struct.unpack(">h", channelData[(indx):(indx+2)])[0]
+        indx = indx + 2
+        logging.debug("Sprite[%d] unknown_05: %04x"%(i, unknown_05))
+        if unknown_05 != rowd + 4 + bdsize:
+            logging.warn("Sprite[%d] Strange unknown_05 value!"%(i))
+        
+        foregroundColor = ord(channelData[indx])
+        indx += 1
+        logging.debug("Sprite[%d] foregroundColor: %d"%(i, foregroundColor))
+        
+        backgroundColor = ord(channelData[indx])
+        indx += 1
+        logging.debug("Sprite[%d] backgroundColor: %d"%(i, backgroundColor))
+        
+        y = struct.unpack(">h", channelData[(indx):(indx+2)])[0]
+        indx = indx + 2
+        logging.debug("Sprite[%d] y: %d"%(i, y))
+        
+        x = struct.unpack(">h", channelData[(indx):(indx+2)])[0]
+        indx = indx + 2
+        logging.debug("Sprite[%d] x: %d"%(i, x))
+        
+        height = struct.unpack(">h", channelData[(indx):(indx+2)])[0]
+        indx = indx + 2
+        logging.debug("Sprite[%d] height: %d"%(i, height))
+        
+        width = struct.unpack(">h", channelData[(indx):(indx+2)])[0]
+        indx = indx + 2
+        logging.debug("Sprite[%d] width: %d"%(i, width))
+        
+        if indx < len(channelData):
+            # Try to calculate if the end of this block is the begining of a new block
+            nextRowd = struct.unpack(">h", channelData[(indx+2):(indx+4)])[0]
+            nextScriptId = struct.unpack(">h", channelData[(indx+4):(indx+6)])[0]
+            nextSpriteType = struct.unpack(">h", channelData[(indx+6):(indx+8)])[0]
+            while ( (nextRowd % SPRITE_DATA_SIZE) != 0 or  nextRowd <= rowd ):
+                if nextScriptId == scriptId and nextSpriteType == spriteType:
+                    break
+                
+                # There is extra data in this block
+                unk = struct.unpack(">h", channelData[(indx):(indx+2)])[0]
+                indx = indx + 2
+                logging.debug("Sprite[%d] unk: 0x%04x"%(i, unk))
+                
+                nextRowd = struct.unpack(">h", channelData[(indx+2):(indx+4)])[0]
+                nextScriptId = struct.unpack(">h", channelData[(indx+4):(indx+6)])[0]
+                nextSpriteType = struct.unpack(">h", channelData[(indx+6):(indx+8)])[0]
+            
+            
+        if castId > 0:
+            sprite_data = {}
+            sprite_data['scriptId'] = scriptId
+            sprite_data['spriteType'] = spriteType
+            sprite_data['castId'] = castId
+            sprite_data['foregroundColor'] = foregroundColor
+            sprite_data['backgroundColor'] = backgroundColor
+            sprite_data['y'] = y
+            sprite_data['x'] = x
+            sprite_data['height'] = height
+            sprite_data['width'] = width
+            sprite_data['row'] = row
+            
+            cdata.append(sprite_data)
+        
+        i += 1
+        
+    
+    return cdata
+
+# ====================================================================================================================================
+# Reads from VWSC data the score elements
+def parse_vwsc_data(fdata):
+    vwsc_data = []
+    
+    idx = 0
+    dataSize = struct.unpack(">i", fdata[(idx):(idx+4)])[0]
+    idx = idx + 4
+
+    dataMarker = struct.unpack(">i", fdata[(idx):(idx+4)])[0]
+    idx = idx + 4
+
+    if dataMarker != 0x14:
+        logging.error('Can\'f find data marker in VWSC data!')
+        sys.exit(-1)
+    
+    if len(fdata) != dataSize:
+        logging.error('Bad VWSC data size: (%d != %d)'%(len(fdata), dataSize))
+        sys.exit(-1)
+        
+    unknown01 =  struct.unpack(">i", fdata[idx:idx+4])[0]
+    idx += 4
+    logging.debug("unknown01 = %08x"%(unknown01))
+    
+    unknown02 =  struct.unpack(">i", fdata[idx:idx+4])[0]
+    idx += 4
+    logging.debug("unknown02 = %08x"%(unknown02))
+    
+    unknown03 =  struct.unpack(">i", fdata[idx:idx+4])[0]
+    idx += 4
+    logging.debug("unknown03 = %08x"%(unknown03))
+    
+    while idx < len(fdata):
+        logging.debug("idx: %08x"%(idx))
+        channelSize = struct.unpack(">h", fdata[(idx):(idx+2)])[0]
+        idx = idx + 2
+        logging.debug("channelSize: %d"%(channelSize))
+        if channelSize == 2:
+            logging.debug('Empty channel!')
+            vwsc_data.append([])
+            continue
+        
+        channelOffset = struct.unpack(">h", fdata[(idx):(idx+2)])[0]
+        idx = idx + 2
+        logging.debug("channelOffset: %d"%(channelOffset))
+        
+        # Skip offset
+        idx += channelOffset
+        channelSize -= channelOffset
+        
+        # Channel data
+        unknown_01 = struct.unpack(">h", fdata[(idx):(idx+2)])[0]
+        idx = idx + 2
+        logging.debug("Channel unknown_01: %04x"%(unknown_01))
+        
+        if channelSize > 0:
+            channelSize -= 6
+            channelData = fdata[(idx):(idx+channelSize)]
+            vwsc_data.append(parse_vwsc_channels(channelData))
+            
+        else:
+            logging.debug('Empty channel!')
+            vwsc_data.append([])
+        
+        idx += channelSize
+        
+    
+    return vwsc_data
+
+# ====================================================================================================================================
+# Reads from VWSC file the score elements
+def parse_vwsc_file(vwsc_file):
+    vwsc_data = []
+    
+    with open(vwsc_file, mode='rb') as file:
+        fdata = file.read()
+
+        # Check if the real VWSC data is wrapped into other data
+        indx = 0
+        dataSize = struct.unpack(">i", fdata[(indx):(indx+4)])[0]
+        indx = indx + 4
+        
+        dataMarker = struct.unpack(">i", fdata[(indx):(indx+4)])[0]
+        indx = indx + 4
+        
+        logging.debug("dataSize: %d"%(dataSize))
+        logging.debug("dataMarker: %d"%(dataMarker))
+        
+        markersidx = 0
+        if dataMarker != 0x14:
+            # VWSC data is wrapped into other data (DIR file and not DRX file)
+            if len(fdata) != dataSize:
+                logging.error('Bad VWSC file size: (%d != %d)'%(len(fdata), dataSize))
+                sys.exit(-1)
+            
+            unknown_01 =  struct.unpack(">i", fdata[indx:indx+4])[0]
+            indx += 4
+            logging.debug("unknown_01 = %08x"%(unknown_01))
+            
+            nmarkers =  struct.unpack(">i", fdata[indx:indx+4])[0]
+            indx += 4
+            logging.debug("nmarkers = %08x"%(nmarkers))
+            
+            nmarkers1 =  struct.unpack(">i", fdata[indx:indx+4])[0]
+            indx += 4
+            logging.debug("nmarkers1 = %08x"%(nmarkers1))
+            
+            lastMarker =  struct.unpack(">i", fdata[indx:indx+4])[0]
+            indx += 4
+            logging.debug("lastMarker = %08x"%(lastMarker))
+            
+            
+            markersidx = indx
+            
+            # Skip the markers because at this moment I don't know what are they
+            # useful for
+            indx += nmarkers1 * 4
+            
+            dataSize = struct.unpack(">i", fdata[(indx):(indx+4)])[0]
+            indx = indx + 4
+
+            dataMarker = struct.unpack(">i", fdata[(indx):(indx+4)])[0]
+            indx = indx + 4
+        
+        if dataMarker != 0x14:
+            logging.error('Can\'f find data marker in VWSC file!')
+            sys.exit(-1)
+        
+        indx -= 8
+        data = fdata[indx:(indx+dataSize)]
+        indx += dataSize
+        
+        # TODO: Complete this!
+        # VWSC data structure depends on Director version
+        #vwsc_data = parse_vwsc_data(data)
+        
+        # Check of many data is left
+        logging.debug('Data left: %d'%(len(fdata)-indx))
+        
+        
+    return vwsc_data
+
+
+# ====================================================================================================================================
+def parse_vwcf_file(vwcf_file):
+    config = {}
+    with open(vwcf_file, mode='rb') as file:
+        fdata = file.read()
+
+        indx = 0
+        dataSize = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+        indx = indx + 2
+        logging.debug("Data size: %d"%(dataSize))
+        
+        if (len(fdata) != dataSize):
+            logging.error("Bad data size!")
+            sys.exit(-1)
+            
+        version = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+        indx = indx + 2
+        logging.debug("Director version: 0x%04x"%(version))
+        
+        stageTop = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+        indx = indx + 2
+        logging.debug("Stage top: %d"%(stageTop))
+        
+        stageLeft = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+        indx = indx + 2
+        logging.debug("Stage left: %d"%(stageLeft))
+        
+        
+        stageBottom = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+        indx = indx + 2
+        logging.debug("Stage bottom: %d"%(stageBottom))
+        
+        
+        stageRight = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+        indx = indx + 2
+        logging.debug("Stage right: %d"%(stageRight))
+        
+        castArrayStart = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+        indx = indx + 2
+        logging.debug("Cast array start: %d"%(castArrayStart))
+        
+        castArrayEnd = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+        indx = indx + 2
+        logging.debug("Cast array end: %d"%(castArrayEnd))
+        
+        currentFrameRate = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+        indx = indx + 2
+        logging.debug("Current frame rate?: %d"%(currentFrameRate))
+        
+        indx += 9
+        stageColor = ord(fdata[indx])
+        indx += 1
+        
+        logging.debug("Stage color: %d"%(stageColor))
+
+        indx += 34
+        palette = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+        indx = indx + 2
+        logging.debug("palette?: %d"%(palette))
+        
+        version_major = ((version >> 8) & 0xFF)
+        version_minor = ( version       & 0xFF)
+        
+        if version_major == 4:
+            # Director 6 or lower version
+            if version_minor < 0xC0:
+                version = 'dir4'
+                
+            elif version_minor < 0xC6:
+                version = 'dir5'
+            
+            else:
+                version = 'dir6'
+            
+        elif version_major == 5:
+            # Director 7
+            version = 'dir7'
+            
+        elif version_major == 7:
+            # Director 8 or MX
+            if version_minor <= 0x3A:
+                version = 'dir8'
+                
+            elif version_minor <= 0x42:
+                version = 'dirMX'
+            
+            else:
+                version = 'unknown'
+        
+        elif version_major == 0x16 and version_minor == 0x3C:
+            # When the Director file is published the version
+            # is always 0x163C
+            version = 'published'
+            
+        else:
+            version = 'unknown'
+            
+        logging.info("Director version: %s"%(version))
+        
+        config['version'] = version
+        config['stageTop'] = stageTop
+        config['stageLeft'] = stageLeft
+        config['stageBottom'] = stageBottom
+        config['stageRight'] = stageRight
+        config['castArrayStart'] = castArrayStart
+        config['castArrayEnd'] = castArrayEnd
+        config['currentFrameRate'] = currentFrameRate
+        config['stageColor'] = stageColor
+        config['palette'] = palette
+        
+    
+    
+    return config
 
 # ====================================================================================================================================
 def parse_lctx_file(lctx_file):
@@ -384,16 +801,28 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
             logging.info("%s: is a push button"%(cast_file))
             castData['type'] = 'push_button'
             
+        elif data_type == DIR5_TEXT_INPUT_TYPE:
+            logging.info("%s: is a text input field"%(cast_file))
+            castData['type'] = 'text_input'
+            
+        elif data_type == DIR5_TEXT_TYPE:
+            logging.info("%s: is a text field"%(cast_file))
+            castData['type'] = 'text'
+            
+        elif data_type == DIR5_SHAPE_TYPE:
+            logging.info("%s: is a shape"%(cast_file))
+            castData['type'] = 'shape'
+            
         else:
             logging.warn("%s: data_type unknown (%s)!"%(cast_file, data_type))
             castData['type'] = 'unknown'
         
         # Write CAST data to JSON file
         with open(os.path.join(dest_dir, 'data.json'), 'wb') as jsfile:
-            jsfile.write(json.dumps(castData))
+            jsfile.write(json.dumps(castData, indent=4, sort_keys=True))
         
         if kelm is None or len(kelm) <= 0:
-            logging.info("%s: has no related image data!"%(cast_file))
+            logging.info("%s: has no related data!"%(cast_file))
         else:
             for f in kelm:
                 logging.debug("Related file: %s"%(f))
@@ -429,6 +858,15 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
                         dest_dir, # work directory
                         f # stxt file name
                     ))
+                    
+                if f.endswith('.RTE1'):
+                    # RTE1 files are just plain text files
+                    src = os.path.join(os.path.dirname(cast_file), f)
+                    txt_file = "content.txt"
+                    dst = os.path.join(dest_dir, txt_file)
+                    if os.path.isfile(src):
+                        copyfile(src, dst)
+
 
 
 
@@ -462,6 +900,12 @@ if __name__ == '__main__':
         cas_file = None
         lctx_file = None
         lnam_file = None
+        
+        sord_file = None
+        vwlb_file = None
+        vwsc_file = None
+        vwcf_file = None
+        
         for f in os.listdir(os.path.join(sys.argv[2], BINDIR)):
             if f.endswith('KEY*') and not f.startswith("ext_"):
                 key_file = f
@@ -474,6 +918,18 @@ if __name__ == '__main__':
                 
             if f.endswith('Lnam') and not f.startswith("ext_"):
                 lnam_file = f
+
+            if f.endswith('Sord') and not f.startswith("ext_"):
+                sord_file = f
+
+            if f.endswith('VWLB') and not f.startswith("ext_"):
+                vwlb_file = f
+                
+            if f.endswith('VWSC') and not f.startswith("ext_"):
+                vwsc_file = f
+                
+            if (f.endswith('VWCF') or f.endswith('DRCF')) and not f.startswith("ext_"):
+                vwcf_file = f
                 
         if key_file is None:
             logging.error('Can not find a KEY* file!')
@@ -481,7 +937,7 @@ if __name__ == '__main__':
 
         if cas_file is None:
             logging.error('Can not find a CAS* file!')
-            sys.exit(-1) 
+            sys.exit(-1)
 
         if lctx_file is None:
             logging.error('Can not find a Lctx file!')
@@ -489,27 +945,52 @@ if __name__ == '__main__':
 
         if lnam_file is None:
             logging.error('Can not find a Lnam file!')
-            sys.exit(-1) 
+            sys.exit(-1)
             
+        if sord_file is None:
+            logging.error('Can not find a Sord file!')
+            sys.exit(-1)
+            
+        if vwcf_file is None:
+            logging.error('Can not find a VWCF or DRCF file!')
+            sys.exit(-1)
+        
+        config = parse_vwcf_file(os.path.join(sys.argv[2], BINDIR, vwcf_file))
+        # Write config data to JSON file
+        with open(os.path.join(sys.argv[2], CASDIR, 'config.json'), 'wb') as jsfile:
+            jsfile.write(json.dumps(config, indent=4, sort_keys=True))        
+        
         cas_elements = parse_cas_file(os.path.join(sys.argv[2], BINDIR, cas_file))
         key_elements = parse_key_file(os.path.join(sys.argv[2], BINDIR, key_file))
         lctx_elements = parse_lctx_file(os.path.join(sys.argv[2], BINDIR, lctx_file))
         
+        if vwlb_file is not None:
+            vwlb_elements = parse_vwlb_file(os.path.join(sys.argv[2], BINDIR, vwlb_file))
+            # Write markers data to JSON file
+            with open(os.path.join(sys.argv[2], CASDIR, 'markers.json'), 'wb') as jsfile:
+                jsfile.write(json.dumps(vwlb_elements, indent=4, sort_keys=True))
+        
+        if vwsc_file is not None:
+            vwsc_elements = parse_vwsc_file(os.path.join(sys.argv[2], BINDIR, vwsc_file))
+            # Write score data to JSON file
+            with open(os.path.join(sys.argv[2], CASDIR, 'score.json'), 'wb') as jsfile:
+                jsfile.write(json.dumps(vwsc_elements, indent=4, sort_keys=True))
+        
         logging.info('There is %i elements in the casting!'%(len(cas_elements)))
         
         # Extract casting elements
-        for elm in range(0, len(cas_elements)):
+        for elm in range(1, len(cas_elements)+1):
             # Create directory
             if not os.path.isdir(os.path.join(sys.argv[2], CASDIR, str(elm))):
                 os.mkdir(os.path.join(sys.argv[2], CASDIR, str(elm)))
             
             # Read CASt file
             kelm = []
-            cas_index = (cas_elements[elm])
+            cas_index = (cas_elements[elm - 1])
             if cas_index in key_elements:
                 kelm = key_elements[cas_index]
             
-            fname = '%i.CASt'%(int(cas_elements[elm], 16))
+            fname = '%i.CASt'%(int(cas_elements[elm - 1], 16))
             if os.path.isfile(os.path.join(sys.argv[2], BINDIR, fname)):
                 logging.info('Casting element number %i is %s file!'%(elm, fname))
                 parse_cast_file(os.path.join(sys.argv[2], BINDIR, fname), kelm,
