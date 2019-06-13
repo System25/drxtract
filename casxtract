@@ -29,21 +29,15 @@ BINDIR = 'bin'
 CASDIR = 'cas'
 
 # -- Casting data types --
-# Director 5 types
-DIR5_IMAGE_TYPE = 1
-DIR5_TEXT_INPUT_TYPE = 3
-DIR5_CLUT_TYPE = 4
-DIR5_SND_TYPE = 6
-DIR5_PUSH_BUTTON_TYPE = 7
-DIR5_SHAPE_TYPE = 8
-DIR5_LSCR_TYPE = 11
-DIR5_TEXT_TYPE = 12
+DIR_IMAGE_TYPE = 1
+DIR_TEXT_INPUT_TYPE = 3
+DIR_CLUT_TYPE = 4
+DIR_SND_TYPE = 6
+DIR_PUSH_BUTTON_TYPE = 7
+DIR_SHAPE_TYPE = 8
+DIR_LSCR_TYPE = 11
+DIR_TEXT_TYPE = 12
 
-
-# Director 4 types
-DIR4_IMAGE_TYPE = 0x1C0000
-DIR4_SND_TYPE = 0x010000
-DIR4_LSCR_TYPE = 0x00040000
 
 
 # ====================================================================================================================================
@@ -583,42 +577,86 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
         data_type = struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
         idx += 4
         
-        contentSize = struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
-        idx += 4
-        logging.debug("contentSize = %08x"%(contentSize))
-
-        unknown_01 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
-        idx += 4
-        logging.debug("unknown_01 = %08x"%(unknown_01))
-
-        # Look for content marker
-        contentMarker =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
-        idx += 4
-        logging.debug("contentMarker? = %08x"%(contentMarker))
+        header_size = 0
+        additional_size = 0
         
-        while contentMarker != 0x00000014 and (len(fdata) - idx) > 4:
-            contentMarker =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+        if (data_type & 0xFFFFFF00) != 0:
+            # Director 4 structure
+            logging.debug("Director 4 CASt file!")
+            idx -= 4
+            
+            header_size = struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            idx += 2
+            logging.debug("header_size = %04x"%(header_size))
+            
+            additional_size = struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            logging.debug("additional_size = %08x"%(additional_size))
+            
+            if 6 + header_size + additional_size != len(fdata):
+                logging.error("Bad data size! (%d != %d)"%(6 + header_size + additional_size, len(fdata)))
+                sys.exit(-1)
+                
+            data_type = fdata[idx]
+            idx += 1
+            logging.debug("data_type = %02x"%(data_type))
+            
+            header_data = fdata[idx:idx + header_size]
+            idx += header_size
+            
+            basic_data = fdata[idx:idx + additional_size]
+            idx += additional_size
+            
+        else:
+            # Director 5 structure
+            logging.debug("data_type = %08x"%(data_type))
+        
+            additional_size = struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            logging.debug("additional_size = %08x"%(additional_size))
+
+            header_size =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            idx += 4
+            logging.debug("header_size = %08x"%(header_size))
+            
+            if 12 + header_size + additional_size != len(fdata):
+                logging.error("Bad data size! (%d != %d)"%(12 + header_size + additional_size, len(fdata)))
+                sys.exit(-1)
+            
+            basic_data = fdata[idx:idx + additional_size]
+            idx += additional_size
+            
+            header_data = fdata[idx:idx + header_size]
+            idx += header_size
+
+        castData['content'] = {}
+        if additional_size > 0:
+            # Parse main data
+            idx = 0
+            contentMarker =  struct.unpack(cast_bit_order+"i", basic_data[idx:idx+4])[0]
             idx += 4
             logging.debug("contentMarker? = %08x"%(contentMarker))
-        
-        if contentMarker == 0x00000014:
+            
+            if contentMarker != 0x00000014:
+                logging.error("Bad content marker %08x"%(contentMarker))
+                sys.exit(-1)
+            
             # Content found!
-            castData['content'] = {}
             castData['content']['basic'] = []
             
-            basic_data00 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            basic_data00 =  struct.unpack(cast_bit_order+"i", basic_data[idx:idx+4])[0]
             idx += 4
             logging.debug("basic_data00 = %08x"%(basic_data00))
 
-            basic_data01 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            basic_data01 =  struct.unpack(cast_bit_order+"i", basic_data[idx:idx+4])[0]
             idx += 4
             logging.debug("basic_data01 = %08x"%(basic_data01))
 
-            basic_data02 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            basic_data02 =  struct.unpack(cast_bit_order+"i", basic_data[idx:idx+4])[0]
             idx += 4
             logging.debug("basic_data02 = %08x"%(basic_data02))
 
-            basic_data03 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            basic_data03 =  struct.unpack(cast_bit_order+"i", basic_data[idx:idx+4])[0]
             idx += 4
             logging.debug("basic_data03: %d"%(basic_data03))
             
@@ -627,7 +665,7 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
             castData['content']['basic'].append('0x%08x'%(basic_data02))
             castData['content']['basic'].append('0x%08x'%(basic_data03))
 
-            nstruct =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            nstruct =  struct.unpack(cast_bit_order+"h", basic_data[idx:idx+2])[0]
             idx += 2
             logging.debug("number of structures contained = %d"%(nstruct))
 
@@ -636,7 +674,7 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
             
                 struct_indx = []
                 for i in range(0, nstruct+1):
-                    stindx =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+                    stindx =  struct.unpack(cast_bit_order+"i", basic_data[idx:idx+4])[0]
                     idx += 4
                     logging.debug("stindx[%d] = %08x"%(i, stindx))
                     struct_indx.append(stindx)
@@ -646,7 +684,7 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
                     stlen = struct_indx[i+1] - struct_indx[i]
                     logging.debug("The %d element of the structure is %d bytes long"%(i, stlen))
                     if stlen > 0:
-                        stdata = fdata[idx:idx+stlen]
+                        stdata = basic_data[idx:idx+stlen]
                         idx += stlen
                         
                         encodedBytes = base64.b64encode(stdata)
@@ -673,13 +711,14 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
         copyfile(cast_file, os.path.join(dest_dir, os.path.basename(cast_file)))
         logging.debug("%s: data_type = %s"%(cast_file, data_type))
         
-
-        if data_type == DIR5_IMAGE_TYPE or data_type == DIR4_IMAGE_TYPE:
+        # Parse header data
+        idx = 0
+        if data_type == DIR_IMAGE_TYPE:
             # Director image type
             logging.info("%s: is a image file"%(cast_file))
             castData['type'] = 'image'
             
-            bmp_bpp_val =  struct.unpack(cast_bit_order+"B", fdata[idx])[0]
+            bmp_bpp_val =  struct.unpack(cast_bit_order+"B", header_data[idx])[0]
             idx += 1
 
             bmp_bpp = 8
@@ -713,43 +752,43 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
             logging.debug("bmp_bpp = %s"%(bmp_bpp)) 
 
 
-            unknown_11 =  struct.unpack(cast_bit_order+"B", fdata[idx])[0]
+            unknown_11 =  struct.unpack(cast_bit_order+"B", header_data[idx])[0]
             idx += 1                
             logging.debug("unknown_11 = %s"%(unknown_11)) 
 
-            h_padding =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            h_padding =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
             idx += 2
             logging.debug("h_padding = %s"%(h_padding)) 
 
-            w_padding =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            w_padding =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
             idx += 2
             logging.debug("w_padding = %s"%(w_padding)) 
 
-            bmp_height =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            bmp_height =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
             idx += 2                
             logging.debug("bmp_height = %s"%(bmp_height)) 
 
-            bmp_width =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            bmp_width =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
             idx += 2                
             logging.debug("bmp_width = %s"%(bmp_width)) 
 
-            unknown_12 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            unknown_12 =  struct.unpack(cast_bit_order+"i", header_data[idx:idx+4])[0]
             idx += 4
             logging.debug("unknown_12 = %s"%(unknown_12)) 
 
-            unknown_13 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            unknown_13 =  struct.unpack(cast_bit_order+"i", header_data[idx:idx+4])[0]
             idx += 4
             logging.debug("unknown_13 = %s"%(unknown_13)) 
 
-            unknown_14 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            unknown_14 =  struct.unpack(cast_bit_order+"i", header_data[idx:idx+4])[0]
             idx += 4
             logging.debug("unknown_14 = %s"%(unknown_14)) 
 
-            unknown_15 =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
+            unknown_15 =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
             idx += 2
             logging.debug("unknown_15 = %s"%(unknown_15)) 
 
-            unknown_16 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
+            unknown_16 =  struct.unpack(cast_bit_order+"i", header_data[idx:idx+4])[0]
             idx += 4
             logging.debug("unknown_16 = %s"%(unknown_16))
 
@@ -765,13 +804,13 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
             
 
             
-        elif data_type == DIR5_SND_TYPE or data_type == DIR4_SND_TYPE:
+        elif data_type == DIR_SND_TYPE:
             # Director sound type
             logging.info("%s: is a sound file"%(cast_file))
             castData['type'] = 'sound'
 
 
-        elif data_type == DIR5_LSCR_TYPE or data_type == DIR4_LSCR_TYPE:
+        elif data_type == DIR_LSCR_TYPE:
             # Director Lingo Script reference
             logging.info("%s: is a script reference file"%(cast_file))
             castData['type'] = 'script'
@@ -797,19 +836,19 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
                 lnam_file
             ))
         
-        elif data_type == DIR5_PUSH_BUTTON_TYPE:
+        elif data_type == DIR_PUSH_BUTTON_TYPE:
             logging.info("%s: is a push button"%(cast_file))
             castData['type'] = 'push_button'
             
-        elif data_type == DIR5_TEXT_INPUT_TYPE:
+        elif data_type == DIR_TEXT_INPUT_TYPE:
             logging.info("%s: is a text input field"%(cast_file))
             castData['type'] = 'text_input'
             
-        elif data_type == DIR5_TEXT_TYPE:
+        elif data_type == DIR_TEXT_TYPE:
             logging.info("%s: is a text field"%(cast_file))
             castData['type'] = 'text'
             
-        elif data_type == DIR5_SHAPE_TYPE:
+        elif data_type == DIR_SHAPE_TYPE:
             logging.info("%s: is a shape"%(cast_file))
             castData['type'] = 'shape'
             
