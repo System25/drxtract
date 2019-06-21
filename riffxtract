@@ -16,7 +16,7 @@ import struct
 import re
 import logging
 
-logging.basicConfig(level=logging.DEBUG)
+#logging.basicConfig(level=logging.DEBUG)
 
 
 # Default bit order for MAC
