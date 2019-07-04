@@ -343,16 +343,10 @@ def parse_vwsc_data(fdata):
             vwsc_data.append(vwsc_data[-1])
             continue
         
-        # The offset indicates the position relative to other frames
-        channelOffset = struct.unpack(">h", fdata[(idx):(idx+2)])[0]
-        logging.debug("channelOffset: %d"%(channelOffset))
-        
-        idx = idx + channelOffset - 2
+        channelSize -= 2
         
         # Channel data
         if channelSize > 0:
-            channelSize -= channelOffset
-            
             # Apply the differences from the previous channel
             while channelSize > 0:
                 delta_size = struct.unpack(">h", fdata[(idx):(idx+2)])[0]
