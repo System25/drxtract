@@ -64,12 +64,20 @@ if __name__ == '__main__':
         logging.debug(cmd)
         os.system(cmd)
         
+        # Extract the score
+        cmd = '%s/vwscxtract %s'%(
+            os.path.dirname(sys.argv[0]), # Scripts path
+            sys.argv[3] # work directory
+        )
+        logging.debug(cmd)
+        os.system(cmd)
+        
         # Extract the casting elements
         cmd = '%s/casxtract %s %s'%(
             os.path.dirname(sys.argv[0]), # Scripts path
             sys.argv[1], # pc or mac
             sys.argv[3]  # work directory
         )
-        logging.debug(cmd)
-        os.system(cmd)
+        #logging.debug(cmd)
+        #os.system(cmd)
 

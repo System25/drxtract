@@ -1,0 +1,491 @@
+#!/usr/bin/python2
+
+# Author: Abraham Macias Paredes
+# E-mail: system252001@yahoo.es
+# License: GNU GPL v2 (see LICENSE file for details).
+
+#
+# Script to extract Macromedia Director VWSC files.
+# VWLB files contains the score.
+# 
+
+import sys
+import os
+import struct
+import re
+import logging
+import json
+from shutil import copyfile
+
+BINDIR = 'bin'
+
+DEBUG_MAIN_CHANNEL_INFO = False
+DEBUG_PALETTE_CHANNEL_INFO = False
+DEBUG_SPRITE_INFO = False
+
+logging.basicConfig(level=logging.DEBUG)
+
+
+# ====================================================================================================================================
+# ====================================================================================================================================
+# Main channel info (Director 4) 
+def read_main_channel_info_v4(frameData):
+    indx = 0
+    # Main channel info
+    flags = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_MAIN_CHANNEL_INFO:
+        logging.debug("flags: %04x"%(flags))
+
+    transition = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_MAIN_CHANNEL_INFO:
+        logging.debug("transition: %04x"%(transition))
+
+    fps = ord(frameData[indx])
+    indx += 1
+    if DEBUG_MAIN_CHANNEL_INFO:
+        logging.debug("Frames per second: %d"%(fps))
+    
+    transition_id = ord(frameData[indx])
+    indx += 1
+    if DEBUG_MAIN_CHANNEL_INFO:
+        logging.debug("transition_id: %d"%(transition_id))
+
+    sound1_cast = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_MAIN_CHANNEL_INFO:
+        logging.debug("sound1_cast: %04x"%(sound1_cast))
+
+    sound2_cast = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_MAIN_CHANNEL_INFO:
+        logging.debug("sound1_cast: %04x"%(sound2_cast))
+
+    sound_flags = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_MAIN_CHANNEL_INFO:
+        logging.debug("sound_flags: %04x"%(sound_flags))
+    
+    unknown1 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_MAIN_CHANNEL_INFO:
+        logging.debug("unknown1: %04x"%(unknown1))
+
+    unknown2 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_MAIN_CHANNEL_INFO:
+        logging.debug("unknown2: %04x"%(unknown2))
+
+    script = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_MAIN_CHANNEL_INFO:
+        logging.debug("script: %04x"%(script))
+
+    unknown3 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_MAIN_CHANNEL_INFO:
+        logging.debug("unknown3: %04x"%(unknown3))
+
+
+# ====================================================================================================================================
+# Palette channel info (Director 4) 
+def read_palette_channel_info_v4(frameData):
+    indx = 0
+    # Palette channel info
+    palette_cast = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_PALETTE_CHANNEL_INFO:
+        logging.debug("palette_cast: %04x"%(palette_cast))
+
+    unknown2 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_PALETTE_CHANNEL_INFO:
+        logging.debug("unknown2: %04x"%(unknown2))
+
+    transitio_fps = ord(frameData[indx])
+    indx += 1
+    if DEBUG_PALETTE_CHANNEL_INFO:
+        logging.debug("transitio_fps: %d"%(transitio_fps))
+
+    unknown3 = ord(frameData[indx])
+    indx += 1
+    if DEBUG_PALETTE_CHANNEL_INFO:
+        logging.debug("unknown3: %d"%(unknown3))
+
+    unknown4 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_PALETTE_CHANNEL_INFO:
+        logging.debug("unknown4: %04x"%(unknown4))
+
+    palette_id = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_PALETTE_CHANNEL_INFO:
+        logging.debug("palette_id: %04x"%(palette_id))
+
+    unknown5 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_PALETTE_CHANNEL_INFO:
+        logging.debug("unknown5: %04x"%(unknown5))
+
+    unknown6 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_PALETTE_CHANNEL_INFO:
+        logging.debug("unknown6: %04x"%(unknown6))
+
+    unknown7 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_PALETTE_CHANNEL_INFO:
+        logging.debug("unknown7: %04x"%(unknown7))
+
+    unknown8 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_PALETTE_CHANNEL_INFO:
+        logging.debug("unknown8: %04x"%(unknown8))
+
+    unknown9 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_PALETTE_CHANNEL_INFO:
+        logging.debug("unknown9: %04x"%(unknown9))
+    
+# ====================================================================================================================================
+# Sprite channel info (Director 4) 
+def read_sprite_channel_info_v4(frameData, i):
+    indx = 0
+    # Sprite info
+    if DEBUG_SPRITE_INFO:
+        logging.debug("Sprite[%d] ----------------------------"%(i))
+    # Read sprite info
+    spriteType = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_SPRITE_INFO:
+        logging.debug("Sprite[%d] spriteType: %d"%(i, spriteType))
+
+    foregroundColor = ord(frameData[indx])
+    indx += 1
+    if DEBUG_SPRITE_INFO:
+        logging.debug("Sprite[%d] foregroundColor: %d"%(i, foregroundColor))
+
+    backgroundColor = ord(frameData[indx])
+    indx += 1
+    if DEBUG_SPRITE_INFO:
+        logging.debug("Sprite[%d] backgroundColor: %d"%(i, backgroundColor))
+
+    ink_type = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_SPRITE_INFO:
+        logging.debug("Sprite[%d] ink_type: %d"%(i, ink_type))
+
+    castId = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_SPRITE_INFO:
+        logging.debug("Sprite[%d] castId: %d"%(i, castId))
+
+    y = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_SPRITE_INFO:
+        logging.debug("Sprite[%d] y: %d"%(i, y))
+
+    x = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_SPRITE_INFO:
+        logging.debug("Sprite[%d] x: %d"%(i, x))
+
+    height = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_SPRITE_INFO:
+        logging.debug("Sprite[%d] height: %d"%(i, height))
+
+    width = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_SPRITE_INFO:
+        logging.debug("Sprite[%d] width: %d"%(i, width))
+
+    flag1 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_SPRITE_INFO:
+        logging.debug("Sprite[%d] flag1: %04x"%(i, flag1))
+    
+    flag2 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_SPRITE_INFO:
+        logging.debug("Sprite[%d] flag2: %04x"%(i, flag2))
+    
+    if castId > 0:
+        sprite_data = {}
+        sprite_data['spriteType'] = spriteType
+        sprite_data['castId'] = castId
+        sprite_data['foregroundColor'] = foregroundColor
+        sprite_data['backgroundColor'] = backgroundColor
+        sprite_data['ink_type'] = ink_type
+        sprite_data['y'] = y
+        sprite_data['x'] = x
+        sprite_data['height'] = height
+        sprite_data['width'] = width
+        sprite_data['flag1'] = flag1
+        sprite_data['flag2'] = flag2
+        return sprite_data
+    
+    else:
+        # Empty sprite
+        if DEBUG_SPRITE_INFO:
+            logging.debug("Empty castId (%d) in Sprite[%d]"%(castId, i))
+        
+        return {}
+
+    
+
+    
+# ====================================================================================================================================
+# Reads from VWSC channel data the score elements
+def parse_vwsc_channels(channelData, frame_size, column):
+    cdata = {}
+    
+    indx = 0
+    
+    cdata['main'] = {}
+    cdata['score'] = []
+
+    if frame_size == 20:
+        # Director 4
+        if DEBUG_MAIN_CHANNEL_INFO:
+            logging.debug("Director 4?")
+            logging.debug("[%d] Main channel info ----------------------------"%(column))
+        frameData = channelData[indx:(indx+frame_size)]
+        read_main_channel_info_v4(frameData)
+        indx += frame_size
+        
+        if DEBUG_PALETTE_CHANNEL_INFO:
+            logging.debug("[%d] Palette channel info ----------------------------"%(column))
+        frameData = channelData[indx:(indx+frame_size)]
+        read_palette_channel_info_v4(frameData)
+        indx += frame_size
+        
+    else:
+        logging.warn("Unknown director frame size: %d"%(frame_size))
+        
+    i = 1
+    SPRITE_DATA_SIZE = 24
+    while indx < len(channelData):
+        if DEBUG_SPRITE_INFO:
+            logging.debug("[%d] Sprite channel info ----------------------------"%(column))
+        if frame_size == 20:
+            # Director 4
+            if DEBUG_SPRITE_INFO:
+                logging.debug("Director 4?")
+            frameData = channelData[indx:(indx+frame_size)]
+            cdata['score'].append(read_sprite_channel_info_v4(frameData, i))
+        else:
+            logging.warn("Unknown director frame size: %d"%(frame_size))
+
+        indx += frame_size
+        
+        i += 1
+        
+    
+    return cdata
+
+# ====================================================================================================================================
+# Reads from VWSC data the score elements
+def parse_vwsc_data(fdata):
+    logging.debug("parse_vwsc_data ======================")
+    vwsc_data = []
+    
+    idx = 0
+    dataSize = struct.unpack(">i", fdata[(idx):(idx+4)])[0]
+    idx = idx + 4
+    logging.debug("dataSize = %08x"%(dataSize))
+
+    dataMarker = struct.unpack(">i", fdata[(idx):(idx+4)])[0]
+    idx = idx + 4
+    logging.debug("dataMarker = %08x"%(dataMarker))
+
+    if dataMarker != 0x14:
+        logging.error('Can\'f find data marker in VWSC data!')
+        sys.exit(-1)
+    
+    if len(fdata) != dataSize:
+        logging.error('Bad VWSC data size: (%d != %d)'%(len(fdata), dataSize))
+        sys.exit(-1)
+        
+    frame_count =  struct.unpack(">i", fdata[idx:idx+4])[0]
+    idx += 4
+    logging.debug("frame_count = %08x"%(frame_count))
+    
+    unknown01 =  struct.unpack(">h", fdata[idx:idx+2])[0]
+    idx += 2
+    logging.debug("unknown01 = %04x"%(unknown01))
+    
+    frame_size =  struct.unpack(">h", fdata[idx:idx+2])[0]
+    idx += 2
+    logging.debug("frame_size = %04x"%(frame_size))
+    
+    channel_count =  struct.unpack(">h", fdata[idx:idx+2])[0]
+    idx += 2
+    logging.debug("channel_count = %04x"%(channel_count))
+    
+    unknown02 =  struct.unpack(">h", fdata[idx:idx+2])[0]
+    idx += 2
+    logging.debug("unknown02 = %04x"%(unknown02))
+    
+    channelDataList = ["\0"] * (channel_count * frame_size)
+    channelDataStr = "".join(channelDataList)
+    
+    column = 0
+    while idx < dataSize:
+        column += 1
+        logging.debug("column: %d idx: %08x"%(column, idx))
+        channelSize = struct.unpack(">h", fdata[(idx):(idx+2)])[0]
+        idx = idx + 2
+        logging.debug("channelSize: %d"%(channelSize))
+        if channelSize == 2:
+            logging.debug('This frame is equals to the previous one!')
+            vwsc_data.append(vwsc_data[-1])
+            continue
+        
+        # The offset indicates the position relative to other frames
+        channelOffset = struct.unpack(">h", fdata[(idx):(idx+2)])[0]
+        logging.debug("channelOffset: %d"%(channelOffset))
+        
+        idx = idx + channelOffset - 2
+        
+        # Channel data
+        if channelSize > 0:
+            channelSize -= channelOffset
+            
+            # Apply the differences from the previous channel
+            while channelSize > 0:
+                delta_size = struct.unpack(">h", fdata[(idx):(idx+2)])[0]
+                if (delta_size > channelSize) or (delta_size <= 0):
+                    logging.warn("Delta size out of limits: %d > %d"%(delta_size, channelSize))
+                    break
+                idx = idx + 2
+                delta_offset = struct.unpack(">h", fdata[(idx):(idx+2)])[0]
+                if delta_offset < 0:
+                    delta_offset = (delta_offset & 0xFF)
+                
+                idx = idx + 2
+                channelSize -= 4
+            
+                logging.debug("delta_size: %d"%(delta_size))
+                logging.debug("delta_offset: %d"%(delta_offset))
+
+                deltaData = fdata[(idx):(idx+delta_size)]
+                idx = idx + delta_size
+                channelSize -= delta_size
+                
+                for i in range(0, delta_size):
+                    channelDataList[delta_offset + i] = deltaData[i]
+            
+            channelDataStr = "".join(channelDataList)
+            vwsc_data.append(parse_vwsc_channels(channelDataStr, frame_size, column))
+            
+        else:
+            logging.debug('Empty channel!')
+            vwsc_data.append([])
+        
+        idx += channelSize
+        
+    
+    return vwsc_data
+
+# ====================================================================================================================================
+# Reads from VWSC file the score elements
+def parse_vwsc_file(vwsc_file):
+    vwsc_data = []
+    
+    with open(vwsc_file, mode='rb') as file:
+        fdata = file.read()
+
+        # Check if the real VWSC data is wrapped into other data
+        indx = 0
+        dataSize = struct.unpack(">i", fdata[(indx):(indx+4)])[0]
+        indx = indx + 4
+        
+        dataMarker = struct.unpack(">i", fdata[(indx):(indx+4)])[0]
+        indx = indx + 4
+        
+        logging.debug("parse_vwsc_file ============================================")
+        logging.debug("dataSize: %d"%(dataSize))
+        logging.debug("dataMarker: %d"%(dataMarker))
+        
+        markersidx = 0
+        if dataMarker != 0x14:
+            # VWSC data is wrapped into other data (DIR file and not DRX file)
+            if len(fdata) != dataSize:
+                logging.error('Bad VWSC file size: (%d != %d)'%(len(fdata), dataSize))
+                sys.exit(-1)
+            
+            unknown_01 =  struct.unpack(">i", fdata[indx:indx+4])[0]
+            indx += 4
+            logging.debug("unknown_01 = %08x"%(unknown_01))
+            
+            nmarkers =  struct.unpack(">i", fdata[indx:indx+4])[0]
+            indx += 4
+            logging.debug("nmarkers = %08x"%(nmarkers))
+            
+            nmarkers1 =  struct.unpack(">i", fdata[indx:indx+4])[0]
+            indx += 4
+            logging.debug("nmarkers1 = %08x"%(nmarkers1))
+            
+            lastMarker =  struct.unpack(">i", fdata[indx:indx+4])[0]
+            indx += 4
+            logging.debug("lastMarker = %08x"%(lastMarker))
+            
+            
+            markersidx = indx
+            
+            # Skip the markers because at this moment I don't know what are they
+            # useful for
+            indx += nmarkers1 * 4
+            
+            dataSize = struct.unpack(">i", fdata[(indx):(indx+4)])[0]
+            indx = indx + 4
+
+            dataMarker = struct.unpack(">i", fdata[(indx):(indx+4)])[0]
+            indx = indx + 4
+        
+        if dataMarker != 0x14:
+            logging.error('Can\'f find data marker in VWSC file!')
+            sys.exit(-1)
+        
+        indx -= 8
+        data = fdata[indx:(indx+dataSize)]
+        indx += dataSize
+        
+        # VWSC data structure depends on Director version
+        vwsc_data = parse_vwsc_data(data)
+        
+        # Check of many data is left
+        logging.debug('Data left: %d'%(len(fdata)-indx))
+        
+        
+    return vwsc_data
+
+
+# ====================================================================================================================================
+if __name__ == '__main__':
+    if len(sys.argv) < 2:
+        print("USAGE: vwscxtract <work directory>")
+
+    else:
+        if not os.path.isdir(sys.argv[1]):
+            logging.error(" '%s' is not a directory"%(sys.argv[1]))
+            sys.exit(-1)
+
+        vwsc_file = None
+        
+        for f in os.listdir(os.path.join(sys.argv[1], BINDIR)):
+            if f.endswith('VWSC'):
+                vwsc_file = f
+                break
+        
+        if vwsc_file is None:
+            logging.error('Can not find a VWSC file!')
+            sys.exit(-1)
+        
+        vwsc_elements = parse_vwsc_file(os.path.join(sys.argv[1], BINDIR, vwsc_file))
+        # Write score data to JSON file
+        with open(os.path.join(sys.argv[1], 'score.json'), 'wb') as jsfile:
+            jsfile.write(json.dumps(vwsc_elements, indent=4, sort_keys=True))
+
