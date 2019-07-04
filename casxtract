@@ -116,43 +116,6 @@ def parse_cas_file(cas_file):
             
     return cas_data
 
-# ====================================================================================================================================
-# Reads from VWLB file the markers channel of the score and its frame
-def parse_vwlb_file(vwlb_file):
-    vwlb_data = []
-    
-    with open(vwlb_file, mode='rb') as file:
-        fdata = file.read()
-
-        indx = 0
-        nmarkers = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
-        indx = indx + 2
-        logging.debug("N Markers: %d"%(nmarkers))
-        
-        mnidx = 2 + 4 * (nmarkers + 1)
-        
-        for i in range(0, nmarkers):
-            marker = {}
-            
-            frame = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
-            indx = indx + 2
-            logging.debug("Frame: %d"%(frame))
-            marker['frame'] = frame
-            
-            name_start = mnidx + struct.unpack(">h", fdata[(indx):(indx+2)])[0]
-            indx = indx + 2
-            logging.debug("name_start: %d"%(name_start))
-            
-            name_end = mnidx + struct.unpack(">h", fdata[(indx+2):(indx+4)])[0]
-            logging.debug("name_end: %d"%(name_end))
-            
-            name = fdata[name_start:name_end]
-            logging.debug("Name: %s"%(name))
-            marker['name'] = name
-            
-            vwlb_data.append(marker)
-            
-    return vwlb_data
 
 # ====================================================================================================================================
 # Main channel info (Director 4) 
@@ -1120,40 +1083,36 @@ if __name__ == '__main__':
         if not os.path.isdir(os.path.join(sys.argv[2], CASDIR)):
             os.mkdir(os.path.join(sys.argv[2], CASDIR))
         
-        # Look for KEY* and CAS* files (not ext_ ones)
+        # Look for KEY* and CAS* files
         key_file = None
         cas_file = None
         lctx_file = None
         lnam_file = None
         
         sord_file = None
-        vwlb_file = None
         vwsc_file = None
         vwcf_file = None
         
         for f in os.listdir(os.path.join(sys.argv[2], BINDIR)):
-            if f.endswith('KEY*') and not f.startswith("ext_"):
+            if f.endswith('KEY*'):
                 key_file = f
             
-            if f.endswith('CAS*') and not f.startswith("ext_"):
+            if f.endswith('CAS*'):
                 cas_file = f
                 
-            if (f.endswith('Lctx') or f.endswith('LctX')) and not f.startswith("ext_"):
+            if (f.endswith('Lctx') or f.endswith('LctX')):
                 lctx_file = f
                 
-            if f.endswith('Lnam') and not f.startswith("ext_"):
+            if f.endswith('Lnam'):
                 lnam_file = f
 
-            if f.endswith('Sord') and not f.startswith("ext_"):
+            if f.endswith('Sord'):
                 sord_file = f
-
-            if f.endswith('VWLB') and not f.startswith("ext_"):
-                vwlb_file = f
-                
-            if f.endswith('VWSC') and not f.startswith("ext_"):
+            
+            if f.endswith('VWSC'):
                 vwsc_file = f
                 
-            if (f.endswith('VWCF') or f.endswith('DRCF')) and not f.startswith("ext_"):
+            if (f.endswith('VWCF') or f.endswith('DRCF')):
                 vwcf_file = f
                 
         if key_file is None:
@@ -1189,11 +1148,6 @@ if __name__ == '__main__':
         key_elements = parse_key_file(os.path.join(sys.argv[2], BINDIR, key_file))
         lctx_elements = parse_lctx_file(os.path.join(sys.argv[2], BINDIR, lctx_file))
         
-        if vwlb_file is not None:
-            vwlb_elements = parse_vwlb_file(os.path.join(sys.argv[2], BINDIR, vwlb_file))
-            # Write markers data to JSON file
-            with open(os.path.join(sys.argv[2], CASDIR, 'markers.json'), 'wb') as jsfile:
-                jsfile.write(json.dumps(vwlb_elements, indent=4, sort_keys=True))
         
         if vwsc_file is not None:
             vwsc_elements = parse_vwsc_file(os.path.join(sys.argv[2], BINDIR, vwsc_file))
