@@ -20,13 +20,95 @@ from shutil import copyfile
 BINDIR = 'bin'
 
 DEBUG_MAIN_CHANNEL_INFO = False
-DEBUG_PALETTE_CHANNEL_INFO = False
+DEBUG_PALETTE_CHANNEL_INFO = True
 DEBUG_SPRITE_INFO = False
 
 logging.basicConfig(level=logging.DEBUG)
 
+# ====================================================================================================================================
+# Translate operation to string representation (Director 5)
+def get_operation_dir5(operation):
+    operation = ((operation >> 4) & 0xF)
+    bit3 = (operation & 0x8)
+    bit2 = (operation & 0x4)
+    bit1 = (operation & 0x2)
+    bit0 = (operation & 0x1)
+    
+    if bit3 != 0:
+        # Color Cycling
+        if bit0 != 0:
+            return 'color_cycling_auto_reverse'
+        else:
+            return 'color_cycling_loop'
+    
+    if bit2 != 0:
+        # Fade to color
+        if bit1 != 0:
+            return 'fade_to_black'
+        else:
+            return 'fade_to_white'
+    
+    return operation
 
 # ====================================================================================================================================
+# Translate palette number to string representation (Director 5)
+def get_palette_dir5(palette_id):
+    
+    # I found this in a german book called "Macromedia Director: Multimediaprogrammierung mit Lingo"
+    # https://books.google.es/books?id=UxLuBQAAQBAJ&pg=PA282&lpg=PA282&dq=macromedia+director+ntsc+web+grayscale+rainbow&source=bl&ots=tlcNQFqWod&sig=ACfU3U2d0o3Kv3y7_9umDgOCPGBDqooIzQ&hl=es&sa=X&ved=2ahUKEwjXs-rnlNXiAhVDrxoKHdcACWIQ6AEwB3oECAUQAQ#v=onepage&q=macromedia%20director%20ntsc%20web%20grayscale%20rainbow&f=false
+    
+    if palette_id == -1:
+        return 'systemMac'
+    elif palette_id == -102:
+        return 'systemWin'
+    elif palette_id == -2:
+        return 'rainbow'
+    elif palette_id == -3:
+        return 'grayscale'
+    elif palette_id == -4:
+        return 'pastels'
+    elif palette_id == -5:
+        return 'vivid'
+    elif palette_id == -6:
+        return 'ntsc'
+    elif palette_id == -7:
+        return 'metallic'
+    elif palette_id == -8:
+        return 'web216'
+    elif palette_id == -101:
+        return 'systemWinDir4'
+    
+    # Unknown id
+    return palette_id
+
+
+# ====================================================================================================================================
+# Translate palette number to string representation (Director 4)
+def get_palette_dir4(palette_id):
+    if palette_id == -1:
+        return 'systemMac'
+    elif palette_id == -65:
+        return 'systemWin'
+    elif palette_id == -2:
+        return 'rainbow'
+    elif palette_id == -3:
+        return 'grayscale'
+    elif palette_id == -4:
+        return 'pastels'
+    elif palette_id == -5:
+        return 'vivid'
+    elif palette_id == -6:
+        return 'ntsc'
+    elif palette_id == -7:
+        return 'metallic'
+    elif palette_id == -8:
+        return 'web216'
+
+    
+    # Unknown id
+    return palette_id
+
+
 # ====================================================================================================================================
 # Main channel info (Director 4) 
 def read_main_channel_info_v4(frameData):
@@ -55,12 +137,12 @@ def read_main_channel_info_v4(frameData):
     sound1_cast = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
     indx = indx + 2
     if DEBUG_MAIN_CHANNEL_INFO:
-        logging.debug("sound1_cast: %04x"%(sound1_cast))
+        logging.debug("sound1_cast: %d"%(sound1_cast))
 
     sound2_cast = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
     indx = indx + 2
     if DEBUG_MAIN_CHANNEL_INFO:
-        logging.debug("sound1_cast: %04x"%(sound2_cast))
+        logging.debug("sound2_cast: %d"%(sound2_cast))
 
     sound_flags = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
     indx = indx + 2
@@ -87,46 +169,130 @@ def read_main_channel_info_v4(frameData):
     if DEBUG_MAIN_CHANNEL_INFO:
         logging.debug("unknown3: %04x"%(unknown3))
 
+    main_data = {}
+    main_data['fps'] = fps
+    main_data['transition_id'] = transition_id
+    main_data['sound1_cast'] = sound1_cast
+    main_data['sound2_cast'] = sound2_cast
+    main_data['script'] = script
+
+    return main_data
+
+
+# ====================================================================================================================================
+# Main channel info (Director 5) 
+def read_main_channel_info_v5(frameData):
+    indx = 0
+    # Main channel info
+    unknown01 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_MAIN_CHANNEL_INFO:
+        logging.debug("unknown01: %04x"%(unknown01))
+
+    script = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_MAIN_CHANNEL_INFO:
+        logging.debug("script: %04x"%(script))
+
+    unknown03 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_MAIN_CHANNEL_INFO:
+        logging.debug("unknown03: %04x"%(unknown03))
+
+    sound1_cast = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_MAIN_CHANNEL_INFO:
+        logging.debug("sound1_cast: %04x"%(sound1_cast))
+
+    unknown05 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_MAIN_CHANNEL_INFO:
+        logging.debug("unknown05: %04x"%(unknown05))
+
+    sound2_cast = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_MAIN_CHANNEL_INFO:
+        logging.debug("sound2_cast: %04x"%(sound2_cast))
+        
+    unknown07 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_MAIN_CHANNEL_INFO:
+        logging.debug("unknown07: %04x"%(unknown07))
+
+    transition_id = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_MAIN_CHANNEL_INFO:
+        logging.debug("transition_id: %d"%(transition_id))
+
+    unknown08 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_MAIN_CHANNEL_INFO:
+        logging.debug("unknown08: %04x"%(unknown08))
+
+    unknown09 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_MAIN_CHANNEL_INFO:
+        logging.debug("unknown09: %04x"%(unknown09))
+
+    fps = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_MAIN_CHANNEL_INFO:
+        logging.debug("fps: %d"%(fps))
+
+    unknown10 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_MAIN_CHANNEL_INFO:
+        logging.debug("unknown10: %04x"%(unknown10))
+
+    main_data = {}
+    main_data['fps'] = fps
+    main_data['transition_id'] = transition_id
+    main_data['sound1_cast'] = sound1_cast
+    main_data['sound2_cast'] = sound2_cast
+    main_data['script'] = script
+
+    return main_data
+
 
 # ====================================================================================================================================
 # Palette channel info (Director 4) 
 def read_palette_channel_info_v4(frameData):
     indx = 0
     # Palette channel info
-    palette_cast = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    palette_id = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
     indx = indx + 2
+    
+    palette_id = get_palette_dir4(palette_id)
+    
     if DEBUG_PALETTE_CHANNEL_INFO:
-        logging.debug("palette_cast: %04x"%(palette_cast))
+        logging.debug("palette_id: %s"%(palette_id))
 
     unknown2 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
     indx = indx + 2
     if DEBUG_PALETTE_CHANNEL_INFO:
         logging.debug("unknown2: %04x"%(unknown2))
 
-    transitio_fps = ord(frameData[indx])
+    operation = ord(frameData[indx])
     indx += 1
+    
+    operation = get_operation_dir5(operation)
     if DEBUG_PALETTE_CHANNEL_INFO:
-        logging.debug("transitio_fps: %d"%(transitio_fps))
+        logging.debug("operation: %s"%(operation))
 
-    unknown3 = ord(frameData[indx])
+    fps = ord(frameData[indx])
     indx += 1
     if DEBUG_PALETTE_CHANNEL_INFO:
-        logging.debug("unknown3: %d"%(unknown3))
+        logging.debug("fps: %d"%(fps))
 
     unknown4 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
     indx = indx + 2
     if DEBUG_PALETTE_CHANNEL_INFO:
         logging.debug("unknown4: %04x"%(unknown4))
 
-    palette_id = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    cycles = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
     indx = indx + 2
     if DEBUG_PALETTE_CHANNEL_INFO:
-        logging.debug("palette_id: %04x"%(palette_id))
-
-    unknown5 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
-    indx = indx + 2
-    if DEBUG_PALETTE_CHANNEL_INFO:
-        logging.debug("unknown5: %04x"%(unknown5))
+        logging.debug("cycles: %d"%(cycles))
 
     unknown6 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
     indx = indx + 2
@@ -147,7 +313,68 @@ def read_palette_channel_info_v4(frameData):
     indx = indx + 2
     if DEBUG_PALETTE_CHANNEL_INFO:
         logging.debug("unknown9: %04x"%(unknown9))
+        
+    palette_data = {}
+    palette_data['fps'] = fps
+    palette_data['operation'] = operation
+    palette_data['palette_id'] = palette_id
+    palette_data['cycles'] = cycles
+
+    return palette_data
     
+# ====================================================================================================================================
+# Palette channel info (Director 5) 
+def read_palette_channel_info_v5(frameData):
+    indx = 0
+    # Palette channel info
+    unknown01 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_PALETTE_CHANNEL_INFO:
+        logging.debug("unknown01: %04x"%(unknown01))
+
+    palette_id = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    
+    palette_id = get_palette_dir5(palette_id)
+    
+    if DEBUG_PALETTE_CHANNEL_INFO:
+        logging.debug("palette_id: %s"%(palette_id))
+        
+    fps = ord(frameData[indx])
+    indx += 1
+    if DEBUG_PALETTE_CHANNEL_INFO:
+        logging.debug("fps: %d"%(fps))
+
+    operation = ord(frameData[indx])
+    indx += 1
+    
+    operation = get_operation_dir5(operation)
+    if DEBUG_PALETTE_CHANNEL_INFO:
+        logging.debug("operation: %s"%(operation))
+
+    unknown02 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_PALETTE_CHANNEL_INFO:
+        logging.debug("unknown02: %04x"%(unknown02))
+
+    unknown03 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_PALETTE_CHANNEL_INFO:
+        logging.debug("unknown03: %04x"%(unknown03))
+        
+    cycles = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_PALETTE_CHANNEL_INFO:
+        logging.debug("cycles: %d"%(cycles))
+
+    
+    palette_data = {}
+    palette_data['fps'] = fps
+    palette_data['palette_id'] = palette_id
+    palette_data['operation'] = operation
+    palette_data['cycles'] = cycles
+
+    return palette_data
 # ====================================================================================================================================
 # Sprite channel info (Director 4) 
 def read_sprite_channel_info_v4(frameData, i):
@@ -233,8 +460,23 @@ def read_sprite_channel_info_v4(frameData, i):
         
         return {}
 
+# ====================================================================================================================================
+# Sprite channel info (Director 5) 
+def read_sprite_channel_info_v5(frameData, i):
+    sprite_data = read_sprite_channel_info_v4(frameData, i)
     
+    indx = 20
+    unknown10 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_SPRITE_INFO:
+        logging.debug("unknown10: %04x"%(unknown10))
+    
+    unknown11 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_SPRITE_INFO:
+        logging.debug("unknown11: %04x"%(unknown11))
 
+    return sprite_data
     
 # ====================================================================================================================================
 # Reads from VWSC channel data the score elements
@@ -244,6 +486,7 @@ def parse_vwsc_channels(channelData, frame_size, column):
     indx = 0
     
     cdata['main'] = {}
+    cdata['palette'] = {}
     cdata['score'] = []
 
     if frame_size == 20:
@@ -252,13 +495,27 @@ def parse_vwsc_channels(channelData, frame_size, column):
             logging.debug("Director 4?")
             logging.debug("[%d] Main channel info ----------------------------"%(column))
         frameData = channelData[indx:(indx+frame_size)]
-        read_main_channel_info_v4(frameData)
+        cdata['main'] = read_main_channel_info_v4(frameData)
         indx += frame_size
         
         if DEBUG_PALETTE_CHANNEL_INFO:
             logging.debug("[%d] Palette channel info ----------------------------"%(column))
         frameData = channelData[indx:(indx+frame_size)]
-        read_palette_channel_info_v4(frameData)
+        cdata['palette'] = read_palette_channel_info_v4(frameData)
+        indx += frame_size
+    elif frame_size == 24:
+        # Director 5
+        if DEBUG_MAIN_CHANNEL_INFO:
+            logging.debug("Director 5?")
+            logging.debug("[%d] Main channel info ----------------------------"%(column))
+        frameData = channelData[indx:(indx+frame_size)]
+        cdata['main'] = read_main_channel_info_v5(frameData)
+        indx += frame_size
+        
+        if DEBUG_PALETTE_CHANNEL_INFO:
+            logging.debug("[%d] Palette channel info ----------------------------"%(column))
+        frameData = channelData[indx:(indx+frame_size)]
+        cdata['palette'] = read_palette_channel_info_v5(frameData)
         indx += frame_size
         
     else:
@@ -275,6 +532,14 @@ def parse_vwsc_channels(channelData, frame_size, column):
                 logging.debug("Director 4?")
             frameData = channelData[indx:(indx+frame_size)]
             cdata['score'].append(read_sprite_channel_info_v4(frameData, i))
+        
+        elif frame_size == 24:
+            # Director 5
+            if DEBUG_SPRITE_INFO:
+                logging.debug("Director 5?")
+            frameData = channelData[indx:(indx+frame_size)]
+            cdata['score'].append(read_sprite_channel_info_v5(frameData, i))
+            
         else:
             logging.warn("Unknown director frame size: %d"%(frame_size))
 
