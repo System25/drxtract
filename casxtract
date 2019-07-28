@@ -37,6 +37,122 @@ DIR_PUSH_BUTTON_TYPE = 7
 DIR_SHAPE_TYPE = 8
 DIR_LSCR_TYPE = 11
 DIR_TEXT_TYPE = 12
+DIR_TRAN_TYPE = 14
+
+# ====================================================================================================================================
+# Translate a transition number to string representation
+def get_transtition(transition_id):
+    
+    # I found this in: Director 8 Demystified (puppetTransition lingo script reference)
+    
+    if transition_id == 1:
+        return 'wipe right'
+    elif transition_id == 2:
+        return 'wipe left'
+    elif transition_id == 3:
+        return 'wipe down'
+    elif transition_id == 4:
+        return 'wipe up'
+    elif transition_id == 5:
+        return 'center out, horizontal'
+    elif transition_id == 6:
+        return 'edges in, horizontal'
+    elif transition_id == 7:
+        return 'center out, vertical'
+    elif transition_id == 8:
+        return 'edges in, vertical'
+    elif transition_id == 9:
+        return 'center out, square'
+    elif transition_id == 10:
+        return 'edges in, square'
+    elif transition_id == 11:
+        return 'push left'
+    elif transition_id == 12:
+        return 'push right'
+    elif transition_id == 13:
+        return 'push down'
+    elif transition_id == 14:
+        return 'push up'
+    elif transition_id == 15:
+        return 'reveal up'
+    elif transition_id == 16:
+        return 'reveal up, right'
+    elif transition_id == 17:
+        return 'reveal right'
+    elif transition_id == 18:
+        return 'reveal down, right'
+    elif transition_id == 19:
+        return 'reveal down'
+    elif transition_id == 20:
+        return 'reveal down, left'
+    elif transition_id == 21:
+        return 'reveal left'
+    elif transition_id == 22:
+        return 'reveal up, left'
+    elif transition_id == 23:
+        return 'dissolve, pixels fast'
+    elif transition_id == 24:
+        return 'dissolve, boxy rectangles'
+    elif transition_id == 25:
+        return 'dissolve, boxy squares'
+    elif transition_id == 26:
+        return 'dissolve, patterns'
+    elif transition_id == 27:
+        return 'random rows'
+    elif transition_id == 28:
+        return 'random columns'
+    elif transition_id == 29:
+        return 'cover down'
+    elif transition_id == 30:
+        return 'cover down, left'
+    elif transition_id == 31:
+        return 'cover down, right'
+    elif transition_id == 32:
+        return 'cover left'
+    elif transition_id == 33:
+        return 'cover right'
+    elif transition_id == 34:
+        return 'cover up'
+    elif transition_id == 35:
+        return 'cover up, left'
+    elif transition_id == 36:
+        return 'cover up, right'
+    elif transition_id == 37:
+        return 'venetian blinds'
+    elif transition_id == 38:
+        return 'checkerboard'
+    elif transition_id == 39:
+        return 'strips on bottom, build left'
+    elif transition_id == 40:
+        return 'strips on bottom, build right'
+    elif transition_id == 41:
+        return 'strips on left, build down'
+    elif transition_id == 42:
+        return 'strips on left, build up'
+    elif transition_id == 43:
+        return 'strips on right, build down'
+    elif transition_id == 44:
+        return 'strips on right, build up'
+    elif transition_id == 45:
+        return 'strips on top, build left'
+    elif transition_id == 46:
+        return 'strips on top, build right'
+    elif transition_id == 47:
+        return 'zoom open'
+    elif transition_id == 48:
+        return 'zoom close'
+    elif transition_id == 49:
+        return 'vertical blinds'
+    elif transition_id == 50:
+        return 'dissolve, bits fast'
+    elif transition_id == 51:
+        return 'dissolve, pixels'
+    elif transition_id == 52:
+        return 'dissolve, bits'
+
+    # Unknown id
+    return transition_id
+
 
 # ====================================================================================================================================
 def parse_key_file(key_file):
@@ -492,13 +608,13 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
             idx += 4
             logging.debug("unknown_14 = %s"%(unknown_14)) 
 
-            unknown_15 =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
-            idx += 2
-            logging.debug("unknown_15 = %s"%(unknown_15)) 
+            #unknown_15 =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            #idx += 2
+            #logging.debug("unknown_15 = %s"%(unknown_15)) 
 
-            unknown_16 =  struct.unpack(cast_bit_order+"i", header_data[idx:idx+4])[0]
-            idx += 4
-            logging.debug("unknown_16 = %s"%(unknown_16))
+            #unknown_16 =  struct.unpack(cast_bit_order+"i", header_data[idx:idx+4])[0]
+            #idx += 4
+            #logging.debug("unknown_16 = %s"%(unknown_16))
 
             castData['content']['bitmap'] = {}
             castData['content']['bitmap']['height'] = bmp_height
@@ -560,6 +676,33 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
             logging.info("%s: is a shape"%(cast_file))
             castData['type'] = 'shape'
             
+        elif data_type == DIR_TRAN_TYPE:
+            logging.info("%s: is a transition"%(cast_file))
+            castData['type'] = 'transition'
+            
+            smoothness =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2
+            logging.debug("smoothness = %s"%(smoothness))
+            
+            transition =  struct.unpack(cast_bit_order+"B", header_data[idx])[0]
+            idx += 1                
+            logging.debug("transition = %s"%(transition)) 
+            
+            stage_or_area =  struct.unpack(cast_bit_order+"B", header_data[idx])[0]
+            idx += 1                
+            logging.debug("stage_or_area = %s"%(stage_or_area))
+            
+            # Duration in millisenconds
+            duration =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2
+            logging.debug("duration = %s"%(duration))
+            
+            castData['content']['transition'] = {}
+            castData['content']['transition']['type'] = get_transtition(transition)
+            castData['content']['transition']['smoothness'] = smoothness
+            castData['content']['transition']['duration'] = duration
+            castData['content']['transition']['in_changing_area'] = (stage_or_area == 2)
+
         else:
             logging.warn("%s: data_type unknown (%s)!"%(cast_file, data_type))
             castData['type'] = 'unknown'
@@ -580,14 +723,14 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
                 else:
                     logging.warn("There is no %s file (maybe empty file)"%(src))
 
-                if f.endswith('.BITD'):
-                    os.system('%s/bitd2bmp %s %s %s %s'%(
-                        os.path.dirname(sys.argv[0]), # Scripts path
-                        sys.argv[1], # pc or mac
-                        dest_dir, # work directory
-                        os.path.basename(cast_file), # cast file name
-                        f # BITD file name
-                    ))
+#                if f.endswith('.BITD'):
+#                    os.system('%s/bitd2bmp %s %s %s %s'%(
+#                        os.path.dirname(sys.argv[0]), # Scripts path
+#                        sys.argv[1], # pc or mac
+#                        dest_dir, # work directory
+#                        os.path.basename(cast_file), # cast file name
+#                        f # BITD file name
+#                    ))
                     
                 if f.endswith('.snd '):
                     os.system('%s/snd2wav %s %s %s "%s"'%(

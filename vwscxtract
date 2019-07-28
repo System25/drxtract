@@ -19,8 +19,8 @@ from shutil import copyfile
 
 BINDIR = 'bin'
 
-DEBUG_MAIN_CHANNEL_INFO = False
-DEBUG_PALETTE_CHANNEL_INFO = True
+DEBUG_MAIN_CHANNEL_INFO = True
+DEBUG_PALETTE_CHANNEL_INFO = False
 DEBUG_SPRITE_INFO = False
 
 logging.basicConfig(level=logging.DEBUG)
@@ -49,6 +49,172 @@ def get_operation_dir5(operation):
             return 'fade_to_white'
     
     return operation
+
+# ====================================================================================================================================
+# Translate ink number to string representation (Director 5)
+def get_ink(ink_type):
+    
+    # I found this online:
+    # http://users.design.ucla.edu/~cariesta/MayaCourseNotes/html/body_director_basic.html
+    
+    if ink_type == 0:
+        return 'copy'
+    elif ink_type == 1:
+        return 'transparent'
+    elif ink_type == 2:
+        return 'reverse'
+    elif ink_type == 3:
+        return 'ghost'
+    elif ink_type == 4:
+        return 'not copy'
+    elif ink_type == 5:
+        return 'not transparent'
+    elif ink_type == 6:
+        return 'not reverse'
+    elif ink_type == 7:
+        return 'not ghost'
+    elif ink_type == 8:
+        return 'matte'
+    elif ink_type == 9:
+        return 'mask'
+    elif ink_type == 32:
+        return 'blend'
+    elif ink_type == 33:
+        return 'add pin'
+    elif ink_type == 34:
+        return 'add'
+    elif ink_type == 35:
+        return 'subtract pin'
+    elif ink_type == 36:
+        return 'background transparent'
+    elif ink_type == 37:
+        return 'lightest'
+    elif ink_type == 38:
+        return 'subtract'
+    elif ink_type == 39:
+        return 'darkest'
+    elif ink_type == 40:
+        return 'lighten'
+    elif ink_type == 41:
+        return 'darken'
+    
+    # Unknown id
+    return ink_type
+
+# ====================================================================================================================================
+# Translate a transition number to string representation (Director 4)
+def get_transtition_dir4(transition_id):
+    
+    # I found this in: Director 8 Demystified (puppetTransition lingo script reference)
+    
+    if transition_id == 1:
+        return 'wipe right'
+    elif transition_id == 2:
+        return 'wipe left'
+    elif transition_id == 3:
+        return 'wipe down'
+    elif transition_id == 4:
+        return 'wipe up'
+    elif transition_id == 5:
+        return 'center out, horizontal'
+    elif transition_id == 6:
+        return 'edges in, horizontal'
+    elif transition_id == 7:
+        return 'center out, vertical'
+    elif transition_id == 8:
+        return 'edges in, vertical'
+    elif transition_id == 9:
+        return 'center out, square'
+    elif transition_id == 10:
+        return 'edges in, square'
+    elif transition_id == 11:
+        return 'push left'
+    elif transition_id == 12:
+        return 'push right'
+    elif transition_id == 13:
+        return 'push down'
+    elif transition_id == 14:
+        return 'push up'
+    elif transition_id == 15:
+        return 'reveal up'
+    elif transition_id == 16:
+        return 'reveal up, right'
+    elif transition_id == 17:
+        return 'reveal right'
+    elif transition_id == 18:
+        return 'reveal down, right'
+    elif transition_id == 19:
+        return 'reveal down'
+    elif transition_id == 20:
+        return 'reveal down, left'
+    elif transition_id == 21:
+        return 'reveal left'
+    elif transition_id == 22:
+        return 'reveal up, left'
+    elif transition_id == 23:
+        return 'dissolve, pixels fast'
+    elif transition_id == 24:
+        return 'dissolve, boxy rectangles'
+    elif transition_id == 25:
+        return 'dissolve, boxy squares'
+    elif transition_id == 26:
+        return 'dissolve, patterns'
+    elif transition_id == 27:
+        return 'random rows'
+    elif transition_id == 28:
+        return 'random columns'
+    elif transition_id == 29:
+        return 'cover down'
+    elif transition_id == 30:
+        return 'cover down, left'
+    elif transition_id == 31:
+        return 'cover down, right'
+    elif transition_id == 32:
+        return 'cover left'
+    elif transition_id == 33:
+        return 'cover right'
+    elif transition_id == 34:
+        return 'cover up'
+    elif transition_id == 35:
+        return 'cover up, left'
+    elif transition_id == 36:
+        return 'cover up, right'
+    elif transition_id == 37:
+        return 'venetian blinds'
+    elif transition_id == 38:
+        return 'checkerboard'
+    elif transition_id == 39:
+        return 'strips on bottom, build left'
+    elif transition_id == 40:
+        return 'strips on bottom, build right'
+    elif transition_id == 41:
+        return 'strips on left, build down'
+    elif transition_id == 42:
+        return 'strips on left, build up'
+    elif transition_id == 43:
+        return 'strips on right, build down'
+    elif transition_id == 44:
+        return 'strips on right, build up'
+    elif transition_id == 45:
+        return 'strips on top, build left'
+    elif transition_id == 46:
+        return 'strips on top, build right'
+    elif transition_id == 47:
+        return 'zoom open'
+    elif transition_id == 48:
+        return 'zoom close'
+    elif transition_id == 49:
+        return 'vertical blinds'
+    elif transition_id == 50:
+        return 'dissolve, bits fast'
+    elif transition_id == 51:
+        return 'dissolve, pixels'
+    elif transition_id == 52:
+        return 'dissolve, bits'
+
+    # Unknown id
+    return transition_id
+
 
 # ====================================================================================================================================
 # Translate palette number to string representation (Director 5)
@@ -119,20 +285,30 @@ def read_main_channel_info_v4(frameData):
     if DEBUG_MAIN_CHANNEL_INFO:
         logging.debug("flags: %04x"%(flags))
 
-    transition = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
-    indx = indx + 2
+    transition_duration = ord(frameData[indx])
+    
+    # The first bit indicates if is stage area or changing area
+    transition_in_changing_area = ((transition_duration >> 7) & 1)
+    transition_duration = (transition_duration & 0x7F)
+    indx += 1
     if DEBUG_MAIN_CHANNEL_INFO:
-        logging.debug("transition: %04x"%(transition))
+        logging.debug("transition_in_changing_area: %d"%(transition_in_changing_area))
+        logging.debug("transition_duration: %d"%(transition_duration))
+    
+    transition_chunk_size = ord(frameData[indx])
+    indx += 1
+    if DEBUG_MAIN_CHANNEL_INFO:
+        logging.debug("transition_chunk_size: %d"%(transition_chunk_size))
 
     fps = ord(frameData[indx])
     indx += 1
     if DEBUG_MAIN_CHANNEL_INFO:
         logging.debug("Frames per second: %d"%(fps))
     
-    transition_id = ord(frameData[indx])
+    transition_id = get_transtition_dir4(ord(frameData[indx]))
     indx += 1
     if DEBUG_MAIN_CHANNEL_INFO:
-        logging.debug("transition_id: %d"%(transition_id))
+        logging.debug("transition_id: %s"%(transition_id))
 
     sound1_cast = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
     indx = indx + 2
@@ -170,11 +346,14 @@ def read_main_channel_info_v4(frameData):
         logging.debug("unknown3: %04x"%(unknown3))
 
     main_data = {}
-    main_data['fps'] = fps
-    main_data['transition_id'] = transition_id
-    main_data['sound1_cast'] = sound1_cast
-    main_data['sound2_cast'] = sound2_cast
-    main_data['script'] = script
+    if fps != 0 or sound1_cast != 0 or sound2_cast != 0 or script != 0:
+        main_data['fps'] = fps
+        main_data['transition_id'] = transition_id
+        main_data['sound1_cast'] = sound1_cast
+        main_data['sound2_cast'] = sound2_cast
+        main_data['script'] = script
+        main_data['transition_chunk_size'] = transition_chunk_size
+        main_data['transition_duration'] = transition_duration
 
     return main_data
 
@@ -219,10 +398,10 @@ def read_main_channel_info_v5(frameData):
     if DEBUG_MAIN_CHANNEL_INFO:
         logging.debug("unknown07: %04x"%(unknown07))
 
-    transition_id = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    transition_cast_id = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
     indx = indx + 2
     if DEBUG_MAIN_CHANNEL_INFO:
-        logging.debug("transition_id: %d"%(transition_id))
+        logging.debug("transition_cast_id: %d"%(transition_cast_id))
 
     unknown08 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
     indx = indx + 2
@@ -245,11 +424,12 @@ def read_main_channel_info_v5(frameData):
         logging.debug("unknown10: %04x"%(unknown10))
 
     main_data = {}
-    main_data['fps'] = fps
-    main_data['transition_id'] = transition_id
-    main_data['sound1_cast'] = sound1_cast
-    main_data['sound2_cast'] = sound2_cast
-    main_data['script'] = script
+    if fps != 0 or sound1_cast != 0 or sound2_cast != 0 or script != 0:
+        main_data['fps'] = fps
+        main_data['transition_cast_id'] = transition_cast_id
+        main_data['sound1_cast'] = sound1_cast
+        main_data['sound2_cast'] = sound2_cast
+        main_data['script'] = script
 
     return main_data
 
@@ -315,10 +495,11 @@ def read_palette_channel_info_v4(frameData):
         logging.debug("unknown9: %04x"%(unknown9))
         
     palette_data = {}
-    palette_data['fps'] = fps
-    palette_data['operation'] = operation
-    palette_data['palette_id'] = palette_id
-    palette_data['cycles'] = cycles
+    if palette_id != 0:
+        palette_data['fps'] = fps
+        palette_data['operation'] = operation
+        palette_data['palette_id'] = palette_id
+        palette_data['cycles'] = cycles
 
     return palette_data
     
@@ -369,10 +550,11 @@ def read_palette_channel_info_v5(frameData):
 
     
     palette_data = {}
-    palette_data['fps'] = fps
-    palette_data['palette_id'] = palette_id
-    palette_data['operation'] = operation
-    palette_data['cycles'] = cycles
+    if palette_id != 0:
+        palette_data['fps'] = fps
+        palette_data['palette_id'] = palette_id
+        palette_data['operation'] = operation
+        palette_data['cycles'] = cycles
 
     return palette_data
 # ====================================================================================================================================
@@ -398,10 +580,26 @@ def read_sprite_channel_info_v4(frameData, i):
     if DEBUG_SPRITE_INFO:
         logging.debug("Sprite[%d] backgroundColor: %d"%(i, backgroundColor))
 
-    ink_type = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
-    indx = indx + 2
+    flags = ord(frameData[indx])
+    indx += 1
     if DEBUG_SPRITE_INFO:
-        logging.debug("Sprite[%d] ink_type: %d"%(i, ink_type))
+        logging.debug("Sprite[%d] flags: %x"%(i, flags))
+
+    ink_type = ord(frameData[indx])
+    
+    # The first two bits of ink_type is also a flag bit
+    unknown_flag = ((ink_type >> 7) & 1)
+    if DEBUG_SPRITE_INFO:
+        logging.debug("Sprite[%d] unknown_flag: %d"%(i, unknown_flag))
+
+    trails = ((ink_type >> 6) & 1)
+    if DEBUG_SPRITE_INFO:
+        logging.debug("Sprite[%d] trails: %d"%(i, trails))
+
+    ink_type = get_ink(ink_type & 0x3F)
+    indx += 1
+    if DEBUG_SPRITE_INFO:
+        logging.debug("Sprite[%d] ink_type: %s"%(i, ink_type))
 
     castId = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
     indx = indx + 2
@@ -429,11 +627,13 @@ def read_sprite_channel_info_v4(frameData, i):
         logging.debug("Sprite[%d] width: %d"%(i, width))
 
     flag1 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    flag1 = (flag1 & 0xFFFF)
     indx = indx + 2
     if DEBUG_SPRITE_INFO:
         logging.debug("Sprite[%d] flag1: %04x"%(i, flag1))
     
     flag2 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    flag2 = (flag2 & 0xFFFF)
     indx = indx + 2
     if DEBUG_SPRITE_INFO:
         logging.debug("Sprite[%d] flag2: %04x"%(i, flag2))
@@ -449,8 +649,9 @@ def read_sprite_channel_info_v4(frameData, i):
         sprite_data['x'] = x
         sprite_data['height'] = height
         sprite_data['width'] = width
-        sprite_data['flag1'] = flag1
-        sprite_data['flag2'] = flag2
+        sprite_data['trails'] = trails
+        sprite_data['moveable'] = ((flag2 >> 15) & 1)
+        sprite_data['editable'] = ((flag2 >> 14) & 1)
         return sprite_data
     
     else:
@@ -463,18 +664,117 @@ def read_sprite_channel_info_v4(frameData, i):
 # ====================================================================================================================================
 # Sprite channel info (Director 5) 
 def read_sprite_channel_info_v5(frameData, i):
-    sprite_data = read_sprite_channel_info_v4(frameData, i)
+    indx = 0
+    # Sprite info
+    if DEBUG_SPRITE_INFO:
+        logging.debug("Sprite[%d] ----------------------------"%(i))
+    # Read sprite info
+    unknown01 = ord(frameData[indx])
+    indx += 1
+    if DEBUG_SPRITE_INFO:
+        logging.debug("Sprite[%d] unknown01: %d"%(i, unknown01))
+
+    ink_type = ord(frameData[indx])
     
-    indx = 20
-    unknown10 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    # The first two bits of ink_type is also a flag bit
+    unknown_flag = ((ink_type >> 7) & 1)
+    if DEBUG_SPRITE_INFO:
+        logging.debug("Sprite[%d] unknown_flag: %d"%(i, unknown_flag))
+
+    trails = ((ink_type >> 6) & 1)
+    if DEBUG_SPRITE_INFO:
+        logging.debug("Sprite[%d] trails: %d"%(i, trails))
+
+    ink_type = get_ink(ink_type & 0x3F)
+    indx += 1
+    if DEBUG_SPRITE_INFO:
+        logging.debug("Sprite[%d] ink_type: %s"%(i, ink_type))
+        
+    spriteType = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
     indx = indx + 2
     if DEBUG_SPRITE_INFO:
-        logging.debug("unknown10: %04x"%(unknown10))
-    
-    unknown11 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+        logging.debug("Sprite[%d] spriteType: %d"%(i, spriteType))
+
+    castId = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
     indx = indx + 2
     if DEBUG_SPRITE_INFO:
-        logging.debug("unknown11: %04x"%(unknown11))
+        logging.debug("Sprite[%d] castId: %d"%(i, castId))
+
+    unknown02 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_SPRITE_INFO:
+        logging.debug("Sprite[%d] unknown02: %04x"%(i, unknown02))
+
+    unknown03 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_SPRITE_INFO:
+        logging.debug("Sprite[%d] unknown03: %04x"%(i, unknown03))
+
+    foregroundColor = ord(frameData[indx])
+    indx += 1
+    if DEBUG_SPRITE_INFO:
+        logging.debug("Sprite[%d] foregroundColor: %d"%(i, foregroundColor))
+
+    backgroundColor = ord(frameData[indx])
+    indx += 1
+    if DEBUG_SPRITE_INFO:
+        logging.debug("Sprite[%d] backgroundColor: %d"%(i, backgroundColor))
+
+    y = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_SPRITE_INFO:
+        logging.debug("Sprite[%d] y: %d"%(i, y))
+
+    x = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_SPRITE_INFO:
+        logging.debug("Sprite[%d] x: %d"%(i, x))
+
+    height = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_SPRITE_INFO:
+        logging.debug("Sprite[%d] height: %d"%(i, height))
+
+    width = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    indx = indx + 2
+    if DEBUG_SPRITE_INFO:
+        logging.debug("Sprite[%d] width: %d"%(i, width))
+
+    flag2 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    flag2 = (flag2 & 0xFFFF)
+    indx = indx + 2
+    if DEBUG_SPRITE_INFO:
+        logging.debug("Sprite[%d] flag2: %04x"%(i, flag2))
+        
+    flag1 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    flag1 = (flag1 & 0xFFFF)
+    indx = indx + 2
+    if DEBUG_SPRITE_INFO:
+        logging.debug("Sprite[%d] flag1: %04x"%(i, flag1))
+
+    
+    if castId > 0:
+        sprite_data = {}
+        sprite_data['spriteType'] = spriteType
+        sprite_data['castId'] = castId
+        sprite_data['foregroundColor'] = foregroundColor
+        sprite_data['backgroundColor'] = backgroundColor
+        sprite_data['ink_type'] = ink_type
+        sprite_data['y'] = y
+        sprite_data['x'] = x
+        sprite_data['height'] = height
+        sprite_data['width'] = width
+        sprite_data['trails'] = trails
+        sprite_data['moveable'] = ((flag2 >> 15) & 1)
+        sprite_data['editable'] = ((flag2 >> 14) & 1)
+        return sprite_data
+    
+    else:
+        # Empty sprite
+        if DEBUG_SPRITE_INFO:
+            logging.debug("Empty castId (%d) in Sprite[%d]"%(castId, i))
+        
+        return {}
 
     return sprite_data
     
