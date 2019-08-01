@@ -360,11 +360,11 @@ def parse_lctx_file(lctx_file):
         
         nscripts = struct.unpack(">i", fdata[(indx):(indx+4)])[0]
         indx = indx + 4
-        logging.debug("N Scripts: %08x"%(nscripts))
+        logging.debug("N Scripts: %d"%(nscripts))
         
         nscripts2 = struct.unpack(">i", fdata[(indx):(indx+4)])[0]
         indx = indx + 4
-        logging.debug("N Scripts: %08x"%(nscripts2))
+        logging.debug("N Scripts: %d"%(nscripts2))
         
         scr_idx = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
         indx = indx + 2
@@ -425,8 +425,8 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
             idx += 1
             logging.debug("data_type = %02x"%(data_type))
             
-            header_data = fdata[idx:idx + header_size]
-            idx += header_size
+            header_data = fdata[idx:idx + header_size - 1]
+            idx += header_size - 1
             
             basic_data = fdata[idx:idx + additional_size]
             idx += additional_size
@@ -484,10 +484,10 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
             idx += 4
             logging.debug("basic_data03: %d"%(basic_data03))
             
-            castData['content']['basic'].append('0x%08x'%(basic_data00))
-            castData['content']['basic'].append('0x%08x'%(basic_data01))
-            castData['content']['basic'].append('0x%08x'%(basic_data02))
-            castData['content']['basic'].append('0x%08x'%(basic_data03))
+            castData['content']['basic'].append('0x%08x'%(basic_data00 & 0xFFFFFFFF))
+            castData['content']['basic'].append('0x%08x'%(basic_data01 & 0xFFFFFFFF))
+            castData['content']['basic'].append('0x%08x'%(basic_data02 & 0xFFFFFFFF))
+            castData['content']['basic'].append('0x%08x'%(basic_data03 & 0xFFFFFFFF))
 
             nstruct =  struct.unpack(cast_bit_order+"h", basic_data[idx:idx+2])[0]
             idx += 2
@@ -641,24 +641,26 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
             
             scridx = basic_data03
             logging.debug("Script index: %d"%(scridx))
-            script_file = "%s.Lscr"%(lctx_elements[scridx - 1])
-            logging.debug("Script file: %s"%(script_file))
-            
-            src = os.path.join(os.path.dirname(cast_file), script_file)
-            dst = os.path.join(dest_dir, script_file)
-            if os.path.isfile(src):
-                copyfile(src, dst)
+            if lctx_elements[scridx - 1] < 0:
+                logging.debug("Empty script file!")
             else:
-                logging.warn("There is no %s file (maybe empty file)"%(src))
-            
-            os.system('%s/lscr2lingo %s %s %s %s %s'%(
-                os.path.dirname(sys.argv[0]), # Scripts path
-                sys.argv[1], # pc or mac
-                dest_dir, # work directory
-                os.path.basename(cast_file), # cast file name
-                script_file, # script file name
-                lnam_file
-            ))
+                script_file = "%s.Lscr"%(lctx_elements[scridx - 1])
+                logging.debug("Script file: %s"%(script_file))
+
+                src = os.path.join(os.path.dirname(cast_file), script_file)
+                dst = os.path.join(dest_dir, script_file)
+                if os.path.isfile(src):
+                    copyfile(src, dst)
+                else:
+                    logging.warn("There is no %s file (maybe empty file)"%(src))
+
+                os.system('%s/lscr2lingo %s %s %s %s'%(
+                    os.path.dirname(sys.argv[0]), # Scripts path
+                    sys.argv[1], # pc or mac
+                    dest_dir, # work directory
+                    script_file, # script file name
+                    lnam_file
+                ))
         
         elif data_type == DIR_PUSH_BUTTON_TYPE:
             logging.info("%s: is a push button"%(cast_file))

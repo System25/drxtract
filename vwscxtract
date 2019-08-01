@@ -19,11 +19,11 @@ from shutil import copyfile
 
 BINDIR = 'bin'
 
-DEBUG_MAIN_CHANNEL_INFO = True
+DEBUG_MAIN_CHANNEL_INFO = False
 DEBUG_PALETTE_CHANNEL_INFO = False
 DEBUG_SPRITE_INFO = False
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 # ====================================================================================================================================
 # Translate operation to string representation (Director 5)
@@ -49,6 +49,39 @@ def get_operation_dir5(operation):
             return 'fade_to_white'
     
     return operation
+
+
+# ====================================================================================================================================
+# Translate sprite type to string representation (Director 4)
+def get_sprite_type_dir4(sprite_type):
+    # I got this from D4Player project
+    if sprite_type == 0:
+        return 'empty'
+    elif sprite_type == 1:
+        return 'image'
+    elif sprite_type == 2:
+        return 'rectangle'
+    elif sprite_type == 3:
+        return 'round_rectangle'
+    elif sprite_type == 4:
+        return 'ellipse'
+    elif sprite_type == 5:
+        return 'line_lt_br'
+    elif sprite_type == 6:
+        return 'line_bl_tr'
+    elif sprite_type == 7:
+        return 'text'
+    elif sprite_type == 8:
+        return 'button'
+    elif sprite_type == 9:
+        return 'checkbox'
+    elif sprite_type == 10:
+        return 'radio_button'
+    elif sprite_type == 16:
+        return 'shape'
+    
+    return sprite_type
+
 
 # ====================================================================================================================================
 # Translate ink number to string representation (Director 5)
@@ -565,10 +598,10 @@ def read_sprite_channel_info_v4(frameData, i):
     if DEBUG_SPRITE_INFO:
         logging.debug("Sprite[%d] ----------------------------"%(i))
     # Read sprite info
-    spriteType = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    spriteType = get_sprite_type_dir4(struct.unpack(">h", frameData[(indx):(indx+2)])[0])
     indx = indx + 2
     if DEBUG_SPRITE_INFO:
-        logging.debug("Sprite[%d] spriteType: %d"%(i, spriteType))
+        logging.debug("Sprite[%d] spriteType: %s"%(i, spriteType))
 
     foregroundColor = ord(frameData[indx])
     indx += 1
@@ -650,8 +683,8 @@ def read_sprite_channel_info_v4(frameData, i):
         sprite_data['height'] = height
         sprite_data['width'] = width
         sprite_data['trails'] = trails
-        sprite_data['moveable'] = ((flag2 >> 15) & 1)
-        sprite_data['editable'] = ((flag2 >> 14) & 1)
+        sprite_data['moveable'] = (((flag2 >> 15) & 1) != 0)
+        sprite_data['editable'] = (((flag2 >> 14) & 1) != 0)
         return sprite_data
     
     else:
@@ -690,10 +723,10 @@ def read_sprite_channel_info_v5(frameData, i):
     if DEBUG_SPRITE_INFO:
         logging.debug("Sprite[%d] ink_type: %s"%(i, ink_type))
         
-    spriteType = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    spriteType = get_sprite_type_dir4(struct.unpack(">h", frameData[(indx):(indx+2)])[0])
     indx = indx + 2
     if DEBUG_SPRITE_INFO:
-        logging.debug("Sprite[%d] spriteType: %d"%(i, spriteType))
+        logging.debug("Sprite[%d] spriteType: %s"%(i, spriteType))
 
     castId = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
     indx = indx + 2
@@ -765,8 +798,8 @@ def read_sprite_channel_info_v5(frameData, i):
         sprite_data['height'] = height
         sprite_data['width'] = width
         sprite_data['trails'] = trails
-        sprite_data['moveable'] = ((flag2 >> 15) & 1)
-        sprite_data['editable'] = ((flag2 >> 14) & 1)
+        sprite_data['moveable'] = (((flag2 >> 15) & 1) != 0)
+        sprite_data['editable'] = (((flag2 >> 14) & 1) != 0)
         return sprite_data
     
     else:
