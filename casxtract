@@ -39,6 +39,11 @@ DIR_LSCR_TYPE = 11
 DIR_TEXT_TYPE = 12
 DIR_TRAN_TYPE = 14
 
+if len(os.path.dirname(sys.argv[0])) == 0:
+    basepath = '%s '%(sys.executable)
+else:
+    basepath = ('%s/'%(os.path.dirname(sys.argv[0])))
+
 # ====================================================================================================================================
 # Translate palette number to string representation
 def get_palette(palette_id):
@@ -560,7 +565,9 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
                     stdata = base64.b64decode(castData['content']['extra'][1])
                     nchars = struct.unpack("B", stdata[0])[0]
                     cast_elm_name = stdata[1:nchars+1]
+                    cast_elm_name = re.sub(r"[^A-Za-z0-9\-_\.]", "_", cast_elm_name)
                     castData['name'] = cast_elm_name
+                    logging.debug("Cast member name: '%s'"%(cast_elm_name))
                 else:
                     castData['name'] = ''
         
@@ -705,8 +712,8 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
                 else:
                     logging.warn("There is no %s file (maybe empty file)"%(src))
 
-                os.system('%s/lscr2lingo %s %s %s %s'%(
-                    os.path.dirname(sys.argv[0]), # Scripts path
+                os.system('%slscr2lingo %s %s %s %s'%(
+                    basepath, # Scripts path
                     sys.argv[1], # pc or mac
                     dest_dir, # work directory
                     script_file, # script file name
@@ -838,7 +845,7 @@ if __name__ == '__main__':
         if not os.path.isdir(os.path.join(sys.argv[2], CASDIR)):
             os.mkdir(os.path.join(sys.argv[2], CASDIR))
         
-        # Look for KEY* and CAS* files
+        # Look for KEY_ and CAS_ files
         key_file = None
         cas_file = None
         lctx_file = None
@@ -848,10 +855,10 @@ if __name__ == '__main__':
         vwsc_file = None
         
         for f in os.listdir(os.path.join(sys.argv[2], BINDIR)):
-            if f.endswith('KEY*'):
+            if f.endswith('KEY_'):
                 key_file = f
             
-            if f.endswith('CAS*'):
+            if f.endswith('CAS_'):
                 cas_file = f
                 
             if (f.endswith('Lctx') or f.endswith('LctX')):
@@ -859,7 +866,7 @@ if __name__ == '__main__':
                 
             if f.endswith('Lnam'):
                 lnam_file = f
-
+            
             if f.endswith('Sord'):
                 sord_file = f
             
