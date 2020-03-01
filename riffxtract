@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 # Author: Abraham Macias Paredes
 # E-mail: system252001@yahoo.es
@@ -73,7 +73,10 @@ def parse_mmap(data, fileContent, offset):
 
     # Ignore RIFX file data
     file_format = struct.unpack("cccc", data[24:28])
-    file_format = ('%c%c%c%c'%(file_format[0], file_format[1], file_format[2], file_format[3]))
+    file_format = ('%c%c%c%c'%(file_format[0].decode('ascii'),
+                               file_format[1].decode('ascii'),
+                               file_format[2].decode('ascii'),
+                               file_format[3].decode('ascii')))
     logging.debug("MMAP: Meta file: %s"%(file_format))
     if RIFX_FILE_FORMAT != file_format:
         logging.error(" nmap internal format is not %s"%(RIFX_FILE_FORMAT))
@@ -113,7 +116,10 @@ def parse_mmap(data, fileContent, offset):
 
         # Read file format
         file_format = struct.unpack("cccc", data[index:(index+4)])
-        file_format = ('%c%c%c%c'%(file_format[0], file_format[1], file_format[2], file_format[3]))
+        file_format = ('%c%c%c%c'%(file_format[0].decode('ascii'),
+                                   file_format[1].decode('ascii'),
+                                   file_format[2].decode('ascii'),
+                                   file_format[3].decode('ascii')))
         logging.debug("FILE: File format: %s"%(file_format))
 
         # Read file length
@@ -162,7 +168,10 @@ def parse_mmap(data, fileContent, offset):
                 fdata = fileContent[file_offset:(file_offset+file_length+8)]
                 # Read data format
                 data_format = struct.unpack("cccc", fdata[0:4])
-                data_format = ('%c%c%c%c'%(data_format[0], data_format[1], data_format[2], data_format[3]))
+                data_format = ('%c%c%c%c'%(data_format[0].decode('ascii'),
+                                           data_format[1].decode('ascii'),
+                                           data_format[2].decode('ascii'),
+                                           data_format[3].decode('ascii')))
                 if data_format != file_format:
                     logging.error(" Bad data format! (%s != %s)"%(data_format, file_format))
                     sys.exit(-1)
@@ -190,7 +199,10 @@ def parse_mmap(data, fileContent, offset):
 def parse_riff(fileContent, offset):
     # Check if file format is RIFX
     file_format = struct.unpack("cccc", fileContent[offset:offset+4])
-    file_format = ('%c%c%c%c'%(file_format[0], file_format[1], file_format[2], file_format[3]))
+    file_format = ('%c%c%c%c'%(file_format[0].decode('ascii'),
+                               file_format[1].decode('ascii'),
+                               file_format[2].decode('ascii'),
+                               file_format[3].decode('ascii')))
 
     logging.info(" File format: %s"%(file_format))
     if RIFX_FILE_FORMAT != file_format:
@@ -207,7 +219,10 @@ def parse_riff(fileContent, offset):
  
     # Check Macromedia Director MV93 header
     mv93_format = struct.unpack("cccc", fileContent[offset+8:offset+12])
-    mv93_format = ('%c%c%c%c'%(mv93_format[0], mv93_format[1], mv93_format[2], mv93_format[3]))
+    mv93_format = ('%c%c%c%c'%(mv93_format[0].decode('ascii'),
+                               mv93_format[1].decode('ascii'),
+                               mv93_format[2].decode('ascii'),
+                               mv93_format[3].decode('ascii')))
     logging.info(" Data format: %s"%(mv93_format))
     if MV93_FILE_TYPE != mv93_format:
         logging.error(" Data format is not %s"%(MV93_FILE_TYPE))
@@ -223,8 +238,10 @@ def parse_riff(fileContent, offset):
         block_type = struct.unpack("cccc", fileContent[index:(index+4)])
         bt = []
         for c in range(0,4):
-            if block_type[c] > "\0" and block_type[c] >= ' ' and block_type[c] <= 'z':
-                bt.append(block_type[c])
+            if (block_type[c].decode('ascii') > '\0' and
+                block_type[c].decode('ascii') >= ' ' and
+                block_type[c].decode('ascii') <= 'z'):
+                bt.append(block_type[c].decode('ascii'))
             else:
                 bt.append('_')
         block_type = ('%c%c%c%c'%(bt[0], bt[1], bt[2], bt[3]))

@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 # Author: Abraham Macias Paredes
 # E-mail: system252001@yahoo.es
@@ -52,7 +52,7 @@ def parse_vwlb_file(vwlb_file):
             name_end = mnidx + struct.unpack(">h", fdata[(indx+2):(indx+4)])[0]
             logging.debug("name_end: %d"%(name_end))
             
-            name = fdata[name_start:name_end]
+            name = fdata[name_start:name_end].decode('utf-8')
             logging.debug("Name: %s"%(name))
             marker['name'] = name
             
@@ -84,5 +84,5 @@ if __name__ == '__main__':
         vwlb_elements = parse_vwlb_file(os.path.join(sys.argv[1], BINDIR, vwlb_file))
         # Write markers data to JSON file
         with open(os.path.join(sys.argv[1], 'markers.json'), 'wb') as jsfile:
-            jsfile.write(json.dumps(vwlb_elements, indent=4, sort_keys=True))
+            jsfile.write(json.dumps(vwlb_elements, indent=4, sort_keys=True).encode('utf-8'))
 

@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 # Author: Abraham Macias Paredes
 # E-mail: system252001@yahoo.es
@@ -318,7 +318,7 @@ def read_main_channel_info_v4(frameData):
     if DEBUG_MAIN_CHANNEL_INFO:
         logging.debug("flags: %04x"%(flags))
 
-    transition_duration = ord(frameData[indx])
+    transition_duration = int(frameData[indx])
     
     # The first bit indicates if is stage area or changing area
     transition_in_changing_area = ((transition_duration >> 7) & 1)
@@ -328,17 +328,17 @@ def read_main_channel_info_v4(frameData):
         logging.debug("transition_in_changing_area: %d"%(transition_in_changing_area))
         logging.debug("transition_duration: %d"%(transition_duration))
     
-    transition_chunk_size = ord(frameData[indx])
+    transition_chunk_size = int(frameData[indx])
     indx += 1
     if DEBUG_MAIN_CHANNEL_INFO:
         logging.debug("transition_chunk_size: %d"%(transition_chunk_size))
 
-    fps = ord(frameData[indx])
+    fps = int(frameData[indx])
     indx += 1
     if DEBUG_MAIN_CHANNEL_INFO:
         logging.debug("Frames per second: %d"%(fps))
     
-    transition_id = get_transtition_dir4(ord(frameData[indx]))
+    transition_id = get_transtition_dir4(int(frameData[indx]))
     indx += 1
     if DEBUG_MAIN_CHANNEL_INFO:
         logging.debug("transition_id: %s"%(transition_id))
@@ -485,14 +485,14 @@ def read_palette_channel_info_v4(frameData):
     if DEBUG_PALETTE_CHANNEL_INFO:
         logging.debug("unknown2: %04x"%(unknown2))
 
-    operation = ord(frameData[indx])
+    operation = int(frameData[indx])
     indx += 1
     
     operation = get_operation_dir5(operation)
     if DEBUG_PALETTE_CHANNEL_INFO:
         logging.debug("operation: %s"%(operation))
 
-    fps = ord(frameData[indx])
+    fps = int(frameData[indx])
     indx += 1
     if DEBUG_PALETTE_CHANNEL_INFO:
         logging.debug("fps: %d"%(fps))
@@ -554,12 +554,12 @@ def read_palette_channel_info_v5(frameData):
     if DEBUG_PALETTE_CHANNEL_INFO:
         logging.debug("palette_id: %s"%(palette_id))
         
-    fps = ord(frameData[indx])
+    fps = int(frameData[indx])
     indx += 1
     if DEBUG_PALETTE_CHANNEL_INFO:
         logging.debug("fps: %d"%(fps))
 
-    operation = ord(frameData[indx])
+    operation = int(frameData[indx])
     indx += 1
     
     operation = get_operation_dir5(operation)
@@ -603,22 +603,22 @@ def read_sprite_channel_info_v4(frameData, i):
     if DEBUG_SPRITE_INFO:
         logging.debug("Sprite[%d] spriteType: %s"%(i, spriteType))
 
-    foregroundColor = ord(frameData[indx])
+    foregroundColor = int(frameData[indx])
     indx += 1
     if DEBUG_SPRITE_INFO:
         logging.debug("Sprite[%d] foregroundColor: %d"%(i, foregroundColor))
 
-    backgroundColor = ord(frameData[indx])
+    backgroundColor = int(frameData[indx])
     indx += 1
     if DEBUG_SPRITE_INFO:
         logging.debug("Sprite[%d] backgroundColor: %d"%(i, backgroundColor))
 
-    flags = ord(frameData[indx])
+    flags = int(frameData[indx])
     indx += 1
     if DEBUG_SPRITE_INFO:
         logging.debug("Sprite[%d] flags: %x"%(i, flags))
 
-    ink_type = ord(frameData[indx])
+    ink_type = int(frameData[indx])
     
     # The first two bits of ink_type is also a flag bit
     unknown_flag = ((ink_type >> 7) & 1)
@@ -702,12 +702,12 @@ def read_sprite_channel_info_v5(frameData, i):
     if DEBUG_SPRITE_INFO:
         logging.debug("Sprite[%d] ----------------------------"%(i))
     # Read sprite info
-    unknown01 = ord(frameData[indx])
+    unknown01 = int(frameData[indx])
     indx += 1
     if DEBUG_SPRITE_INFO:
         logging.debug("Sprite[%d] unknown01: %d"%(i, unknown01))
 
-    ink_type = ord(frameData[indx])
+    ink_type = int(frameData[indx])
     
     # The first two bits of ink_type is also a flag bit
     unknown_flag = ((ink_type >> 7) & 1)
@@ -962,14 +962,14 @@ def parse_vwsc_data(fdata):
                 logging.debug("delta_size: %d"%(delta_size))
                 logging.debug("delta_offset: %d"%(delta_offset))
 
-                deltaData = fdata[(idx):(idx+delta_size)]
+                deltaData = fdata[(idx):(idx+delta_size)].decode('ISO-8859-1')
                 idx = idx + delta_size
                 channelSize -= delta_size
                 
                 for i in range(0, delta_size):
                     channelDataList[delta_offset + i] = deltaData[i]
             
-            channelDataStr = "".join(channelDataList)
+            channelDataStr = ("".join(channelDataList)).encode('ISO-8859-1')
             vwsc_data.append(parse_vwsc_channels(channelDataStr, frame_size, column))
             
         else:
@@ -1079,5 +1079,5 @@ if __name__ == '__main__':
         vwsc_elements = parse_vwsc_file(os.path.join(sys.argv[1], BINDIR, vwsc_file))
         # Write score data to JSON file
         with open(os.path.join(sys.argv[1], 'score.json'), 'wb') as jsfile:
-            jsfile.write(json.dumps(vwsc_elements, indent=4, sort_keys=True))
+            jsfile.write(json.dumps(vwsc_elements, indent=4, sort_keys=True).encode('utf-8'))
 

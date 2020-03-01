@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 # Author: Abraham Macias Paredes
 # E-mail: system252001@yahoo.es
@@ -214,18 +214,21 @@ def parse_key_file(key_file):
             cas_index = struct.unpack(bit_order+"i", fdata[(indx+4):(indx+8)])[0]
 
             file_ext = struct.unpack("cccc", fdata[indx+8:indx+12])
-            file_ext = ('%c%c%c%c'%(file_ext[0], file_ext[1], file_ext[2], file_ext[3]))
-            if sys.argv[1] == 'pc':
-                file_ext = file_ext[3] + file_ext[2] + file_ext[1] + file_ext[0]
-
             indx = indx + 12
             
-            if ((not ord(file_ext[0]) in range(65, 91)) or
-                (not ord(file_ext[1]) in range(65, 91)) or
-                (not ord(file_ext[2]) in range(65, 91)) or
-                (not ord(file_ext[3]) in range(65, 91))):
+            if ((not int.from_bytes(file_ext[0], byteorder='little') in range(65, 91)) or
+                (not int.from_bytes(file_ext[1], byteorder='little') in range(65, 91)) or
+                (not int.from_bytes(file_ext[2], byteorder='little') in range(65, 91)) or
+                (not int.from_bytes(file_ext[3], byteorder='little') in range(65, 91))):
                 # Not an ASCII char
                 continue
+                
+            file_ext = ('%c%c%c%c'%(file_ext[0].decode('ascii'),
+                                    file_ext[1].decode('ascii'),
+                                    file_ext[2].decode('ascii'),
+                                    file_ext[3].decode('ascii')))
+            if sys.argv[1] == 'pc':
+                file_ext = file_ext[3] + file_ext[2] + file_ext[1] + file_ext[0]
             
             if cas_index > 0 and nfile > 0:
                 cas_index = ('%08x'%cas_index)
@@ -310,7 +313,7 @@ def parse_vwcf_file(vwcf_file):
         logging.debug("Current frame rate?: %d"%(currentFrameRate))
         
         indx += 9
-        stageColor = ord(fdata[indx])
+        stageColor = int(fdata[indx])
         indx += 1
         
         logging.debug("Stage color: %d"%(stageColor))
@@ -453,7 +456,7 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
                 logging.error("Bad data size! (%d != %d)"%(6 + header_size + additional_size, len(fdata)))
                 sys.exit(-1)
                 
-            data_type = ord(fdata[idx])
+            data_type = int(fdata[idx])
             idx += 1
             logging.debug("data_type = %02x"%(data_type))
             
@@ -544,7 +547,7 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
                         idx += stlen
                         
                         encodedBytes = base64.b64encode(stdata)
-                        encodedStr = str(encodedBytes)
+                        encodedStr = encodedBytes.decode('ascii')
                         
                         castData['content']['extra'].append(encodedStr)
                     else:
@@ -558,8 +561,8 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
                 # Check if there is a CAST member name
                 if len(castData['content']['extra']) > 1 and castData['content']['extra'][1] != '':
                     stdata = base64.b64decode(castData['content']['extra'][1])
-                    nchars = struct.unpack("B", stdata[0])[0]
-                    cast_elm_name = stdata[1:nchars+1]
+                    nchars = int(stdata[0])
+                    cast_elm_name = stdata[1:nchars+1].decode('ISO-8859-1')
                     castData['name'] = cast_elm_name
                 else:
                     castData['name'] = ''
@@ -574,11 +577,11 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
             logging.info("%s: is a image file"%(cast_file))
             castData['type'] = 'image'
             
-            flags =  struct.unpack(cast_bit_order+"B", header_data[idx])[0]
+            flags =  int(header_data[idx])
             idx += 1
             logging.debug("flags = %s"%(flags))
 
-            bmp_bpp_val =  struct.unpack(cast_bit_order+"B", header_data[idx])[0]
+            bmp_bpp_val =  int(header_data[idx])
             idx += 1
             
             bmp_bpp = 8
@@ -612,7 +615,7 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
             logging.debug("bmp_bpp = %s"%(bmp_bpp)) 
 
 
-            unknown_11 =  struct.unpack(cast_bit_order+"B", header_data[idx])[0]
+            unknown_11 =  int(header_data[idx])
             idx += 1                
             logging.debug("unknown_11 = %s"%(unknown_11)) 
 
@@ -762,7 +765,7 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
         
         # Write CAST data to JSON file
         with open(os.path.join(dest_dir, 'data.json'), 'wb') as jsfile:
-            jsfile.write(json.dumps(castData, indent=4, sort_keys=True))
+            jsfile.write(json.dumps(castData, indent=4, sort_keys=True).encode('utf-8'))
         
         if kelm is None or len(kelm) <= 0:
             logging.info("%s: has no related data!"%(cast_file))
@@ -838,7 +841,7 @@ if __name__ == '__main__':
         if not os.path.isdir(os.path.join(sys.argv[2], CASDIR)):
             os.mkdir(os.path.join(sys.argv[2], CASDIR))
         
-        # Look for KEY* and CAS* files
+        # Look for KEY_ and CAS_ files
         key_file = None
         cas_file = None
         lctx_file = None
@@ -848,10 +851,10 @@ if __name__ == '__main__':
         vwsc_file = None
         
         for f in os.listdir(os.path.join(sys.argv[2], BINDIR)):
-            if f.endswith('KEY*'):
+            if f.endswith('KEY_'):
                 key_file = f
             
-            if f.endswith('CAS*'):
+            if f.endswith('CAS_'):
                 cas_file = f
                 
             if (f.endswith('Lctx') or f.endswith('LctX')):
@@ -867,11 +870,11 @@ if __name__ == '__main__':
                 vwcf_file = f
                 
         if key_file is None:
-            logging.error('Can not find a KEY* file!')
+            logging.error('Can not find a KEY_ file!')
             sys.exit(-1)
 
         if cas_file is None:
-            logging.error('Can not find a CAS* file!')
+            logging.error('Can not find a CAS_ file!')
             sys.exit(-1)
 
         if lctx_file is None:
@@ -893,7 +896,7 @@ if __name__ == '__main__':
         config = parse_vwcf_file(os.path.join(sys.argv[2], BINDIR, vwcf_file))
         # Write config data to JSON file
         with open(os.path.join(sys.argv[2], CASDIR, 'config.json'), 'wb') as jsfile:
-            jsfile.write(json.dumps(config, indent=4, sort_keys=True))
+            jsfile.write(json.dumps(config, indent=4, sort_keys=True).encode('utf-8'))
         
         cas_elements = parse_cas_file(os.path.join(sys.argv[2], BINDIR, cas_file))
         key_elements = parse_key_file(os.path.join(sys.argv[2], BINDIR, key_file))
