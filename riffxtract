@@ -156,6 +156,7 @@ def parse_mmap(data, fileContent, offset):
                 except:
                     file_name = file_namer
             file_name = file_name.replace("/", "_")
+            file_name = file_name.replace("*", "_")
 
 
             try:

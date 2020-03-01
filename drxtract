@@ -37,6 +37,10 @@ if __name__ == '__main__':
             bit_order_type = 'pc'
             bit_order = "<"
 
+        if len(os.path.dirname(sys.argv[0])) == 0:
+            basepath = '%s '%(sys.executable)
+        else:
+            basepath = ('%s/'%(os.path.dirname(sys.argv[0])))
 
         if not os.path.isfile(sys.argv[2]):
             logging.error("'%s' is not a file"%(sys.argv[2]))
@@ -47,8 +51,8 @@ if __name__ == '__main__':
             sys.exit(-1)
 
         # Extract RIFF file content
-        cmd = '%s/riffxtract %s %s %s'%(
-            os.path.dirname(sys.argv[0]), # Scripts path
+        cmd = '%sriffxtract %s %s %s'%(
+            basepath, # Scripts path
             sys.argv[1], # pc or mac
             sys.argv[2], # director file
             sys.argv[3]  # work directory
@@ -57,16 +61,16 @@ if __name__ == '__main__':
         os.system(cmd)
         
         # Extract the score labels
-        cmd = '%s/vwlbxtract %s'%(
-            os.path.dirname(sys.argv[0]), # Scripts path
+        cmd = '%svwlbxtract %s'%(
+            basepath, # Scripts path
             sys.argv[3] # work directory
         )
         logging.debug(cmd)
         os.system(cmd)
         
         # Extract the casting elements
-        cmd = '%s/casxtract %s %s'%(
-            os.path.dirname(sys.argv[0]), # Scripts path
+        cmd = '%scasxtract %s %s'%(
+            basepath, # Scripts path
             sys.argv[1], # pc or mac
             sys.argv[3]  # work directory
         )
@@ -74,8 +78,8 @@ if __name__ == '__main__':
         os.system(cmd)
         
         # Extract the score
-        cmd = '%s/vwscxtract %s'%(
-            os.path.dirname(sys.argv[0]), # Scripts path
+        cmd = '%svwscxtract %s'%(
+            basepath, # Scripts path
             sys.argv[3] # work directory
         )
         logging.debug(cmd)
