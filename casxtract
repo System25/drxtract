@@ -326,6 +326,8 @@ def parse_vwcf_file(vwcf_file):
         indx += 34
         palette = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
         indx = indx + 2
+        
+        palette = get_palette(palette)
         logging.debug("palette?: %d"%(palette))
         
         version_major = ((version >> 8) & 0xFF)
@@ -671,7 +673,7 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
                 idx += 2
                 logging.debug("bitdepth = %s"%(bitdepth)) 
 
-                palette =  get_palette(struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0] - 1)
+                palette =  get_palette(struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0])
                 idx += 2
                 logging.debug("palette = %s"%(palette))
                 
@@ -786,14 +788,12 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
                 else:
                     logging.warn("There is no %s file (maybe empty file)"%(src))
 
-#                if f.endswith('.BITD'):
-#                    os.system('%s/bitd2bmp %s %s %s %s'%(
-#                        os.path.dirname(sys.argv[0]), # Scripts path
-#                        sys.argv[1], # pc or mac
-#                        dest_dir, # work directory
-#                        os.path.basename(cast_file), # cast file name
-#                        f # BITD file name
-#                    ))
+                if f.endswith('.BITD'):
+                    os.system('%s/bitd2bmp %s %s'%(
+                        os.path.dirname(sys.argv[0]), # Scripts path
+                        dest_dir, # work directory
+                        f # BITD file name
+                    ))
                     
                 if f.endswith('.snd '):
                     os.system('%s/snd2wav %s %s %s "%s"'%(

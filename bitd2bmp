@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 # Author: Abraham Macias Paredes
 # E-mail: system252001@yahoo.es
@@ -13,7 +13,18 @@ import os
 import struct
 import re
 import logging
+import json
 from shutil import copyfile
+from palettes.grayscale import GRAYSCALE_256COLORS_PALETTE
+from palettes.metallic import METALLIC_256COLORS_PALETTE
+from palettes.ntsc import NTSC_256COLORS_PALETTE
+from palettes.pastels import PASTELS_256COLORS_PALETTE
+from palettes.rainbow import RAINBOW_256COLORS_PALETTE
+from palettes.systemMac import SYSTEM_MAC_256COLORS_PALETTE
+from palettes.systemWinDir4 import SYSTEM_WINDOWS_DIR4_256COLORS_PALETTE
+from palettes.systemWin import SYSTEM_WINDOWS_256COLORS_PALETTE
+from palettes.vivid import VIVID_256COLORS_PALETTE
+from palettes.web216 import WEB_256COLORS_PALETTE
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -69,302 +80,6 @@ SYSTEM_WINDOWS_16COLORS_PALETTE = (
   0, 0, 0, 0        # black
  )
 
-
-
-
-
-# ====================================================================================================================================
-def parse_cast_file(cast_file):
-    castData = None
-
-    with open(cast_file, mode='rb') as file:
-        fdata = file.read()
-
-        idx = 0
-        cast_bit_order = '>'
-        data_type = struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
-        idx += 4
-
-        logging.debug("%s: data_type = %s"%(cast_file, data_type))
-        
-
-        if data_type == DIR5_IMAGE_TYPE:
-            # Director 5 image type
-            logging.info("%s: is a image file"%(cast_file))
-            
-            unknown_00 = struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
-            idx += 4
-            logging.debug("unknown_00 = %08x"%(unknown_00))
-            
-            unknown_01 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
-            idx += 4
-            logging.debug("unknown_01 = %08x"%(unknown_01))
-            
-            unknown_02 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
-            idx += 4
-            logging.debug("unknown_02 = %08x"%(unknown_02))
-            
-            unknown_03 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
-            idx += 4
-            logging.debug("unknown_03 = %08x"%(unknown_03))
-            
-            unknown_04 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
-            idx += 4
-            logging.debug("unknown_04 = %08x"%(unknown_04))
-            
-            unknown_05 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
-            idx += 4
-            logging.debug("unknown_05 = %08x"%(unknown_05))
-            
-            unknown_06 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
-            idx += 4
-            logging.debug("unknown_06 = %08x"%(unknown_06))
-            
-            nint =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
-            idx += 2
-            logging.debug("number of integers = %d"%(nint))
-            
-            for i in range(0, nint):
-                unknown_int =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
-                idx += 4
-                logging.debug("unknown_int[%d] = %08x"%(i, unknown_int))
-            
-            fnamepad =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
-            idx += 4
-            logging.debug("fnamepad = %s"%(fnamepad)) 
-
-
-            fnamechars = struct.unpack("B", fdata[idx])[0]
-            logging.debug("fnamechars = %s"%(fnamechars)) 
-            idx += 1
-            bmp_file_name = fdata[idx:idx+fnamechars]
-            idx += fnamechars
-
-            idx += (fnamepad - (fnamechars+1))
-
-            logging.info("bmp_file_name = %s"%(bmp_file_name))
-
-            bmp_bpp_val =  struct.unpack(cast_bit_order+"B", fdata[idx])[0]
-            idx += 1                
-
-            bmp_bpp = 8
-            if bmp_bpp_val == 0x80:
-                # 8 bit per pixel image
-                bmp_bpp = 8
-                
-            elif bmp_bpp_val == 0x81:
-                # 4 bit per pixel image
-                bmp_bpp = 4
-
-            elif bmp_bpp_val == 0x82:
-                # 8 bit per pixel image
-                bmp_bpp = 8
-
-            elif bmp_bpp_val == 0x84:
-                # 16 bit per pixel image
-                bmp_bpp = 16
-
-            elif bmp_bpp_val == 0x85:
-                # 16 bit per pixel image (MAC format)
-                bmp_bpp = 16
-
-            elif bmp_bpp_val == 0x8A:
-                # 24 bit per pixel image
-                bmp_bpp = 24
-
-            else:
-                logging.warn("Unknown BPP value: %s"%(bmp_bpp_val))
-
-            logging.debug("bmp_bpp = %s"%(bmp_bpp)) 
-
-
-            unknown_11 =  struct.unpack(cast_bit_order+"B", fdata[idx])[0]
-            idx += 1                
-            logging.debug("unknown_11 = %s"%(unknown_11)) 
-
-            h_padding =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
-            idx += 2
-            logging.debug("h_padding = %s"%(h_padding)) 
-
-            w_padding =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
-            idx += 2
-            logging.debug("w_padding = %s"%(w_padding)) 
-
-            bmp_height =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
-            idx += 2                
-            logging.debug("bmp_height = %s"%(bmp_height)) 
-
-            bmp_width =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
-            idx += 2                
-            logging.debug("bmp_width = %s"%(bmp_width)) 
-
-            bmp_height -= h_padding
-            bmp_width -= w_padding
-
-            unknown_12 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
-            idx += 4
-            logging.debug("unknown_12 = %s"%(unknown_12)) 
-
-            unknown_13 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
-            idx += 4
-            logging.debug("unknown_13 = %s"%(unknown_13)) 
-
-            unknown_14 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
-            idx += 4
-            logging.debug("unknown_14 = %s"%(unknown_14)) 
-
-            unknown_15 =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
-            idx += 2
-            logging.debug("unknown_15 = %s"%(unknown_15)) 
-
-            unknown_16 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
-            idx += 4
-            logging.debug("unknown_16 = %s"%(unknown_16))
-
-            castData = {}
-            castData['bmp_height'] = bmp_height
-            castData['bmp_width'] = bmp_width
-            castData['bmp_bpp'] = bmp_bpp
-            castData['bmp_file_name'] = bmp_file_name
-
-        elif  data_type == DIR4_IMAGE_TYPE: 
-            logging.debug("Reading image data...")
-            unknown_00 = struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
-            idx += 4
-
-            logging.debug("unknown_00 = %s"%(unknown_00)) 
-
-
-            bmp_bpp_val =  struct.unpack("B", fdata[idx])[0]
-            idx += 1                
-
-            # Force 8BPP
-            bmp_bpp = 8
-
-            logging.debug("bmp_bpp = %s"%(bmp_bpp)) 
-
-
-            unknown_11 =  struct.unpack("B", fdata[idx])[0]
-            idx += 1                
-            logging.debug("unknown_11 = %s"%(unknown_11)) 
-
-
-            h_padding =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
-            idx += 2
-            logging.debug("h_padding = %s"%(h_padding)) 
-
-            w_padding =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
-            idx += 2
-            logging.debug("w_padding = %s"%(w_padding)) 
-
-            bmp_height =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
-            idx += 2                
-
-            bmp_width =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
-            idx += 2                
-
-            logging.debug("bmp_height = %s"%(bmp_height)) 
-            logging.debug("bmp_width = %s"%(bmp_width)) 
-
-            bmp_height -= h_padding
-            bmp_width -= w_padding
-
-            unknown_12 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
-            idx += 4
-            logging.debug("unknown_12 = %s"%(unknown_12)) 
-
-            unknown_13 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
-            idx += 4
-            logging.debug("unknown_13 = %s"%(unknown_13)) 
-
-            unknown_14 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
-            idx += 4
-            logging.debug("unknown_14 = %s"%(unknown_14)) 
-
-            unknown_15 =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
-            idx += 2
-            logging.debug("unknown_15 = %s"%(unknown_15)) 
-
-            unknown_16 =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
-            idx += 2
-            logging.debug("unknown_16 = %s"%(unknown_16)) 
-
-            if idx < len(fdata) - 1:
-                # 00 00 00 14
-                unknown_02 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
-                idx += 4
-                if unknown_02 != 0x14:
-                    logging.error("Can't locate a region in the CASt file")
-                    sys.exit(-1)
-
-                unknown_03 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
-                idx += 4
-                unknown_04 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
-                idx += 4
-                unknown_05 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
-                idx += 4
-                unknown_06 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
-                idx += 4
-                unknown_07_h =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
-                idx += 2
-
-                logging.debug("unknown_02 = %s"%(unknown_02)) 
-                logging.debug("unknown_03 = %s"%(unknown_03)) 
-                logging.debug("unknown_04 = %s"%(unknown_04)) 
-                logging.debug("unknown_05 = %s"%(unknown_05)) 
-                logging.debug("unknown_06 = %s"%(unknown_06)) 
-                logging.debug("unknown_07_h = %s"%(unknown_07_h)) 
-
-                if unknown_07_h > 0:
-                    unknown_07_l =  struct.unpack(cast_bit_order+"h", fdata[idx:idx+2])[0]
-                    idx += 2
-
-                    logging.debug("unknown_07_l = %s"%(unknown_07_l)) 
-
-
-                    for k in range(0, unknown_07_h):
-                        unknown_08 =  struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
-                        logging.debug("unknown_08 = %s"%(unknown_08))
-                        idx += 4
-
-                unknown_10 =  struct.unpack("B", fdata[idx])[0]
-                idx += 1
-
-
-                logging.debug("unknown_10 = %s"%(unknown_10)) 
-
-            bmp_file_name = None
-            if idx < len(fdata) - 1:
-                fnamepad = struct.unpack("B", fdata[idx])[0]
-                logging.debug("fnamepad = %s"%(fnamepad)) 
-                idx += 1
-
-                fnamechars = struct.unpack("B", fdata[idx])[0]
-                logging.debug("fnamechars = %s"%(fnamechars)) 
-                idx += 1
-                bmp_file_name = fdata[idx:idx+fnamechars]
-                idx += fnamechars
-
-                idx += (fnamepad - (fnamechars+1))
-
-                if bmp_file_name == '':
-                    bmp_file_name = None
-                else:
-                    logging.debug("bmp_file_name = %s"%(bmp_file_name)) 
-
-            castData = {}
-            castData['bmp_height'] = bmp_height
-            castData['bmp_width'] = bmp_width
-            castData['bmp_bpp'] = bmp_bpp
-            castData['bmp_file_name'] = bmp_file_name
-
-                
-            
-        else:
-            logging.error("%s: data_type unknown (%s)!"%(cast_file, data_type))
-            sys.exit(1)
-        
-    return castData
 
 # ====================================================================================================================================
 def save_4bit_bmp(bmp_width, bmp_height, file, previous_clut, fdata):
@@ -470,7 +185,7 @@ def save_4bit_bmp(bmp_width, bmp_height, file, previous_clut, fdata):
     file.close()
 
 # ====================================================================================================================================
-def save_8bit_bmp(bmp_width, bmp_height, bmp_wlimit, file, previous_clut, fdata):
+def save_8bit_bmp(bmp_width, bmp_height, bmp_wlimit, file, palette, previous_clut, fdata):
     bmp_bpp = 8
     values = (bmp_width*bmp_height+(256*4)+40+14, # The size of the BMP file in bytes
               0, # Reserved
@@ -507,13 +222,31 @@ def save_8bit_bmp(bmp_width, bmp_height, bmp_wlimit, file, previous_clut, fdata)
         file.write(packed_data)
 
     else:
-        # Default windows 256 colors palete
+        # Load a standar color palette from a file
         s = struct.Struct('B'*(256*4))
-        if sys.argv[1] == 'pc':
-            packed_data = s.pack(*DEFAULT_WINDOWS_256COLORS_PALETTE)
+        if palette == 'grayscale':
+          packed_data = s.pack(*GRAYSCALE_256COLORS_PALETTE)
+        elif palette == 'metallic':
+          packed_data = s.pack(*METALLIC_256COLORS_PALETTE)
+        elif palette == 'ntsc':
+          packed_data = s.pack(*NTSC_256COLORS_PALETTE)
+        elif palette == 'pastels':
+          packed_data = s.pack(*PASTELS_256COLORS_PALETTE)
+        elif palette == 'rainbow':
+          packed_data = s.pack(*RAINBOW_256COLORS_PALETTE)
+        elif palette == 'systemMac':
+          packed_data = s.pack(*SYSTEM_MAC_256COLORS_PALETTE)
+        elif palette == 'systemWinDir4':
+          packed_data = s.pack(*SYSTEM_WINDOWS_DIR4_256COLORS_PALETTE)
+        elif palette == 'systemWin':
+          packed_data = s.pack(*SYSTEM_WINDOWS_256COLORS_PALETTE)
+        elif palette == 'vivid':
+          packed_data = s.pack(*VIVID_256COLORS_PALETTE)          
+        elif palette == 'web216':
+          packed_data = s.pack(*WEB_256COLORS_PALETTE)           
         else:
-            packed_data = s.pack(*DEFAUL_MAC_256COLORS_PALETTE)
-
+          logging.warn("Using default windows color palette!")
+          packed_data = s.pack(*SYSTEM_WINDOWS_256COLORS_PALETTE)   
         file.write(packed_data)
 
     # get the pixel information
@@ -539,14 +272,14 @@ def save_8bit_bmp(bmp_width, bmp_height, bmp_wlimit, file, previous_clut, fdata)
     previous_encoded = True
     previous_run_length = 0
     while (idx < len(fdata)) and (y>=0):
-        val = struct.unpack("B", fdata[idx])[0]
+        val = fdata[idx]
         if (val & 0x80) != 0:
             # RLE encoded
             run_length = 257 - val
             if idx+1 >= len(fdata):
                 logging.error("Unexpected end of data! (data length=%s)"%(len(fdata)))
                 break
-            run_value = struct.unpack("B", fdata[idx+1])[0]
+            run_value = fdata[idx+1]
             idx = idx + 2
 
             # Jump to next row when necessary
@@ -602,7 +335,7 @@ def save_8bit_bmp(bmp_width, bmp_height, bmp_wlimit, file, previous_clut, fdata)
                 break
 
             for i in range(0, run_length):
-                castData[y*w + x] = struct.unpack("B", fdata[idx])[0]
+                castData[y*w + x] = fdata[idx]
                 idx = idx + 1
                 if idx >= len(fdata):
                     logging.error("Bad run length! (value=%s)"%(run_length))
@@ -866,10 +599,15 @@ def bitd2bmp(castData, bitd_file):
         
         file_ext = 'bmp'
 
-        bmp_height = castData['bmp_height']
-        bmp_width = castData['bmp_width']
-        bmp_bpp = castData['bmp_bpp']
-        bmp_file_name = castData['bmp_file_name']
+        bmp_height = castData['content']['bitmap']['height']
+        bmp_width = castData['content']['bitmap']['width']
+        bmp_bpp = castData['content']['bitmap']['bpp']
+        bmp_padding_w = castData['content']['bitmap']['w_padding']
+        bmp_padding_h = castData['content']['bitmap']['h_padding']
+        bmp_palette = castData['content']['bitmap']['palette']
+        bmp_file_name = None
+        if 'name' in castData:
+          bmp_file_name = castData['name']
 
         file_name = "%s.%s"%(os.path.basename(bitd_file)[:-5], file_ext)
         if bmp_file_name is not None:
@@ -887,6 +625,62 @@ def bitd2bmp(castData, bitd_file):
                 file_name = file_namer
         file_name = file_name.replace("/", "_")
 
+        # Check if the palette is a casting member number (custom palette)
+        if type(bmp_palette) == int:
+            bmp_palette = str(bmp_palette)
+            
+            # Check if the cast member exists
+            base_dir = os.path.dirname(sys.argv[1])
+            if not os.path.isdir(os.path.join(base_dir, bmp_palette)):
+              logging.error('Can\'t find cast member: %s'%(bmp_palette))
+              sys.exit(-1)
+            
+            # Check if there is any CLUT file in the directory
+            clut_dir = os.path.join(base_dir, bmp_palette)
+            clut_file = None
+            for file in os.listdir(clut_dir):
+                if file.endswith(".CLUT"):
+                    clut_file = file
+                    break
+            
+            if not clut_file:
+              logging.error('Can\'t find any CLUT file in cast member: %s'%(bmp_palette))
+              sys.exit(-1)            
+            
+            with open(os.path.join(clut_dir, clut_file), mode='rb') as cfile:
+                cData = cfile.read()
+                clutData = [0] * (256*4)
+                indx = 0
+                cindx = 0
+                for i in range(0, 256):
+                    # The same color in RGB - BRG form
+                    r0 = cData[indx]
+                    indx += 1
+                    g0 = cData[indx]
+                    indx += 1
+                    b0 = cData[indx]
+                    indx += 1
+                    
+                    b1 = cData[indx]
+                    indx += 1
+                    g1 = cData[indx]
+                    indx += 1
+                    r1 = cData[indx]
+                    indx += 1
+                    
+                    clutData[cindx] = b1
+                    cindx += 1
+                    clutData[cindx] = g1
+                    cindx += 1
+                    clutData[cindx] = r1
+                    cindx += 1
+                    clutData[cindx] = 0  # Alpha
+                    cindx += 1
+           
+            logging.debug('Using a custom palette: %s'%(bmp_palette))
+            
+        else:
+            logging.debug('Using a default palette: %s'%(bmp_palette))
 
         try:
             logging.info(u"Saving file content to: %s"%(file_name))
@@ -895,16 +689,12 @@ def bitd2bmp(castData, bitd_file):
             logging.info(u"Saving file content to: %s"%(file_name))
 
 
-        with open(os.path.join(sys.argv[2], file_name), 'wb') as file:
+        with open(os.path.join(sys.argv[1], file_name), 'wb') as file:
             # Write Windows bitmap file header
-            file.write('BM')
+            file.write('BM'.encode('ascii'))
 
             # bmp_width must be divisible by 4
-            bmp_wlimit = bmp_width
-            if (bmp_width & 3) != 0:
-                bmp_width += 4-(bmp_width & 3)
-                logging.info("Change bmp_width to %s"%(bmp_width))
-                bmp_wlimit += 1
+            bmp_wlimit = bmp_width + bmp_padding_w
 
             if bmp_bpp == 4:
                 # 4 bits per pixel image
@@ -912,7 +702,7 @@ def bitd2bmp(castData, bitd_file):
 
             elif bmp_bpp == 8:
                 # 8 bits per pixel image
-                save_8bit_bmp(bmp_width, bmp_height, bmp_wlimit, file, clutData, fdata)
+                save_8bit_bmp(bmp_width, bmp_height, bmp_wlimit, file, bmp_palette,  clutData, fdata)
 
             elif bmp_bpp == 16:
                 # 16 bits per pixel image
@@ -929,39 +719,31 @@ def bitd2bmp(castData, bitd_file):
 
 # ====================================================================================================================================
 if __name__ == '__main__':
-    if len(sys.argv) < 5:
-        lprint("USAGE: bitd2bmp [pc|mac] <work directory> <cast file name> <bitd file name>")
+    if len(sys.argv) < 3:
+        print("USAGE: bitd2bmp <work directory> <bitd file name>")
 
     else:
-        if sys.argv[1] != 'pc' and sys.argv[1] != 'mac':
-            logging.error(" First argument must be 'pc' or 'mac'")
+        if not os.path.isdir(sys.argv[1]):
+            logging.error(" '%s' is not a directory"%(sys.argv[1]))
             sys.exit(-1)
 
-        if sys.argv[1] == 'pc':
-            bit_order_type = 'pc'
-            bit_order = "<"
-
-        if not os.path.isdir(sys.argv[2]):
-            logging.error(" '%s' is not a directory"%(sys.argv[2]))
+        if not os.path.isfile(os.path.join(sys.argv[1], sys.argv[2])):
+            logging.error(" '%s' is not a file"%(os.path.join(sys.argv[1], sys.argv[2])))
             sys.exit(-1)
 
-        if not os.path.isfile(os.path.join(sys.argv[2], sys.argv[3])):
-            logging.error(" '%s' is not a file"%(os.path.join(sys.argv[2], sys.argv[3])))
+        if not os.path.isfile(os.path.join(sys.argv[1], 'data.json')):
+            logging.error(" '%s' is not a file"%(os.path.join(sys.argv[1], 'data.json')))
             sys.exit(-1)
         
-        if not sys.argv[3].endswith('.CASt'):
-            logging.error(" '%s' does not end in .CASt"%(sys.argv[3]))
-            sys.exit(-1)
-
-        if not os.path.isfile(os.path.join(sys.argv[2], sys.argv[4])):
-            logging.error(" '%s' is not a file"%(os.path.join(sys.argv[2], sys.argv[4])))
-            sys.exit(-1)
-        
-        if not sys.argv[4].endswith('.BITD'):
-            logging.error(" '%s' does not end in .BITD"%(sys.argv[4]))
+        if not sys.argv[2].endswith('.BITD'):
+            logging.error(" '%s' does not end in .BITD"%(sys.argv[2]))
             sys.exit(-1)
             
         # Get cast file data
-        img_data = parse_cast_file(os.path.join(sys.argv[2], sys.argv[3]))
-        bitd2bmp(img_data, os.path.join(sys.argv[2], sys.argv[4]))
+        json_data = None
+        with open(os.path.join(sys.argv[1], 'data.json'), encoding='utf-8') as json_file:
+            text = json_file.read()
+            json_data = json.loads(text)
+        
+        bitd2bmp(json_data, os.path.join(sys.argv[1], sys.argv[2]))
         
