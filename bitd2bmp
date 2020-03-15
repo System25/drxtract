@@ -82,7 +82,7 @@ SYSTEM_WINDOWS_16COLORS_PALETTE = (
 
 
 # ====================================================================================================================================
-def save_4bit_bmp(bmp_width, bmp_height, file, previous_clut, fdata):
+def save_4bit_bmp(bmp_width, bmp_height, file, palette, previous_clut, fdata, bmp_padding_h):
     bmp_bpp = 4
     values = (bmp_width*bmp_height+(16*4)+40+14, # The size of the BMP file in bytes
               0, # Reserved
@@ -119,59 +119,70 @@ def save_4bit_bmp(bmp_width, bmp_height, file, previous_clut, fdata):
         file.write(packed_data)
 
     else:
-        # Default windows 16 colors palete
+        # Use a standar color palette
         s = struct.Struct('B'*(ncolors*4))
-        if sys.argv[1] == 'pc':
-            packed_data = s.pack(*DEFAULT_WINDOWS_16COLORS_PALETTE)
+        if palette == 'systemMac':
+          packed_data = s.pack(*SYSTEM_MAC_16COLORS_PALETTE)
+        elif palette == 'systemWin':
+          packed_data = s.pack(*SYSTEM_WINDOWS_16COLORS_PALETTE)       
         else:
-            packed_data = s.pack(*DEFAULT_MAC_16COLORS_PALETTE)
-
+          logging.warn("Using default windows color palette!")
+          packed_data = s.pack(*SYSTEM_WINDOWS_16COLORS_PALETTE)               
+            
         file.write(packed_data)
-
+        
+        
     # get the pixel information
-    # RLE encoded bytes contains 2 pixel colors
-    w = (bmp_width/2)
+    w = bmp_width + (bmp_width%2)
+    print("w: %s"%(w))  
 
     castData = [0 for x in range(w*bmp_height)]
     x = 0
-    y = bmp_height - 1
+    y = bmp_height - 1 - bmp_padding_h
     idx = 0
     while (idx < len(fdata)) and (y>=0):
-        val = struct.unpack("B", fdata[idx])[0]
+        val = fdata[idx]
+        print("val=%s"%(val))        
         if (val & 0x80) != 0:
             # RLE encoded
             run_length = 257 - val
-            run_value = struct.unpack("B", fdata[idx+1])[0]
+            print("RLE: run length: %s"%(run_length))            
+            run_value = fdata[idx+1]
+            print("RLE: run value: %s"%(run_value))            
             idx = idx + 2
             for i in range(0, run_length):
+                if x >= w:
+                    logging.error("Painting out of image! (x=%s y=%s col=%s)"%(x-1, y, run_value))
+                    break
                 castData[y*w + x] = run_value
                 x += 1
-                if x >= w:
-                    x = 0
-                    y -= 1
             
-
-        elif val != 0:
-            # Not RLE encoded
-            run_length = (val + 1)
-            idx = idx + 1
-            for i in range(0, run_length):
-                castData[y*w + x] = struct.unpack("B", fdata[idx])[0]
-                idx = idx + 1
-                x += 1
-                if x >= w:
-                    x = 0
-                    y -= 1
-
-        else: # val is zero
-            run_value = struct.unpack("B", fdata[idx+1])[0]
-            idx = idx + 2
-
-            castData[y*w + x] = run_value
-            x += 1
             if x >= w:
                 x = 0
                 y -= 1
+                print("RLE: jump to next row!")                
+            
+            
+        else:
+            # Not RLE encoded
+            run_length = (val + 1)
+            print("NoRLE: run length: %s"%(run_length))            
+            idx = idx + 1
+            for i in range(0, run_length):
+                if x >= w:
+                    logging.error("Painting out of image! (x=%s y=%s col=%s)"%(x-1, y, run_value))
+                    break
+                castData[y*w + x] = fdata[idx]
+                idx = idx + 1
+                x += 1
+                if idx > len(fdata):
+                    logging.error("Bad run length! (value=%s)"%(run_length))
+                    break
+                    
+            if x >= w:
+                x = 0
+                y -= 1
+                print("NoRLE: jump to next row!") 
 
     if y!=-1 or x!=0:
         logging.warn("Not enought data to decode. Probably the image is not properly generated. (y=%s, x=%s)"%(y, x))
@@ -179,13 +190,20 @@ def save_4bit_bmp(bmp_width, bmp_height, file, previous_clut, fdata):
     if idx != len(fdata):
         logging.warn("there is more data to decode. Probably the image is not properly generated. (%s != %s)"%(idx, len(fdata)))
 
-
+    # RLE encoded bytes contains 2 pixel colors
+    ow = int(bmp_width/2) + (bmp_width%2)
+    outData = [0 for x in range(ow*bmp_height)]
+    for y in range(bmp_height):
+      for x in range(ow):
+        val = (castData[y*w + x*2] << 4)
+        outData = val
+        
     # Write the pixel information
-    file.write(struct.pack("B"*(w*bmp_height), *castData))
+    file.write(struct.pack("B"*(bmp_width*bmp_height), *outData))
     file.close()
 
 # ====================================================================================================================================
-def save_8bit_bmp(bmp_width, bmp_height, bmp_wlimit, file, palette, previous_clut, fdata):
+def save_8bit_bmp(bmp_width, bmp_height, bmp_wlimit, file, palette, previous_clut, fdata, bmp_padding_w, bmp_padding_h):
     bmp_bpp = 8
     values = (bmp_width*bmp_height+(256*4)+40+14, # The size of the BMP file in bytes
               0, # Reserved
@@ -198,9 +216,14 @@ def save_8bit_bmp(bmp_width, bmp_height, bmp_wlimit, file, palette, previous_clu
 
     ncolors = 256
 
+    width = bmp_width
+    if (width%4) > 0:
+      # The image width must be divisible by four
+      width = width + 4 - (width%4)
+    
     # Write BITMAPINFOHEADER
     values = (40, # the size of this header (40 bytes)
-              bmp_width, # the bitmap width in pixels (signed integer)
+              width, # the bitmap width in pixels (signed integer)
               bmp_height, # the bitmap height in pixels (signed integer)
               1, # the number of color planes (must be 1)
               bmp_bpp, # the number of bits per pixel, which is the color depth of the image. Typical values are 1, 4, 8, 16, 24 and 32.
@@ -251,7 +274,7 @@ def save_8bit_bmp(bmp_width, bmp_height, bmp_wlimit, file, palette, previous_clu
 
     # get the pixel information
     # RLE encoded bytes contains 1 pixel color
-    w = bmp_width
+    w = bmp_width + (bmp_width%2) - bmp_padding_w
 
     if len(fdata) == w*bmp_height:
         logging.info("The size of the data matches the image resolution. Not RLE compressed!")
@@ -265,12 +288,10 @@ def save_8bit_bmp(bmp_width, bmp_height, bmp_wlimit, file, palette, previous_clu
         return
 
 
-    castData = [0 for x in range(w*bmp_height)]
+    castData = [0 for x in range(width*bmp_height)]
     x = 0
-    y = bmp_height - 1
+    y = bmp_height - 1 - bmp_padding_h
     idx = 0
-    previous_encoded = True
-    previous_run_length = 0
     while (idx < len(fdata)) and (y>=0):
         val = fdata[idx]
         if (val & 0x80) != 0:
@@ -282,85 +303,59 @@ def save_8bit_bmp(bmp_width, bmp_height, bmp_wlimit, file, palette, previous_clu
             run_value = fdata[idx+1]
             idx = idx + 2
 
-            # Jump to next row when necessary
-            if ((x + run_length) > bmp_wlimit):
-                x = 0
-                y -= 1
-
-            if y < 0:
-                break
+            if x + run_length > w:
+                logging.error("Run too long! (%s, %s)"%(run_length, w-x))
 
             for i in range(0, run_length):
-                castData[y*w + x] = run_value
-                x += 1
                 if x >= w:
-                    x = 0
-                    y -= 1
-                    if y < 0:
-                        break
+                    logging.error("Painting out of image! (x=%s y=%s col=%s)"%(x-1, y, run_value))
+                    break
+                 
+                castData[y*width + x + bmp_padding_w] = run_value
+                x += 1
             
-            previous_encoded = True
-            previous_run_length = run_length
+            if x >= w:
+                x = 0
+                y -= 1
+                if y < 0:
+                    break
 
         else:
             # Not RLE encoded
             run_length = val + 1
             idx = idx + 1
-            if idx >= len(fdata):
-                logging.error("Bad run length! (value=%s)"%(run_length))
-                break
-
-            # Jump to next row when necessary
-            if ((x + run_length) > bmp_wlimit) or ( not previous_encoded and (run_length+previous_run_length) < 128 ):
-                # (not previous_encoded and (run_length+previous_run_length) < 128) condition
-                # detects when there is something like:
-                #   00 AA 00 BB
-                #
-                # Because that could be compressed as:
-                #   01 AA BB
-                #
-                # And that means that [00 BB] must be at the begining of a new line
-                previous_encoded = True
-                previous_run_length = 0
-
-                x = 0
-                y -= 1
-
-            else:
-                previous_encoded = False
-                previous_run_length = run_length
-
-
-            if y < 0:
+            if idx + run_length > len(fdata):
+                logging.error("Bad run length! (value=%s, available=%s)"%(run_length, len(fdata)-idx))
                 break
 
             for i in range(0, run_length):
-                castData[y*w + x] = fdata[idx]
+                if x >= w:
+                    logging.error("Painting out of image! (x=%s y=%s col=%s)"%(x-1, y, fdata[idx-1]))
+                    break
+
+                castData[y*width + x + bmp_padding_w] = fdata[idx]
+                  
                 idx = idx + 1
-                if idx >= len(fdata):
+                if idx > len(fdata):
                     logging.error("Bad run length! (value=%s)"%(run_length))
                     break
 
-                x += 1
-                if x >= w:
-                    previous_encoded = True
-                    previous_run_length = 0
+                x += 1            
 
-                    x = 0
-                    y -= 1
-                    if y < 0:
-                        break
-
-
+            if x >= w:           
+                x = 0
+                y -= 1
+                if y < 0:
+                    break
 
     if y!=-1 or x!=0:
         logging.warning("Not enought data to decode. Probably the image is not properly generated. (y=%s, x=%s)"%(y, x))
 
     if idx != len(fdata):
         logging.warning("there is more data to decode. Probably the image is not properly generated. (%s != %s)"%(idx, len(fdata)))
-
+        
     # Write the pixel information
-    file.write(struct.pack("B"*(bmp_width*bmp_height), *castData))
+    file.write(struct.pack("B"*(width*bmp_height), *castData))
     file.close()
 
 # ====================================================================================================================================
@@ -698,11 +693,11 @@ def bitd2bmp(castData, bitd_file):
 
             if bmp_bpp == 4:
                 # 4 bits per pixel image
-                save_4bit_bmp(bmp_width, bmp_height, file, clutData, fdata)
+                save_4bit_bmp(bmp_width, bmp_height, file, bmp_palette, clutData, fdata, bmp_padding_h)
 
             elif bmp_bpp == 8:
                 # 8 bits per pixel image
-                save_8bit_bmp(bmp_width, bmp_height, bmp_wlimit, file, bmp_palette,  clutData, fdata)
+                save_8bit_bmp(bmp_width, bmp_height, bmp_wlimit, file, bmp_palette, clutData, fdata, bmp_padding_w, bmp_padding_h)
 
             elif bmp_bpp == 16:
                 # 16 bits per pixel image

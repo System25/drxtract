@@ -51,6 +51,11 @@ def get_palette(palette_id):
     # I found this in a german book called "Macromedia Director: Multimediaprogrammierung mit Lingo"
     # https://books.google.es/books?id=UxLuBQAAQBAJ&pg=PA282&lpg=PA282&dq=macromedia+director+ntsc+web+grayscale+rainbow&source=bl&ots=tlcNQFqWod&sig=ACfU3U2d0o3Kv3y7_9umDgOCPGBDqooIzQ&hl=es&sa=X&ved=2ahUKEwjXs-rnlNXiAhVDrxoKHdcACWIQ6AEwB3oECAUQAQ#v=onepage&q=macromedia%20director%20ntsc%20web%20grayscale%20rainbow&f=false
     
+    if palette_id <= 0:
+        # There is no zero casting member so
+        # it must be a predefined palette
+        palette_id = palette_id - 1
+    
     if palette_id == -1:
         return 'systemMac'
     elif palette_id == -102:
@@ -618,6 +623,10 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
                 # 24 bit per pixel image
                 bmp_bpp = 24
 
+            elif bmp_bpp_val == 0x0:
+                # 2 bit per pixel image (Black and White)
+                bmp_bpp = 2               
+                
             else:
                 logging.warn("Unknown BPP value: %s"%(bmp_bpp_val))
 
@@ -668,10 +677,13 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
             idx += 2
             logging.debug("center_x = %s"%(center_x))
 
+            palette = 'systemMac'
             if (len(header_data) > 24):
                 bitdepth =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
                 idx += 2
-                logging.debug("bitdepth = %s"%(bitdepth)) 
+                logging.debug("bitdepth = %s"%(bitdepth))
+                if bitdepth > bmp_bpp:
+                    bmp_bpp = bitdepth
 
                 palette =  get_palette(struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0])
                 idx += 2
