@@ -39,8 +39,13 @@ DIR4_IMAGE_TYPE = 0x1C0000
 
 
 # ============================================ Default color palettes ================================================================
+BW_PALETTE = (
+  255, 255, 255, 0, # white  
+  0, 0, 0, 0        # black  
+)
+
 SYSTEM_MAC_16COLORS_PALETTE = (
-  255, 255, 255, 0, # white
+
   255, 255, 0, 0,   # yellow
   255, 160, 0, 0,   # orange
   255, 0, 0, 0,     # red
@@ -80,6 +85,124 @@ SYSTEM_WINDOWS_16COLORS_PALETTE = (
   0, 0, 0, 0        # black
  )
 
+# ====================================================================================================================================
+def save_2bit_bmp(bmp_width, bmp_height, file, fdata, bmp_padding_w, bmp_padding_h):
+    bmp_bpp = 8
+    ncolors = 2    
+    values = (bmp_width*bmp_height+(ncolors*4)+40+14, # The size of the BMP file in bytes
+              0, # Reserved
+              0, # Reserved
+              ((ncolors*4)+40+14) # Data offset
+             )
+    s = struct.Struct('<ihhi')
+    packed_data = s.pack(*values)
+    file.write(packed_data)
+    
+    width = bmp_width
+    if (width%4) > 0:
+      # The image width must be divisible by four
+      width = width + 4 - (width%4)
+    
+    # Write BITMAPINFOHEADER
+    values = (40, # the size of this header (40 bytes)
+              bmp_width, # the bitmap width in pixels (signed integer)
+              bmp_height, # the bitmap height in pixels (signed integer)
+              1, # the number of color planes (must be 1)
+              bmp_bpp, # the number of bits per pixel, which is the color depth of the image. Typical values are 1, 4, 8, 16, 24 and 32.
+              0, # the compression method being used
+              0, # the image size. This is the size of the raw bitmap data; a dummy 0 can be given for BI_RGB bitmaps.
+              0, # the horizontal resolution of the image. (pixel per meter, signed integer)
+              0, # the vertical resolution of the image. (pixel per meter, signed integer)
+              ncolors, # the number of colors in the color palette, or 0 to default to 2n
+              ncolors  # the number of important colors used, or 0 when every color is important; generally ignored
+             )
+    s = struct.Struct('<iiihhiiiiii')
+    packed_data = s.pack(*values)
+    file.write(packed_data)
+
+    # Write the black and white color palette
+    s = struct.Struct('B'*(ncolors*4))
+    packed_data = s.pack(*BW_PALETTE)   
+    file.write(packed_data)
+
+    # get the pixel information
+    # RLE encoded bytes contains 1 pixel color
+    w = bmp_width - bmp_padding_w
+
+    castData = [0 for x in range(width*bmp_height)]
+    x = 0
+    y = bmp_height - 1 - bmp_padding_h
+    idx = 0
+    while (idx < len(fdata)) and (y>=0):
+        val = fdata[idx]
+        if (val & 0x80) != 0:
+            # RLE encoded
+            run_length = 257 - val
+            if idx+1 >= len(fdata):
+                logging.error("Unexpected end of data! (data length=%s)"%(len(fdata)))
+                break
+            run_value = fdata[idx+1]
+            idx = idx + 2
+
+            if x + run_length > w:
+                logging.error("Run too long! (%s, %s)"%(run_length, w-x))
+
+            for i in range(0, run_length):
+                for j in range(0, 8):
+                    bitval = ((run_value >> (7-j)) & 1)
+                    if x >= w:
+                        logging.error("Painting out of image! (x=%s y=%s col=%s)"%(x-1, y, bitval))
+                        break
+
+                    castData[y*width + x + bmp_padding_w] = bitval
+                    x += 1
+            
+            if x >= w:
+                x = 0
+                y -= 1
+                if y < 0:
+                    break
+
+        else:
+            # Not RLE encoded
+            run_length = val + 1
+            idx = idx + 1
+            if idx + run_length > len(fdata):
+                logging.error("Bad run length! (value=%s, available=%s)"%(run_length, len(fdata)-idx))
+                break
+
+            for i in range(0, run_length):
+                for j in range(0, 8):
+                    bitval = ((fdata[idx] >> (7-j)) & 1)
+                    if x >= w:
+                        logging.error("Painting out of image! (x=%s y=%s col=%s)"%(x-1, y, bitval))
+                        break
+
+                    castData[y*width + x + bmp_padding_w] = bitval
+                    x += 1            
+
+                idx = idx + 1
+                if idx > len(fdata):
+                    logging.error("Bad run length! (value=%s)"%(run_length))
+                    break
+
+
+            if x >= w:           
+                x = 0
+                y -= 1
+                if y < 0:
+                    break
+
+    if y!=-1 or x!=0:
+        logging.warning("Not enought data to decode. Probably the image is not properly generated. (y=%s, x=%s)"%(y, x))
+
+    if idx != len(fdata):
+        logging.warning("there is more data to decode. Probably the image is not properly generated. (%s != %s)"%(idx, len(fdata)))
+        
+    # Write the pixel information
+    file.write(struct.pack("B"*(width*bmp_height), *castData))
+    file.close()
+
 
 # ====================================================================================================================================
 def save_4bit_bmp(bmp_width, bmp_height, file, palette, previous_clut, fdata, bmp_padding_h):
@@ -95,6 +218,11 @@ def save_4bit_bmp(bmp_width, bmp_height, file, palette, previous_clut, fdata, bm
 
     ncolors = 16
 
+    width = bmp_width
+    if (width%4) > 0:
+      # The image width must be divisible by four
+      width = width + 4 - (width%4)    
+    
     # Write BITMAPINFOHEADER
     values = (40, # the size of this header (40 bytes)
               bmp_width, # the bitmap width in pixels (signed integer)
@@ -203,7 +331,7 @@ def save_4bit_bmp(bmp_width, bmp_height, file, palette, previous_clut, fdata, bm
     file.close()
 
 # ====================================================================================================================================
-def save_8bit_bmp(bmp_width, bmp_height, bmp_wlimit, file, palette, previous_clut, fdata, bmp_padding_w, bmp_padding_h):
+def save_8bit_bmp(bmp_width, bmp_height, file, palette, previous_clut, fdata, bmp_padding_w, bmp_padding_h):
     bmp_bpp = 8
     values = (bmp_width*bmp_height+(256*4)+40+14, # The size of the BMP file in bytes
               0, # Reserved
@@ -223,7 +351,7 @@ def save_8bit_bmp(bmp_width, bmp_height, bmp_wlimit, file, palette, previous_clu
     
     # Write BITMAPINFOHEADER
     values = (40, # the size of this header (40 bytes)
-              width, # the bitmap width in pixels (signed integer)
+              bmp_width, # the bitmap width in pixels (signed integer)
               bmp_height, # the bitmap height in pixels (signed integer)
               1, # the number of color planes (must be 1)
               bmp_bpp, # the number of bits per pixel, which is the color depth of the image. Typical values are 1, 4, 8, 16, 24 and 32.
@@ -274,16 +402,25 @@ def save_8bit_bmp(bmp_width, bmp_height, bmp_wlimit, file, palette, previous_clu
 
     # get the pixel information
     # RLE encoded bytes contains 1 pixel color
-    w = bmp_width + (bmp_width%2) - bmp_padding_w
+    w = bmp_width - bmp_padding_w
+    w = w + (w%2)
 
-    if len(fdata) == w*bmp_height:
+    if len(fdata) == w*(bmp_height-bmp_padding_h):
         logging.info("The size of the data matches the image resolution. Not RLE compressed!")
         # Write the pixel information
-        y = bmp_height - 1
+        y = bmp_height - 1 - bmp_padding_h
         while y>=0:
+            if bmp_padding_w > 0:
+                file.write(bytearray('\0' * bmp_padding_w, 'ascii'))
             idx = y*w
             file.write(fdata[idx:(idx+w)])
             y -= 1
+            if width - bmp_width > 0:
+                file.write(bytearray('\0'*(width - bmp_width), 'ascii'))
+            
+        for _ in range(0, bmp_padding_h):
+          file.write(bytearray('\0' * width, 'ascii'))
+          
         file.close()
         return
 
@@ -292,6 +429,7 @@ def save_8bit_bmp(bmp_width, bmp_height, bmp_wlimit, file, palette, previous_clu
     x = 0
     y = bmp_height - 1 - bmp_padding_h
     idx = 0
+    logging.debug("w=%s h=%s"%(w, bmp_height-bmp_padding_h))
     while (idx < len(fdata)) and (y>=0):
         val = fdata[idx]
         if (val & 0x80) != 0:
@@ -599,10 +737,16 @@ def bitd2bmp(castData, bitd_file):
         bmp_bpp = castData['content']['bitmap']['bpp']
         bmp_padding_w = castData['content']['bitmap']['w_padding']
         bmp_padding_h = castData['content']['bitmap']['h_padding']
-        bmp_palette = castData['content']['bitmap']['palette']
+        if bmp_bpp == 8:
+            bmp_palette = castData['content']['bitmap']['palette']
+        elif bmp_bpp == 2:
+            bmp_palette = 'black and white'          
+        else:
+            bmp_palette = 'none'
+        
         bmp_file_name = None
         if 'name' in castData:
-          bmp_file_name = castData['name']
+            bmp_file_name = castData['name']
 
         file_name = "%s.%s"%(os.path.basename(bitd_file)[:-5], file_ext)
         if bmp_file_name is not None:
@@ -688,16 +832,17 @@ def bitd2bmp(castData, bitd_file):
             # Write Windows bitmap file header
             file.write('BM'.encode('ascii'))
 
-            # bmp_width must be divisible by 4
-            bmp_wlimit = bmp_width + bmp_padding_w
-
-            if bmp_bpp == 4:
+            if bmp_bpp == 2:
+                # 2 bits per pixel image (black and white)
+                save_2bit_bmp(bmp_width, bmp_height, file, fdata, bmp_padding_w, bmp_padding_h)
+                
+            elif bmp_bpp == 4:
                 # 4 bits per pixel image
                 save_4bit_bmp(bmp_width, bmp_height, file, bmp_palette, clutData, fdata, bmp_padding_h)
 
             elif bmp_bpp == 8:
                 # 8 bits per pixel image
-                save_8bit_bmp(bmp_width, bmp_height, bmp_wlimit, file, bmp_palette, clutData, fdata, bmp_padding_w, bmp_padding_h)
+                save_8bit_bmp(bmp_width, bmp_height, file, bmp_palette, clutData, fdata, bmp_padding_w, bmp_padding_h)
 
             elif bmp_bpp == 16:
                 # 16 bits per pixel image
