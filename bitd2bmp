@@ -128,7 +128,52 @@ def save_2bit_bmp(bmp_width, bmp_height, file, fdata, bmp_padding_w, bmp_padding
     # get the pixel information
     # RLE encoded bytes contains 1 pixel color
     w = bmp_width - bmp_padding_w
+    inc = (w%2)
+    w = w + inc
 
+    w_size = int(w/8)
+    if (w%8) > 0:
+      w_size = w_size + 1
+
+    if len(fdata) == (w_size+1)*(bmp_height-bmp_padding_h):
+        # Sometimes is a byte more and I don't know why
+        w_size = w_size + 1
+    logging.debug("len=%s size=%s"%(len(fdata), w_size*(bmp_height-bmp_padding_h)))      
+      
+    if len(fdata) == w_size*(bmp_height-bmp_padding_h):
+        logging.info("The size of the data matches the image resolution. Not RLE compressed!")
+        # Write the pixel information
+        white = '\0'
+        y = bmp_height - 1 - bmp_padding_h
+        idx = 0
+        while y>=0:
+            if bmp_padding_w > 0:
+                file.write(bytearray(white * bmp_padding_w, 'ascii'))
+            
+            idx = (y * w_size)
+            
+            x = 0
+            while x < w:
+                for j in range(0, 8):
+                    bitval = ((fdata[idx] >> (7-j)) & 1)                 
+                    file.write(struct.pack('B', bitval))
+                    x = x + 1
+                    if x >= w:
+                      break
+                idx = idx + 1
+
+            if width - bmp_width - inc > 0:
+                file.write(bytearray(white *(width - bmp_width - inc), 'ascii'))
+            
+            y = y - 1
+             
+        for _ in range(0, bmp_padding_h):
+          file.write(bytearray(white * width, 'ascii'))
+          
+        file.close()
+        return    
+    
+    
     castData = [0 for x in range(width*bmp_height)]
     x = 0
     y = bmp_height - 1 - bmp_padding_h
@@ -151,9 +196,9 @@ def save_2bit_bmp(bmp_width, bmp_height, file, fdata, bmp_padding_w, bmp_padding
                 for j in range(0, 8):
                     bitval = ((run_value >> (7-j)) & 1)
                     if x >= w:
-                        logging.error("Painting out of image! (x=%s y=%s col=%s)"%(x-1, y, bitval))
+                        logging.error("Painting out of image (rle)! (x=%s y=%s col=%s)"%(x-1, y, bitval))
                         break
-
+                    
                     castData[y*width + x + bmp_padding_w] = bitval
                     x += 1
             
@@ -175,9 +220,9 @@ def save_2bit_bmp(bmp_width, bmp_height, file, fdata, bmp_padding_w, bmp_padding
                 for j in range(0, 8):
                     bitval = ((fdata[idx] >> (7-j)) & 1)
                     if x >= w:
-                        logging.error("Painting out of image! (x=%s y=%s col=%s)"%(x-1, y, bitval))
+                        logging.error("Painting out of image (no-rle)! (x=%s y=%s col=%s)"%(x-1, y, bitval))
                         break
-
+                    
                     castData[y*width + x + bmp_padding_w] = bitval
                     x += 1            
 
@@ -403,23 +448,25 @@ def save_8bit_bmp(bmp_width, bmp_height, file, palette, previous_clut, fdata, bm
     # get the pixel information
     # RLE encoded bytes contains 1 pixel color
     w = bmp_width - bmp_padding_w
-    w = w + (w%2)
+    inc = (w%2)
+    w = w + inc
 
     if len(fdata) == w*(bmp_height-bmp_padding_h):
         logging.info("The size of the data matches the image resolution. Not RLE compressed!")
         # Write the pixel information
+        white = '\0'
         y = bmp_height - 1 - bmp_padding_h
         while y>=0:
             if bmp_padding_w > 0:
-                file.write(bytearray('\0' * bmp_padding_w, 'ascii'))
+                file.write(bytearray(white * bmp_padding_w, 'ascii'))
             idx = y*w
             file.write(fdata[idx:(idx+w)])
             y -= 1
-            if width - bmp_width > 0:
-                file.write(bytearray('\0'*(width - bmp_width), 'ascii'))
+            if width - bmp_width - inc > 0:
+                file.write(bytearray(white *(width - bmp_width - inc), 'ascii'))
             
         for _ in range(0, bmp_padding_h):
-          file.write(bytearray('\0' * width, 'ascii'))
+          file.write(bytearray(white * width, 'ascii'))
           
         file.close()
         return
