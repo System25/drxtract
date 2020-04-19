@@ -128,20 +128,15 @@ def save_2bit_bmp(bmp_width, bmp_height, file, fdata, bmp_padding_w, bmp_padding
     # get the pixel information
     # RLE encoded bytes contains 1 pixel color
     w = bmp_width - bmp_padding_w
-    inc = (w%2)
-    w = w + inc
 
     w_size = int(w/8)
     if (w%8) > 0:
-      w_size = w_size + 1
-
-    if len(fdata) == (w_size+1)*(bmp_height-bmp_padding_h):
-        # Sometimes is a byte more and I don't know why
         w_size = w_size + 1
-    logging.debug("len=%s size=%s"%(len(fdata), w_size*(bmp_height-bmp_padding_h)))      
-      
+    # Must be an even number
+    w_size = w_size + (w_size%2)  
+
     if len(fdata) == w_size*(bmp_height-bmp_padding_h):
-        logging.info("The size of the data matches the image resolution. Not RLE compressed!")
+        logging.info("The size of the data matches the image resolution. Not RLE compressed!")      
         # Write the pixel information
         white = '\0'
         y = bmp_height - 1 - bmp_padding_h
@@ -161,9 +156,9 @@ def save_2bit_bmp(bmp_width, bmp_height, file, fdata, bmp_padding_w, bmp_padding
                     if x >= w:
                       break
                 idx = idx + 1
-
-            if width - bmp_width - inc > 0:
-                file.write(bytearray(white *(width - bmp_width - inc), 'ascii'))
+                
+            if width - bmp_width > 0:
+                file.write(bytearray(white *(width - bmp_width), 'ascii'))
             
             y = y - 1
              
@@ -173,6 +168,11 @@ def save_2bit_bmp(bmp_width, bmp_height, file, fdata, bmp_padding_w, bmp_padding
         file.close()
         return    
     
+    # w must be an even number in compressed images
+    inc = (w%2)
+    if bmp_width + inc > width:
+        inc = 0
+    w = w + inc    
     
     castData = [0 for x in range(width*bmp_height)]
     x = 0
