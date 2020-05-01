@@ -45,6 +45,16 @@ else:
     basepath = ('%s/'%(os.path.dirname(sys.argv[0])))
 
 # ====================================================================================================================================
+# Replace the extension in a filename
+def replace_ext(filename, new_extension):
+    f = filename
+    if '.' in f:
+        f = filename[0:filename.rfind('.')]
+        f = '%s.%s'%(f, new_extension)
+        
+    return f
+    
+# ====================================================================================================================================
 # Translate palette number to string representation
 def get_palette(palette_id):
     
@@ -575,7 +585,7 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
                     stdata = base64.b64decode(castData['content']['extra'][1])
                     nchars = int(stdata[0])
                     cast_elm_name = stdata[1:nchars+1].decode('ISO-8859-1')
-                    cast_elm_name = re.sub(r"[^A-Za-z0-9\-_\.]", "_", cast_elm_name)
+                    cast_elm_name = re.sub(r"[^A-Za-z0-9\-_\. ]", "_", cast_elm_name)
                     castData['name'] = cast_elm_name
                     logging.debug("Cast member name: '%s'"%(cast_elm_name))
                 else:
@@ -699,11 +709,13 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
             if bmp_bpp == 8:
                 castData['content']['bitmap']['palette'] = palette
             
-            
-            
-            
-
-            
+            for f in kelm:
+                if f.endswith('.BITD'):            
+                    castData['file'] = replace_ext(f, 'png')
+                 
+                if f.endswith('.THUM'):            
+                    castData['thumbnail'] = replace_ext(f, 'png')
+                    
         elif data_type == DIR_SND_TYPE:
             # Director sound type
             logging.info("%s: is a sound file"%(cast_file))

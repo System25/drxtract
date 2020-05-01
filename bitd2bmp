@@ -790,26 +790,8 @@ def bitd2bmp(castData, bitd_file):
             bmp_palette = 'black and white'          
         else:
             bmp_palette = 'none'
-        
-        bmp_file_name = None
-        if 'name' in castData:
-            bmp_file_name = castData['name']
 
         file_name = "%s.%s"%(os.path.basename(bitd_file)[:-5], file_ext)
-        if bmp_file_name is not None:
-            file_name = bmp_file_name
-            if not file_name.upper().endswith('.BMP'):
-                file_name = "%s.%s"%(file_name, file_ext)
-
-        # Remove strange chars
-        file_namer = re.sub(r"[^A-Za-z0-9\-_\.]", "_", file_name)
-        if file_namer != file_name:
-            try:
-                # Maybe is a japanese file name
-                file_name = file_name.decode('shift-jis')
-            except:
-                file_name = file_namer
-        file_name = file_name.replace("/", "_")
 
         # Check if the palette is a casting member number (custom palette)
         if type(bmp_palette) == int:
@@ -932,5 +914,32 @@ if __name__ == '__main__':
             text = json_file.read()
             json_data = json.loads(text)
         
-        bitd2bmp(json_data, os.path.join(sys.argv[1], sys.argv[2]))
+        # Generate BMP image
+        bitd_file = os.path.join(sys.argv[1], sys.argv[2])
+        bitd2bmp(json_data, bitd_file)
+        
+        # Use ImageMagick to remove the background
+        inp_name = os.path.join(sys.argv[1], "%s.%s"%(os.path.basename(bitd_file)[:-5], 'bmp'))
+        tmp_name = os.path.join(sys.argv[1], "%s.%s"%(os.path.basename(bitd_file)[:-5], 'tmp.png'))
+        out_name = os.path.join(sys.argv[1], "%s.%s"%(os.path.basename(bitd_file)[:-5], 'png'))
+        command = '-alpha off -bordercolor white -border 1 \\( +clone -fuzz 30% -fill none -floodfill +0+0 white '\
+                  '-alpha extract -geometry 200% -blur 0x0.5 -morphology erode square:1 -geometry 50% \\) '\
+                  '-compose CopyOpacity -composite -shave 1'
+        os.system('convert %s %s %s'%(
+                        inp_name, # input file
+                        command, # command
+                        tmp_name #output file
+                    ))
+        
+        # Crop the image
+        bmp_height = json_data['content']['bitmap']['height']
+        bmp_width = json_data['content']['bitmap']['width']
+        bmp_padding_w = json_data['content']['bitmap']['w_padding']
+        bmp_padding_h = json_data['content']['bitmap']['h_padding']
+        command = '-crop %sx%s+%s+%s'%(bmp_width, bmp_height, bmp_padding_w, bmp_padding_h)
+        os.system('convert %s %s %s'%(
+                tmp_name, # input file
+                command, # command
+                out_name #output file
+            ))
         
