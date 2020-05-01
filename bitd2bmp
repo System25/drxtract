@@ -928,8 +928,8 @@ if __name__ == '__main__':
         inp_name = os.path.join(sys.argv[1], "%s.%s"%(os.path.basename(bitd_file)[:-5], 'bmp'))
         tmp_name = os.path.join(sys.argv[1], "%s.%s"%(os.path.basename(bitd_file)[:-5], 'tmp.png'))
         out_name = os.path.join(sys.argv[1], "%s.%s"%(os.path.basename(bitd_file)[:-5], 'png'))
-        command = '-alpha off -bordercolor white -border 1 \\( +clone -fuzz 30% -fill none -floodfill +0+0 white '\
-                  '-alpha extract -geometry 200% -blur 0x0.5 -morphology erode square:1 -geometry 50% \\) '\
+        command = '-alpha off -bordercolor white -border 1 \\( +clone -fill none -floodfill +0+0 white '\
+                  '-alpha extract \\) '\
                   '-compose CopyOpacity -composite -shave 1'
         os.system('convert %s %s %s'%(
             inp_name, # input file
