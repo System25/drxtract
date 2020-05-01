@@ -88,7 +88,13 @@ SYSTEM_WINDOWS_16COLORS_PALETTE = (
 # ====================================================================================================================================
 def save_2bit_bmp(bmp_width, bmp_height, file, fdata, bmp_padding_w, bmp_padding_h):
     bmp_bpp = 8
-    ncolors = 2    
+    ncolors = 2
+    
+    # Sometimes the padding is negative
+    if bmp_padding_h < 0:
+      bmp_height = bmp_height - bmp_padding_h
+      bmp_padding_h = 0 
+    
     values = (bmp_width*bmp_height+(ncolors*4)+40+14, # The size of the BMP file in bytes
               0, # Reserved
               0, # Reserved
@@ -173,7 +179,7 @@ def save_2bit_bmp(bmp_width, bmp_height, file, fdata, bmp_padding_w, bmp_padding
     if bmp_width + inc > width:
         inc = 0
     w = w + inc    
-    
+
     castData = [0 for x in range(width*bmp_height)]
     x = 0
     y = bmp_height - 1 - bmp_padding_h
@@ -198,7 +204,7 @@ def save_2bit_bmp(bmp_width, bmp_height, file, fdata, bmp_padding_w, bmp_padding
                     if x >= w:
                         logging.error("Painting out of image (rle)! (x=%s y=%s col=%s)"%(x-1, y, bitval))
                         break
-                    
+
                     castData[y*width + x + bmp_padding_w] = bitval
                     x += 1
             
@@ -926,20 +932,28 @@ if __name__ == '__main__':
                   '-alpha extract -geometry 200% -blur 0x0.5 -morphology erode square:1 -geometry 50% \\) '\
                   '-compose CopyOpacity -composite -shave 1'
         os.system('convert %s %s %s'%(
-                        inp_name, # input file
-                        command, # command
-                        tmp_name #output file
-                    ))
+            inp_name, # input file
+            command, # command
+            tmp_name #output file
+        ))
         
         # Crop the image
         bmp_height = json_data['content']['bitmap']['height']
         bmp_width = json_data['content']['bitmap']['width']
         bmp_padding_w = json_data['content']['bitmap']['w_padding']
         bmp_padding_h = json_data['content']['bitmap']['h_padding']
-        command = '-crop %sx%s+%s+%s'%(bmp_width, bmp_height, bmp_padding_w, bmp_padding_h)
+        w = bmp_width
+        h = bmp_height
+        pw = bmp_padding_w
+        ph = bmp_padding_h
+        if ph < 0:
+            h = h - bmp_padding_h
+            ph = 0
+        
+        command = '-crop %sx%s+%s+%s'%(w, h, pw, ph)
         os.system('convert %s %s %s'%(
-                tmp_name, # input file
-                command, # command
-                out_name #output file
-            ))
+            tmp_name, # input file
+            command, # command
+            out_name #output file
+        ))
         
