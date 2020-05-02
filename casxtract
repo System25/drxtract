@@ -236,10 +236,10 @@ def parse_key_file(key_file):
             file_ext = struct.unpack("cccc", fdata[indx+8:indx+12])
             indx = indx + 12
             
-            if ((not int.from_bytes(file_ext[0], byteorder='little') in range(65, 91)) or
-                (not int.from_bytes(file_ext[1], byteorder='little') in range(65, 91)) or
-                (not int.from_bytes(file_ext[2], byteorder='little') in range(65, 91)) or
-                (not int.from_bytes(file_ext[3], byteorder='little') in range(65, 91))):
+            if ((not int.from_bytes(file_ext[0], byteorder='little') in range(32, 122)) or
+                (not int.from_bytes(file_ext[1], byteorder='little') in range(32, 122)) or
+                (not int.from_bytes(file_ext[2], byteorder='little') in range(32, 122)) or
+                (not int.from_bytes(file_ext[3], byteorder='little') in range(32, 122))):
                 # Not an ASCII char
                 continue
                 
@@ -249,6 +249,9 @@ def parse_key_file(key_file):
                                     file_ext[3].decode('ascii')))
             if sys.argv[1] == 'pc':
                 file_ext = file_ext[3] + file_ext[2] + file_ext[1] + file_ext[0]
+            
+            # Remove strange chars
+            file_ext = re.sub(r"[^A-Za-z0-9\-_\.]", "_", file_ext)
             
             if cas_index > 0 and nfile > 0:
                 cas_index = ('%08x'%cas_index)
@@ -820,12 +823,10 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
                         f # BITD file name
                     ))
                     
-                if f.endswith('.snd '):
-                    os.system('%s/snd2wav %s %s %s "%s"'%(
+                if f.endswith('.snd_'):
+                    os.system('%s/snd2wav %s %s'%(
                         os.path.dirname(sys.argv[0]), # Scripts path
-                        sys.argv[1], # pc or mac
                         dest_dir, # work directory
-                        os.path.basename(cast_file), # cast file name
                         f # snd file name
                     ))
                     
