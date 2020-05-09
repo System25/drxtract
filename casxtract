@@ -757,6 +757,12 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
                         script_file, # script file name
                         lnam_file
                     ))
+                    
+                    codefile = os.path.join(dest_dir, replace_ext(script_file, 'lingo'))
+                    if os.path.isfile(codefile):
+                        logging.debug("Decompiled code file: %s"%(codefile))
+                        with open(codefile, mode='rb') as cfile:
+                            castData['code'] = base64.b64encode(cfile.read()).decode()
         
         elif data_type == DIR_PUSH_BUTTON_TYPE:
             logging.info("%s: is a push button"%(cast_file))

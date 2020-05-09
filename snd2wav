@@ -290,7 +290,7 @@ if __name__ == '__main__':
         out_name = os.path.join(sys.argv[1], "%s.%s"%(sys.argv[2][:-5], 'mp3'))
         
         # Transform it to mp3
-        os.system('ffmpeg -i %s -acodec libmp3lame %s'%(
+        os.system('ffmpeg -y -i %s -acodec libmp3lame %s'%(
             in_name, # input file
             out_name #output file
         ))        
