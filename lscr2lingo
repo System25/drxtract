@@ -76,13 +76,13 @@ TWO_BYTE_OPCODES = [
     0x45, # push <sym>      Push a symbol with a name from namelist[XX]. Note that the name will be stored as "name", not "#name".
     0x46, # push <object>   Push a object with a name from namelist[XX]. See also code 86.
     0x47, # UNKNOWN
-    0x48, # UNKNOWN
+    0x48, # push <global>   Push the value of a global variable with a name from namelist[XX].
     0x49, # push <global>   Push the value of a global variable with a name from namelist[XX].
     0x4A, # push <prop>     Push the value of a property
     0x4B, # push <param>    Push the value of a function call parameter. The parameter records seem to be 6 bytes long, so the first is pushed with 4B 00, the second with 4B 06, etc.
     0x4C, # push <local>    Push the value of a local variable. The local variable records seem to be 6 bytes long, so the first is pushed with 4C 00, the second with 4C 06, etc.
     0x4D, # UNKNOWN
-    0x4E, # UNKNOWN
+    0x4E, # put Y into XX   Pop one value and use it to set the global variable with name from namelist[XX].
     0x4F, # set <global>    Pop one value and use it to set the global variable with name from namelist[XX].
     0x50, # set <prop>      Pop one value and use it to set a property.
     0x51, # set <param>     Pop one value and use it to set a parameter.
@@ -151,6 +151,45 @@ SPECIAL_CONSTANTS = {
     '"\\r"': 'return',
     '"\\""': 'quote'
 }
+
+SYSTEM_PROPERTIES = [
+    'UNKNOWN_SYSTEM_PROPERTY_00',
+    'beepOn',
+    'buttonStyle',
+    'centerStage',
+    'checkBoxAccess',
+    'checkBoxType',
+    'colorDepth',
+    'exitLock',
+    'fixStageSize',
+    'UNKNOWN_SYSTEM_PROPERTY_0A',
+    'UNKNOWN_SYSTEM_PROPERTY_0B',
+    'UNKNOWN_SYSTEM_PROPERTY_0C',
+    'UNKNOWN_SYSTEM_PROPERTY_0D',
+    'UNKNOWN_SYSTEM_PROPERTY_0E',
+    'UNKNOWN_SYSTEM_PROPERTY_0F',
+    'UNKNOWN_SYSTEM_PROPERTY_10',
+    'UNKNOWN_SYSTEM_PROPERTY_11',
+    'UNKNOWN_SYSTEM_PROPERTY_12',
+    'timeoutLapsed',
+    'UNKNOWN_SYSTEM_PROPERTY_14',
+    'UNKNOWN_SYSTEM_PROPERTY_15',
+    'UNKNOWN_SYSTEM_PROPERTY_16',
+    'selEnd',
+    'selStart',
+    'soundEnabled',
+    'soundLevel',
+    'stageColor',
+    'UNKNOWN_SYSTEM_PROPERTY_1C',
+    'stillDown',
+    'timeoutKeyDown',
+    'timeoutLength',
+    'timeoutMouse',
+    'timeoutPlay',
+    'timer'
+    
+]
+
 
 operations_stack = []
 
@@ -581,7 +620,8 @@ def lscr2lingo(lscr_file, name_list):
                      else:
                           args = args + ', ' + ('%s'%(paramns[c]))
 
-                file.write("on %s %s\n"%(fname, args))
+                if fname != 'noname':
+                    file.write("on %s %s\n"%(fname, args))
 
                 spacing = '    '
 
@@ -665,17 +705,19 @@ def lscr2lingo(lscr_file, name_list):
                 while (idxc - bc_off) < bc_length:
                     if idxc in label_indexes:
                         flush_stack(file, spacing)
-                        if idxc in label_types:
-                            if label_types[idxc].startswith('end') or label_types[idxc] == 'else':
-                                spacing = spacing[0:(len(spacing) - 4)]
+                        for nlabel in range(0, label_indexes.count(idxc)):
+                            # Can be more than one "end if" in the same position
+                            if idxc in label_types:
+                                if label_types[idxc].startswith('end') or label_types[idxc] == 'else':
+                                    spacing = spacing[0:(len(spacing) - 4)]
 
-                            file.write(spacing)
-                            file.write("%s\n"%(label_types[idxc]))
-                            if not label_types[idxc].startswith('end'):
-                                spacing = spacing + '    '
+                                file.write(spacing)
+                                file.write("%s\n"%(label_types[idxc]))
+                                if not label_types[idxc].startswith('end'):
+                                    spacing = spacing + '    '
 
-                        else:
-                            file.write("label%08x\n"%(idxc))
+                            else:
+                                file.write("label%08x\n"%(idxc))
 
                     file.write(spacing)
 
@@ -980,6 +1022,10 @@ def lscr2lingo(lscr_file, name_list):
                             # Push a object with a name from namelist[XX]. 
                             push('%s'%(name_list[op1]))
 
+                        elif opcode == 0x48:
+                            # Push the value of a global variable with a name from namelist[XX].  
+                            push('%s'%(name_list[op1]))                            
+                            
                         elif opcode == 0x49:
                             # Push the value of a global variable with a name from namelist[XX].  
                             push('%s'%(name_list[op1]))
@@ -1002,6 +1048,12 @@ def lscr2lingo(lscr_file, name_list):
 
                             push('%s'%(localvs[op1 / bytes_per_const]))
 
+                        elif opcode == 0x4E:
+                            # Pop one value and use it to set the global variable with name from namelist[XX].    
+                            file.write("\n")
+                            file.write(spacing)
+                            file.write('put %s into %s'%(pop_s(), name_list[op1]))                         
+                            
                         elif opcode == 0x4F:
                             # Pop one value and use it to set the global variable with name from namelist[XX].    
                             file.write("\n")
@@ -1180,6 +1232,16 @@ def lscr2lingo(lscr_file, name_list):
                                 op_types = ['chars', 'words', 'items', 'lines']
                                 push('the number of %s of %s'%(op_types[op_type - 1], op_var))
 
+                            elif op1 == 0x07:
+                                # Pop a setting ID from the stack and push its value
+                                file.write("\n")
+                                file.write(spacing)
+                                setting_id = int(pop())
+                                setting_name = 'UNKNOWN_PROPERTY_%s'%(setting_id)
+                                if setting_id < len(SYSTEM_PROPERTIES):
+                                    setting_name = SYSTEM_PROPERTIES[setting_id]
+                                push("the %s"%(setting_name))                                
+                                
                             else:
                                 file.write("\n")
                                 file.write(spacing)
@@ -1187,14 +1249,15 @@ def lscr2lingo(lscr_file, name_list):
 
                         elif opcode == 0x5D:
                             if op1 == 0x07:
-                                # set the exitLock to TRUE
+                                # Pop a setting ID from the stack and push its value
                                 file.write("\n")
                                 file.write(spacing)
-                                unkown_v0 = pop_s()
-                                if unkown_v0 != '8':
-                                    logging.warn("Unknown value: %s"%(unkown_v0))
-                                file.write("put %s into the exitLock"%(pop_s()))
-
+                                setting_id = int(pop())
+                                setting_name = 'UNKNOWN_PROPERTY_%s'%(setting_id)
+                                if setting_id < len(SYSTEM_PROPERTIES):
+                                    setting_name = SYSTEM_PROPERTIES[setting_id]
+                                file.write("put %s into the %s"%(pop_s(), setting_name))
+                                
                             else:
                                 file.write("\n")
                                 file.write(spacing)
@@ -1448,7 +1511,8 @@ def lscr2lingo(lscr_file, name_list):
                     if WRITE_OPCODES:
                         file.write("\n")
 
-                file.write("end %s\n\n"%(fname))
+                if fname != 'noname':
+                    file.write("end %s\n\n"%(fname))
 
             file.close()
  
