@@ -5,7 +5,7 @@
 # License: GNU GPL v2 (see LICENSE file for details).
 
 #
-# Script to convert a Machintosh "snd " file to Microsoft WAV.
+# Script to convert a Machintosh "snd " file to Microsoft WAV (and then to MP3).
 # More info: https://developer.apple.com/library/archive/documentation/mac/Sound/Sound-60.html#MARKER-9-400
 # 
 
@@ -286,3 +286,11 @@ if __name__ == '__main__':
         snd_file = os.path.join(sys.argv[1], sys.argv[2])
         snd2wav(snd_file)
         
+        in_name = os.path.join(sys.argv[1], "%s.%s"%(sys.argv[2][:-5], 'wav'))
+        out_name = os.path.join(sys.argv[1], "%s.%s"%(sys.argv[2][:-5], 'mp3'))
+        
+        # Transform it to mp3
+        os.system('ffmpeg -i %s -acodec libmp3lame %s'%(
+            in_name, # input file
+            out_name #output file
+        ))        
