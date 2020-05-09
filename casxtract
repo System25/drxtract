@@ -723,6 +723,7 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
             # Director sound type
             logging.info("%s: is a sound file"%(cast_file))
             castData['type'] = 'sound'
+            castData['looped'] = (basic_data02 != 0x10)
 
 
         elif data_type == DIR_LSCR_TYPE:
@@ -745,13 +746,14 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
                 else:
                     logging.warn("There is no %s file (maybe empty file)"%(src))
 
-                os.system('%slscr2lingo %s %s %s %s'%(
-                    basepath, # Scripts path
-                    sys.argv[1], # pc or mac
-                    dest_dir, # work directory
-                    script_file, # script file name
-                    lnam_file
-                ))
+                if lnam_file is not None:
+                    os.system('%slscr2lingo %s %s %s %s'%(
+                        basepath, # Scripts path
+                        sys.argv[1], # pc or mac
+                        dest_dir, # work directory
+                        script_file, # script file name
+                        lnam_file
+                    ))
         
         elif data_type == DIR_PUSH_BUTTON_TYPE:
             logging.info("%s: is a push button"%(cast_file))
@@ -910,13 +912,10 @@ if __name__ == '__main__':
             logging.error('Can not find a CAS_ file!')
             sys.exit(-1)
 
-        if lctx_file is None:
-            logging.error('Can not find a Lctx file!')
-            sys.exit(-1)
-
         if lnam_file is None:
-            logging.error('Can not find a Lnam file!')
-            sys.exit(-1)
+            logging.warn('Can not find a Lnam file!')
+        else:
+            lnam_file = os.path.join(sys.argv[2], BINDIR, lnam_file)
             
         if sord_file is None:
             logging.error('Can not find a Sord file!')
@@ -933,7 +932,11 @@ if __name__ == '__main__':
         
         cas_elements = parse_cas_file(os.path.join(sys.argv[2], BINDIR, cas_file))
         key_elements = parse_key_file(os.path.join(sys.argv[2], BINDIR, key_file))
-        lctx_elements = parse_lctx_file(os.path.join(sys.argv[2], BINDIR, lctx_file))
+        if lctx_file is None:
+            logging.warn('Can not find a Lctx file!')
+            lctx_elements = []
+        else:
+            lctx_elements = parse_lctx_file(os.path.join(sys.argv[2], BINDIR, lctx_file))
         
         
         logging.info('There is %i elements in the casting!'%(len(cas_elements)))
@@ -955,7 +958,7 @@ if __name__ == '__main__':
                 logging.info('Casting element number %i is %s file!'%(elm, fname))
                 parse_cast_file(os.path.join(sys.argv[2], BINDIR, fname), kelm,
                                 os.path.join(sys.argv[2], CASDIR, str(elm)),
-                               lctx_elements, os.path.join(sys.argv[2], BINDIR, lnam_file))
+                               lctx_elements, lnam_file)
             else:
                 logging.warn('File %s for casting element %i does not exists!'%(fname, elm))
 
