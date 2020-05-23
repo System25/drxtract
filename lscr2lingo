@@ -705,7 +705,11 @@ def lscr2lingo(lscr_file, name_list):
                 while (idxc - bc_off) < bc_length:
                     if idxc in label_indexes:
                         flush_stack(file, spacing)
-                        for nlabel in range(0, label_indexes.count(idxc)):
+                        nends = 1
+                        if (idxc in label_types) and label_types[idxc].startswith('end'):
+                            nends = label_indexes.count(idxc)
+                        
+                        for nlabel in range(0, nends):
                             # Can be more than one "end if" in the same position
                             if idxc in label_types:
                                 if label_types[idxc].startswith('end') or label_types[idxc] == 'else':

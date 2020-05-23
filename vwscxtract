@@ -21,9 +21,9 @@ BINDIR = 'bin'
 
 DEBUG_MAIN_CHANNEL_INFO = False
 DEBUG_PALETTE_CHANNEL_INFO = False
-DEBUG_SPRITE_INFO = False
+DEBUG_SPRITE_INFO = True
 
-logging.basicConfig(level=logging.INFO)
+#logging.basicConfig(level=logging.DEBUG)
 
 # ====================================================================================================================================
 # Translate operation to string representation (Director 5)
@@ -678,6 +678,7 @@ def read_sprite_channel_info_v4(frameData, i):
         sprite_data['foregroundColor'] = foregroundColor
         sprite_data['backgroundColor'] = backgroundColor
         sprite_data['ink_type'] = ink_type
+        sprite_data['flags'] = flags
         sprite_data['y'] = y
         sprite_data['x'] = x
         sprite_data['height'] = height
@@ -743,12 +744,12 @@ def read_sprite_channel_info_v5(frameData, i):
     if DEBUG_SPRITE_INFO:
         logging.debug("Sprite[%d] unknown03: %04x"%(i, unknown03))
 
-    foregroundColor = ord(frameData[indx])
+    foregroundColor = frameData[indx]
     indx += 1
     if DEBUG_SPRITE_INFO:
         logging.debug("Sprite[%d] foregroundColor: %d"%(i, foregroundColor))
 
-    backgroundColor = ord(frameData[indx])
+    backgroundColor = frameData[indx]
     indx += 1
     if DEBUG_SPRITE_INFO:
         logging.debug("Sprite[%d] backgroundColor: %d"%(i, backgroundColor))

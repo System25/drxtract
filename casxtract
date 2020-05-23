@@ -341,12 +341,12 @@ def parse_vwcf_file(vwcf_file):
         
         logging.debug("Stage color: %d"%(stageColor))
 
-        indx += 34
+        indx += 42
         palette = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
         indx = indx + 2
         
         palette = get_palette(palette)
-        logging.debug("palette?: %d"%(palette))
+        logging.debug("palette (%d): %s"%(indx, palette))
         
         version_major = ((version >> 8) & 0xFF)
         version_minor = ( version       & 0xFF)
@@ -708,6 +708,8 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
             castData['content']['bitmap']['width'] = bmp_width
             castData['content']['bitmap']['h_padding'] = h_padding
             castData['content']['bitmap']['w_padding'] = w_padding
+            castData['content']['bitmap']['center_x'] = center_x
+            castData['content']['bitmap']['center_y'] = center_y
             castData['content']['bitmap']['bpp'] = bmp_bpp
             if bmp_bpp == 8:
                 castData['content']['bitmap']['palette'] = palette
