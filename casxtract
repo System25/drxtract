@@ -738,7 +738,7 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
             
             scridx = basic_data03
             logging.debug("Script index: %d"%(scridx))
-            if lctx_elements[scridx - 1] < 0:
+            if scridx <= 0 or lctx_elements[scridx - 1] < 0:
                 logging.debug("Empty script file!")
             else:
                 script_file = "%s.Lscr"%(lctx_elements[scridx - 1])
