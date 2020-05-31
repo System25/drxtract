@@ -782,6 +782,10 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
             logging.info("%s: is a shape"%(cast_file))
             castData['type'] = 'shape'
             
+        elif data_type == DIR_CLUT_TYPE:
+            logging.info("%s: is a palette"%(cast_file))
+            castData['type'] = 'palette'
+            
         elif data_type == DIR_TRAN_TYPE:
             logging.info("%s: is a transition"%(cast_file))
             castData['type'] = 'transition'
@@ -859,7 +863,12 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
                     if os.path.isfile(src):
                         copyfile(src, dst)
 
-
+                if f.endswith('.CLUT'):
+                    os.system('%s/clut2json %s %s'%(
+                        os.path.dirname(sys.argv[0]), # Scripts path
+                        dest_dir, # work directory
+                        f # CLUT file name
+                    ))
 
 
 # ====================================================================================================================================
