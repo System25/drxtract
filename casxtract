@@ -55,6 +55,21 @@ def replace_ext(filename, new_extension):
     return f
     
 # ====================================================================================================================================
+# Translate shape type ID to string representation    
+def get_shape_type(shape_type_id):    
+    if shape_type_id == 1:
+        return 'rect'
+    elif shape_type_id == 2:
+        return 'roundRect'
+    elif shape_type_id == 3:
+        return 'oval'
+    elif shape_type_id == 4:
+        return 'line'    
+    
+    # Unknown id
+    return shape_type_id    
+    
+# ====================================================================================================================================
 # Translate palette number to string representation
 def get_palette(palette_id):
     
@@ -781,6 +796,69 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
         elif data_type == DIR_SHAPE_TYPE:
             logging.info("%s: is a shape"%(cast_file))
             castData['type'] = 'shape'
+            
+            unknown00 =  int(header_data[idx])
+            idx += 1                
+            logging.debug("unknown00 = %s"%(unknown00)) 
+
+            shape_type =  get_shape_type(struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0])
+            idx += 2
+            logging.debug("shape_type = %s"%(shape_type))
+            
+            top =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2
+            logging.debug("top = %s"%(top))
+            
+            left =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2
+            logging.debug("left = %s"%(left))
+            
+            bottom =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2
+            logging.debug("bottom = %s"%(bottom))            
+            
+            right =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2
+            logging.debug("right = %s"%(right))             
+            
+            unknown02 =  int(header_data[idx])
+            idx += 1                
+            logging.debug("unknown02 = %s"%(unknown02))             
+            
+            pattern =  int(header_data[idx])
+            idx += 1                
+            logging.debug("pattern = %s"%(pattern))            
+            
+            fgColor =  int(header_data[idx])
+            idx += 1                
+            logging.debug("fgColor = %s"%(fgColor))                
+            
+            bgColor =  int(header_data[idx])
+            idx += 1                
+            logging.debug("bgColor = %s"%(bgColor))              
+            
+            filled =  int(header_data[idx])
+            idx += 1                
+            logging.debug("filled = %s"%(filled))
+            
+            line_width =  int(header_data[idx]) - 1
+            idx += 1                
+            logging.debug("line_width = %s"%(line_width))                 
+            
+            unknown08 =  int(header_data[idx])
+            idx += 1                
+            logging.debug("unknown08 = %s"%(unknown08))             
+            
+            castData['content']['type'] = shape_type            
+            castData['content']['top'] = top            
+            castData['content']['left'] = left            
+            castData['content']['bottom'] = bottom            
+            castData['content']['right'] = right
+            castData['content']['pattern'] = pattern     
+            castData['content']['fgColor'] = fgColor     
+            castData['content']['bgColor'] = bgColor     
+            castData['content']['filled'] = filled
+            castData['content']['line_width'] = line_width
             
         elif data_type == DIR_CLUT_TYPE:
             logging.info("%s: is a palette"%(cast_file))
