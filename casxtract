@@ -783,15 +783,66 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
         
         elif data_type == DIR_PUSH_BUTTON_TYPE:
             logging.info("%s: is a push button"%(cast_file))
-            castData['type'] = 'push_button'
+            castData['type'] = 'button'
             
         elif data_type == DIR_TEXT_INPUT_TYPE:
             logging.info("%s: is a text input field"%(cast_file))
-            castData['type'] = 'text_input'
+            castData['type'] = 'field'
             
         elif data_type == DIR_TEXT_TYPE:
-            logging.info("%s: is a text field"%(cast_file))
-            castData['type'] = 'text'
+            logging.info("%s: is a text label"%(cast_file))
+            castData['type'] = 'richText'
+            
+            h_padding =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2
+            logging.debug("h_padding = %s"%(h_padding)) 
+
+            w_padding =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2
+            logging.debug("w_padding = %s"%(w_padding)) 
+
+            txt_height =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2                
+            logging.debug("txt_height = %s"%(txt_height)) 
+
+            txt_width =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2                
+            logging.debug("txt_width = %s"%(txt_width)) 
+
+            top =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2
+            logging.debug("top = %s"%(top)) 
+
+            left =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2
+            logging.debug("left = %s"%(left)) 
+
+            bottom =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2
+            logging.debug("bottom = %s"%(bottom)) 
+
+            right =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2
+            logging.debug("right = %s"%(right)) 
+            
+            center_y =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2
+            logging.debug("center_y = %s"%(center_y)) 
+            
+            center_x =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2
+            logging.debug("center_x = %s"%(center_x))
+             
+            for f in kelm:
+                if f.endswith('.RTE1'):            
+                    src = os.path.join(os.path.dirname(cast_file), f)
+                    fdata = ''
+                    with open(src, mode='rb') as kfile:
+                        fdata = kfile.read()
+                    castData['text'] = fdata.decode("ISO-8859-1")
+
+                if f.endswith('.RTE2'):            
+                    castData['file'] = replace_ext(f, 'png')            
             
         elif data_type == DIR_SHAPE_TYPE:
             logging.info("%s: is a shape"%(cast_file))
@@ -932,15 +983,14 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
                         dest_dir, # work directory
                         f # stxt file name
                     ))
-                    
-                if f.endswith('.RTE1'):
-                    # RTE1 files are just plain text files
-                    src = os.path.join(os.path.dirname(cast_file), f)
-                    txt_file = "content.txt"
-                    dst = os.path.join(dest_dir, txt_file)
-                    if os.path.isfile(src):
-                        copyfile(src, dst)
 
+                if f.endswith('.RTE2'):
+                    os.system('%s/rte22bmp %s "%s"'%(
+                        os.path.dirname(sys.argv[0]), # Scripts path
+                        dest_dir, # work directory
+                        f # rte2 file name
+                    ))                        
+                        
                 if f.endswith('.CLUT'):
                     os.system('%s/clut2json %s %s'%(
                         os.path.dirname(sys.argv[0]), # Scripts path
