@@ -825,14 +825,22 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
             idx += 2
             logging.debug("right = %s"%(right)) 
             
-            center_y =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            unknown1 =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
             idx += 2
-            logging.debug("center_y = %s"%(center_y)) 
+            logging.debug("unknown1 = %s"%(unknown1)) 
             
-            center_x =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            unknown2 =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
             idx += 2
-            logging.debug("center_x = %s"%(center_x))
+            logging.debug("unknown2 = %s"%(unknown2))
              
+            castData['content']['top'] = top            
+            castData['content']['left'] = left            
+            castData['content']['bottom'] = bottom            
+            castData['content']['width'] = txt_width
+            castData['content']['height'] = txt_height
+            castData['content']['h_padding'] = h_padding
+            castData['content']['w_padding'] = w_padding               
+                
             for f in kelm:
                 if f.endswith('.RTE1'):            
                     src = os.path.join(os.path.dirname(cast_file), f)

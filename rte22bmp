@@ -153,11 +153,7 @@ def rte22bmp(rte2_file):
 
         height =  struct.unpack(bit_order+"h", fdata[idx:idx+2])[0]
         idx += 2                
-        logging.debug("height = %s"%(height))              
-        
-        padding_h =  struct.unpack(bit_order+"h", fdata[idx:idx+2])[0]
-        idx += 2                
-        logging.debug("padding_h = %s"%(padding_h))         
+        logging.debug("height = %s"%(height))       
         
         unknown0 = int(fdata[idx])
         idx += 1                
