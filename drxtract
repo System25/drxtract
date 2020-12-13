@@ -68,6 +68,14 @@ if __name__ == '__main__':
         logging.debug(cmd)
         os.system(cmd)
         
+        # Extract the font map
+        cmd = '%sfmapxtract %s'%(
+            basepath, # Scripts path
+            sys.argv[3] # work directory
+        )
+        logging.debug(cmd)
+        os.system(cmd)        
+        
         # Extract the casting elements
         cmd = '%scasxtract %s %s'%(
             basepath, # Scripts path

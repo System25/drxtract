@@ -785,6 +785,94 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
             logging.info("%s: is a push button"%(cast_file))
             castData['type'] = 'button'
             
+            unknown1 =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2
+            logging.debug("unknown1 = %s"%(unknown1)) 
+            
+            unknown2 =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2
+            logging.debug("unknown2 = %s"%(unknown2))             
+            
+            text_alignment =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2
+            
+            if text_alignment == 0:
+                text_alignment = 'left'
+            elif text_alignment == 1:
+                text_alignment = 'center'
+            elif text_alignment == -1:
+                text_alignment = 'right'
+            else:
+                logging.warn("Unknown text alignment = %s"%(text_alignment))  
+            
+            logging.debug("text_alignment = %s"%(text_alignment))               
+            
+            bgcolor_red =  int(header_data[idx])
+            idx += 1            
+            logging.debug("bgcolor_red = %s"%(bgcolor_red))               
+            
+            unknown4 =  int(header_data[idx])
+            idx += 1   
+            logging.debug("unknown4 = %s"%(unknown4))               
+            
+            bgcolor_green =  int(header_data[idx])
+            idx += 1            
+            logging.debug("bgcolor_green = %s"%(bgcolor_green))               
+            
+            unknown5 =  int(header_data[idx])
+            idx += 1   
+            logging.debug("unknown5 = %s"%(unknown5))              
+            
+            bgcolor_blue =  int(header_data[idx])
+            idx += 1            
+            logging.debug("bgcolor_blue = %s"%(bgcolor_blue))               
+            
+            unknown6 =  int(header_data[idx])
+            idx += 1   
+            logging.debug("unknown6 = %s"%(unknown6))              
+            
+            unknown7 =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2
+            logging.debug("unknown7 = %s"%(unknown7))             
+            
+            unknown8 =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2
+            logging.debug("unknown8 = %s"%(unknown8))             
+            
+            unknown9 =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2
+            logging.debug("unknown9 = %s"%(unknown9))            
+            
+            unknown10 =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2
+            logging.debug("unknown10 = %s"%(unknown10))             
+            
+            unknown11 =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2
+            logging.debug("unknown11 = %s"%(unknown11))  
+            
+            unknown12 =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2
+            logging.debug("unknown12 = %s"%(unknown12))  
+            
+            unknown13 =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2
+            logging.debug("unknown13 = %s"%(unknown13))  
+            
+            unknown14 =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2
+            logging.debug("unknown14 = %s"%(unknown14))  
+            
+            unknown15 =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2
+            logging.debug("unknown15 = %s"%(unknown15))              
+            
+            castData['backgroundColor'] = '#%0.2X%0.2X%0.2X'%(
+                bgcolor_red, bgcolor_green, bgcolor_blue)
+            castData['text_alignment'] = text_alignment
+            
+            
+            
         elif data_type == DIR_TEXT_INPUT_TYPE:
             logging.info("%s: is a text input field"%(cast_file))
             castData['type'] = 'field'
@@ -985,7 +1073,7 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
                     ))
                     
                 if f.endswith('.STXT'):
-                    os.system('%s/stxt2txt %s %s "%s"'%(
+                    os.system('%s/stxt2json %s %s "%s"'%(
                         os.path.dirname(sys.argv[0]), # Scripts path
                         sys.argv[1], # pc or mac
                         dest_dir, # work directory
