@@ -872,13 +872,21 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
             idx += 2
             logging.debug("unknown14 = %s"%(unknown14))  
             
-            unknown15 =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            button_type =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
             idx += 2
-            logging.debug("unknown15 = %s"%(unknown15))              
+            if button_type == 1:
+                button_type = 'push button'
+            if button_type == 2:
+                button_type = 'checkbox'
+            if button_type == 3:
+                button_type = 'radio'
+            
+            logging.debug("button_type = %s"%(button_type))              
             
             castData['backgroundColor'] = '#%0.2X%0.2X%0.2X'%(
                 bgcolor_red, bgcolor_green, bgcolor_blue)
             castData['text_alignment'] = text_alignment
+            castData['button_type'] = button_type
             
             
             
