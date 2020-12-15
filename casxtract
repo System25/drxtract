@@ -356,13 +356,6 @@ def parse_vwcf_file(vwcf_file):
         
         logging.debug("Stage color: %d"%(stageColor))
 
-        indx += 42
-        palette = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
-        indx = indx + 2
-        
-        palette = get_palette(palette)
-        logging.debug("palette (%d): %s"%(indx, palette))
-        
         version_major = ((version >> 8) & 0xFF)
         version_minor = ( version       & 0xFF)
         
@@ -401,6 +394,22 @@ def parse_vwcf_file(vwcf_file):
             version = 'unknown'
             
         logging.info("Director version: %s"%(version))
+        
+        # The default palette position depends on the director version
+        if version == 'dir4': 
+            indx = 0x46
+            palette = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+            palette = get_palette(palette)
+        elif version == 'dir5':
+            indx = 0x4E
+            palette = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+            palette = get_palette(palette)            
+        else:
+            palette = 'unknonw'
+            
+            
+        logging.debug("palette (%d): %s"%(indx, palette))
+        
         
         config['version'] = version
         config['stageTop'] = stageTop
