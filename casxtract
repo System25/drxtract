@@ -624,9 +624,9 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
         # Parse header data
         idx = 0
         if data_type == DIR_IMAGE_TYPE:
-            # Director image type
-            logging.info("%s: is a image file"%(cast_file))
-            castData['type'] = 'image'
+            # Director bitmap type
+            logging.info("%s: is a bitmap file"%(cast_file))
+            castData['type'] = 'bitmap'
             
             flags =  int(header_data[idx])
             idx += 1
@@ -872,27 +872,156 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
             idx += 2
             logging.debug("unknown14 = %s"%(unknown14))  
             
-            button_type =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            buttonType =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
             idx += 2
-            if button_type == 1:
-                button_type = 'push button'
-            if button_type == 2:
-                button_type = 'checkbox'
-            if button_type == 3:
-                button_type = 'radio'
+            if buttonType == 1:
+                buttonType = 'pushButton'
+            if buttonType == 2:
+                buttonType = 'checkBox'
+            if buttonType == 3:
+                buttonType = 'radioButton'
             
-            logging.debug("button_type = %s"%(button_type))              
+            logging.debug("buttonType = %s"%(buttonType))              
             
             castData['backgroundColor'] = '#%0.2X%0.2X%0.2X'%(
                 bgcolor_red, bgcolor_green, bgcolor_blue)
-            castData['text_alignment'] = text_alignment
-            castData['button_type'] = button_type
+            castData['alignment'] = text_alignment
+            castData['buttonType'] = buttonType
             
             
             
         elif data_type == DIR_TEXT_INPUT_TYPE:
             logging.info("%s: is a text input field"%(cast_file))
-            castData['type'] = 'field'
+            castData['type'] = 'field'            
+
+            border =  int(header_data[idx])
+            idx += 1            
+            logging.debug("border = %s"%(border))  
+            
+            margin =  int(header_data[idx])
+            idx += 1            
+            logging.debug("margin = %s"%(margin))               
+
+            boxDropShadow =  int(header_data[idx])
+            idx += 1            
+            logging.debug("boxDropShadow = %s"%(boxDropShadow))               
+
+            boxType =  int(header_data[idx])
+            idx += 1            
+            logging.debug("boxType = %s"%(boxType))               
+            
+            if boxType == 0:
+                boxType = 'adjust'
+            if boxType == 1:
+                boxType = 'scroll'
+            if boxType == 2:
+                boxType = 'fixed'
+            if boxType == 3:
+                boxType = 'limit'
+            
+            logging.debug("boxType = %s"%(boxType))         
+            
+            alignment =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2
+            
+            if alignment == 0:
+                alignment = 'left'
+            elif alignment == 1:
+                alignment = 'center'
+            elif alignment == -1:
+                alignment = 'right'
+            else:
+                logging.warn("Unknown text alignment = %s"%(alignment))  
+            
+            logging.debug("alignment = %s"%(alignment))            
+            
+            bgcolor_red =  int(header_data[idx])
+            idx += 1            
+            logging.debug("bgcolor_red = %s"%(bgcolor_red))               
+            
+            unknown4 =  int(header_data[idx])
+            idx += 1   
+            logging.debug("unknown4 = %s"%(unknown4))               
+            
+            bgcolor_green =  int(header_data[idx])
+            idx += 1            
+            logging.debug("bgcolor_green = %s"%(bgcolor_green))               
+            
+            unknown5 =  int(header_data[idx])
+            idx += 1   
+            logging.debug("unknown5 = %s"%(unknown5))              
+            
+            bgcolor_blue =  int(header_data[idx])
+            idx += 1            
+            logging.debug("bgcolor_blue = %s"%(bgcolor_blue))               
+            
+            unknown6 =  int(header_data[idx])
+            idx += 1   
+            logging.debug("unknown6 = %s"%(unknown6))                          
+            
+            unknown7 =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2
+            logging.debug("unknown7 = %s"%(unknown7))
+            
+            top =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2
+            logging.debug("top = %s"%(top)) 
+
+            left =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2
+            logging.debug("left = %s"%(left)) 
+
+            bottom =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2
+            logging.debug("bottom = %s"%(bottom)) 
+
+            right =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2
+            logging.debug("right = %s"%(right)) 
+            
+            height =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2
+            logging.debug("height = %s"%(height))   
+            
+            if height != bottom-top:
+                logging.error("Bad height value: %s"%(height))
+
+            dropShadow =  int(header_data[idx])
+            idx += 1            
+            logging.debug("dropShadow = %s"%(dropShadow))            
+            
+            options =  int(header_data[idx])
+            idx += 1            
+            logging.debug("options = %s"%(options))
+            
+            wordWrap = True
+            editable = False
+            autoTab = False
+            if options & 0x4:
+                wordWrap = False
+            if options & 0x1:
+                editable = True                
+            if options & 0x2:
+                autoTab = True
+            
+            unknown13 =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2
+            logging.debug("unknown13 = %s"%(unknown13))             
+            
+            castData['wordWrap'] = wordWrap    
+            castData['boxType'] = boxType    
+            castData['editable'] = editable    
+            castData['autoTab'] = autoTab
+            castData['alignment'] = alignment 
+            castData['border'] = border 
+            castData['margin'] = margin 
+            castData['boxDropShadow'] = boxDropShadow 
+            castData['dropShadow'] = dropShadow 
+            castData['backgroundColor'] = '#%0.2X%0.2X%0.2X'%(
+                bgcolor_red, bgcolor_green, bgcolor_blue)
+            castData['height'] = bottom - top 
+            castData['width'] = right - left
+            
             
         elif data_type == DIR_TEXT_TYPE:
             logging.info("%s: is a text label"%(cast_file))
