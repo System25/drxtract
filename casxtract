@@ -979,12 +979,9 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
             idx += 2
             logging.debug("right = %s"%(right)) 
             
-            height =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            pageHeight =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
             idx += 2
-            logging.debug("height = %s"%(height))   
-            
-            if height != bottom-top:
-                logging.error("Bad height value: %s"%(height))
+            logging.debug("pageHeight = %s"%(pageHeight))
 
             dropShadow =  int(header_data[idx])
             idx += 1            
@@ -1021,7 +1018,7 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
                 bgcolor_red, bgcolor_green, bgcolor_blue)
             castData['height'] = bottom - top 
             castData['width'] = right - left
-            
+            castData['pageHeight'] = pageHeight
             
         elif data_type == DIR_TEXT_TYPE:
             logging.info("%s: is a text label"%(cast_file))

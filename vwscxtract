@@ -15,6 +15,7 @@ import struct
 import re
 import logging
 import json
+import math
 from shutil import copyfile
 
 BINDIR = 'bin'
@@ -1078,7 +1079,148 @@ if __name__ == '__main__':
             sys.exit(-1)
         
         vwsc_elements = parse_vwsc_file(os.path.join(sys.argv[1], BINDIR, vwsc_file))
+        
+        # Transform the elements to the appropiate format
+        data = {}
+        data['lastChannel'] = 0
+        data['lastFrame'] = len(vwsc_elements)
+        if data['lastFrame'] > 0:
+            data['lastChannel'] = len(vwsc_elements[0]['score'])
+        
+        data['transition'] = []
+        data['palette'] = []
+        data['sound1'] = []
+        data['sound2'] = []
+        data['tempo'] = []
+        data['script'] = []
+        data['sprite'] = []
+        for i in range(0, data['lastChannel']):
+            data['sprite'].append([])
+            
+        for i in range(0, data['lastFrame']):
+            if ('transition_id' in vwsc_elements[i]['main'] and
+                 vwsc_elements[i]['main']['transition_id'] != ''):
+                tran = {}
+                tran['frame'] = i+1
+                # TODO! Convertir esto en miembros del casting
+                tran['transition_id'] = vwsc_elements[i]['main']['transition_id']
+                tran['transition_chunk_size'] = vwsc_elements[i]['main']['transition_chunk_size']
+                tran['transition_duration'] = vwsc_elements[i]['main']['transition_duration']
+                
+                data['transition'].append(tran)
+            
+            if ('sound1_cast' in vwsc_elements[i]['main'] and
+                 vwsc_elements[i]['main']['sound1_cast'] > 0):    
+                
+                prev = False
+                if len(data['sound1']) > 0 and data['sound1'][-1]['endFrame'] == i:
+                    prev = data['sound1'][-1]
+
+                if (prev and prev['castId'] == vwsc_elements[i]['main']['sound1_cast']):
+                    # This is the same as the previous sound
+                    prev['endFrame'] = i+1
+                    
+                else:
+                    # This is a new sound
+                    snd = {}
+                    snd['startFrame'] = i+1
+                    snd['endFrame'] = i+1
+                    snd['castId'] = vwsc_elements[i]['main']['sound1_cast']
+                    data['sound1'].append(snd)   
+                
+            if ('sound2_cast' in vwsc_elements[i]['main'] and 
+                 vwsc_elements[i]['main']['sound2_cast'] > 0):
+                prev = False
+                if len(data['sound2']) > 0 and data['sound2'][-1]['endFrame'] == i:
+                    prev = data['sound2'][-1]
+
+                if (prev and prev['castId'] == vwsc_elements[i]['main']['sound2_cast']):
+                    # This is the same as the previous sound
+                    prev['endFrame'] = i+1
+                    
+                else:
+                    # This is a new sound
+                    snd = {}
+                    snd['startFrame'] = i+1
+                    snd['endFrame'] = i+1
+                    snd['castId'] = vwsc_elements[i]['main']['sound2_cast']
+                    data['sound2'].append(snd)                  
+              
+            if ('script' in vwsc_elements[i]['main'] and 
+                 vwsc_elements[i]['main']['script'] > 0):
+                scr = {}
+                scr['frame'] = i+1
+                scr['castId'] = vwsc_elements[i]['main']['script']
+                data['script'].append(scr)             
+            
+            if ('fps' in vwsc_elements[i]['main'] and 
+                 vwsc_elements[i]['main']['fps'] > 0):
+                fps = {}
+                fps['frame'] = i+1
+                fps['fps'] = vwsc_elements[i]['main']['fps']
+                data['tempo'].append(fps)             
+            
+            if 'palette_id' in vwsc_elements[i]['palette']:
+                pal = {}
+                pal['frame'] = i+1
+                pal['palette_id'] = vwsc_elements[i]['palette']['palette_id']
+                data['palette'].append(pal)            
+            
+        for i in range(0, data['lastFrame']):
+            for j in range(0, data['lastChannel']):
+                if 'castId' in vwsc_elements[i]['score'][j]:
+                    sprite = {}
+                    sprite['castId'] = vwsc_elements[i]['score'][j]['castId']
+                    sprite['backColor'] = vwsc_elements[i]['score'][j]['backgroundColor']
+                    sprite['foreColor'] = vwsc_elements[i]['score'][j]['foregroundColor']
+                    sprite['width'] = vwsc_elements[i]['score'][j]['width']
+                    sprite['height'] = vwsc_elements[i]['score'][j]['height']
+                    sprite['ink'] = vwsc_elements[i]['score'][j]['ink_type']
+                    sprite['type'] = vwsc_elements[i]['score'][j]['spriteType']
+                    sprite['locH'] = vwsc_elements[i]['score'][j]['x']
+                    sprite['locV'] = vwsc_elements[i]['score'][j]['y']
+                    sprite['editable'] = vwsc_elements[i]['score'][j]['editable']
+                    sprite['moveable'] = vwsc_elements[i]['score'][j]['moveable']
+                    sprite['trails'] = vwsc_elements[i]['score'][j]['trails']
+                    
+                    prev = False
+                    if len(data['sprite'][j]) > 0 and data['sprite'][j][-1]['endFrame'] == i:
+                        prev = data['sprite'][j][-1]
+                        
+                    if (prev and prev['castId'] == sprite['castId'] and
+                        prev['castId'] == sprite['castId'] and
+                        prev['backColor'] == sprite['backColor'] and
+                        prev['foreColor'] == sprite['foreColor'] and
+                        prev['width'] == sprite['width'] and
+                        prev['height'] == sprite['height'] and
+                        prev['ink'] == sprite['ink'] and
+                        prev['type'] == sprite['type'] and
+                        prev['locH'] == sprite['locH'] and
+                        prev['locV'] == sprite['locV'] and
+                        prev['editable'] == sprite['editable'] and
+                        prev['moveable'] == sprite['moveable'] and
+                        prev['trails'] == sprite['trails']):
+                        
+                        # This is the same as previous sprite
+                        prev['endFrame'] = i+1
+                    
+                    else:
+                        # This is a new sprite
+                        sprite['startFrame'] = i+1
+                        sprite['endFrame'] = i+1                    
+                        sprite['locZ'] = j+1
+                        sprite['left'] = math.ceil(sprite['locH'] - sprite['width']/2)
+                        sprite['top'] = math.ceil(sprite['locV'] - sprite['height']/2)
+                        sprite['right'] = sprite['left'] + sprite['width']
+                        sprite['bottom'] = sprite['top'] + sprite['height']
+
+                        data['sprite'][j].append(sprite)                      
+        
+
+      
+        
+        
         # Write score data to JSON file
         with open(os.path.join(sys.argv[1], 'score.json'), 'wb') as jsfile:
-            jsfile.write(json.dumps(vwsc_elements, indent=4, sort_keys=True).encode('utf-8'))
+            jsfile.write(json.dumps(data, indent=4, sort_keys=True).encode('utf-8'))
 
