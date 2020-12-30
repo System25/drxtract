@@ -706,13 +706,13 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
             idx += 2
             logging.debug("right = %s"%(right)) 
             
-            center_y =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            locV =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
             idx += 2
-            logging.debug("center_y = %s"%(center_y)) 
+            logging.debug("locV = %s"%(locV)) 
             
-            center_x =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            locH =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
             idx += 2
-            logging.debug("center_x = %s"%(center_x))
+            logging.debug("locH = %s"%(locH))
 
             palette = 'systemMac'
             if (len(header_data) > 24):
@@ -722,28 +722,33 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
                 if bitdepth > bmp_bpp:
                     bmp_bpp = bitdepth
 
-                palette =  get_palette(struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0])
+                palette = struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+                palette_txt =  get_palette(palette)
                 idx += 2
-                logging.debug("palette = %s"%(palette))
+                logging.debug("palette_txt = %s"%(palette_txt))
                 
 
-            castData['content']['bitmap'] = {}
-            castData['content']['bitmap']['height'] = bmp_height
-            castData['content']['bitmap']['width'] = bmp_width
-            castData['content']['bitmap']['h_padding'] = h_padding
-            castData['content']['bitmap']['w_padding'] = w_padding
-            castData['content']['bitmap']['center_x'] = center_x
-            castData['content']['bitmap']['center_y'] = center_y
-            castData['content']['bitmap']['bpp'] = bmp_bpp
+            castData['height'] = bmp_height
+            castData['width'] = bmp_width
+            castData['top'] = top
+            castData['left'] = left
+            castData['bottom'] = bottom
+            castData['right'] = right            
+            castData['h_padding'] = h_padding
+            castData['w_padding'] = w_padding
+            castData['locH'] = locH
+            castData['locV'] = locV
+            castData['depth'] = bmp_bpp
             if bmp_bpp == 8:
-                castData['content']['bitmap']['palette'] = palette
+                castData['palette'] = palette
+                castData['palette_txt'] = palette_txt
             
             for f in kelm:
                 if f.endswith('.BITD'):            
-                    castData['file'] = replace_ext(f, 'png')
+                    castData['fileName'] = replace_ext(f, 'png')
                  
                 if f.endswith('.THUM'):            
-                    castData['thumbnail'] = replace_ext(f, 'png')
+                    castData['thumbnailFileName'] = replace_ext(f, 'png')
                     
         elif data_type == DIR_SND_TYPE:
             # Director sound type
@@ -1139,16 +1144,16 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
             idx += 1                
             logging.debug("unknown08 = %s"%(unknown08))             
             
-            castData['content']['type'] = shape_type            
-            castData['content']['top'] = top            
-            castData['content']['left'] = left            
-            castData['content']['bottom'] = bottom            
-            castData['content']['right'] = right
-            castData['content']['pattern'] = pattern     
-            castData['content']['fgColor'] = fgColor     
-            castData['content']['bgColor'] = bgColor     
-            castData['content']['filled'] = filled
-            castData['content']['line_width'] = line_width
+            castData['shapeType'] = shape_type            
+            castData['top'] = top            
+            castData['left'] = left            
+            castData['bottom'] = bottom            
+            castData['right'] = right
+            castData['pattern'] = pattern     
+            castData['foreColor'] = fgColor     
+            castData['backColor'] = bgColor     
+            castData['filled'] = filled
+            castData['lineSize'] = line_width
             
         elif data_type == DIR_CLUT_TYPE:
             logging.info("%s: is a palette"%(cast_file))

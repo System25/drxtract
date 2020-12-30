@@ -476,10 +476,10 @@ def read_palette_channel_info_v4(frameData):
     palette_id = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
     indx = indx + 2
     
-    palette_id = get_palette_dir4(palette_id)
+    palette_name = get_palette_dir4(palette_id)
     
     if DEBUG_PALETTE_CHANNEL_INFO:
-        logging.debug("palette_id: %s"%(palette_id))
+        logging.debug("palette: %s"%(palette_name))
 
     unknown2 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
     indx = indx + 2
@@ -550,10 +550,10 @@ def read_palette_channel_info_v5(frameData):
     palette_id = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
     indx = indx + 2
     
-    palette_id = get_palette_dir5(palette_id)
+    palette_name = get_palette_dir5(palette_id)
     
     if DEBUG_PALETTE_CHANNEL_INFO:
-        logging.debug("palette_id: %s"%(palette_id))
+        logging.debug("palette: %s"%(palette_name))
         
     fps = int(frameData[indx])
     indx += 1

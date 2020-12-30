@@ -785,13 +785,13 @@ def bitd2bmp(castData, bitd_file):
         
         file_ext = 'bmp'
 
-        bmp_height = castData['content']['bitmap']['height']
-        bmp_width = castData['content']['bitmap']['width']
-        bmp_bpp = castData['content']['bitmap']['bpp']
-        bmp_padding_w = castData['content']['bitmap']['w_padding']
-        bmp_padding_h = castData['content']['bitmap']['h_padding']
+        bmp_height = castData['height']
+        bmp_width = castData['width']
+        bmp_bpp = castData['depth']
+        bmp_padding_w = castData['w_padding']
+        bmp_padding_h = castData['h_padding']
         if bmp_bpp == 8:
-            bmp_palette = castData['content']['bitmap']['palette']
+            bmp_palette = castData['palette_txt']
         elif bmp_bpp == 2:
             bmp_palette = 'black and white'          
         else:
@@ -938,10 +938,10 @@ if __name__ == '__main__':
         ))
         
         # Crop the image
-        bmp_height = json_data['content']['bitmap']['height']
-        bmp_width = json_data['content']['bitmap']['width']
-        bmp_padding_w = json_data['content']['bitmap']['w_padding']
-        bmp_padding_h = json_data['content']['bitmap']['h_padding']
+        bmp_height = json_data['height']
+        bmp_width = json_data['width']
+        bmp_padding_w = json_data['w_padding']
+        bmp_padding_h = json_data['h_padding']
         w = bmp_width
         h = bmp_height
         pw = bmp_padding_w
