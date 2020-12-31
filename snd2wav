@@ -164,6 +164,22 @@ def processBufferCmd(fdata, idx, wavef, num_channels):
     logging.debug("sample_rate = %s"%(sample_rate)) 
     logging.debug("bps = %s"%(bps))
     logging.debug("num_frames = %s"%(num_frames))
+    
+    # Get cast file data
+    castData = {}
+    with open(os.path.join(sys.argv[1], 'data.json'), mode='r', encoding='utf-8') as jsfile:
+        text = jsfile.read()
+        castData = json.loads(text)
+        
+    # Add sound file information
+    castData['sampleSize'] = bps
+    castData['sampleRate'] = sample_rate
+    castData['channelCount'] = num_channels
+      
+    # Write CAST data to JSON file
+    with open(os.path.join(sys.argv[1], 'data.json'), 'wb') as jsfile:
+        jsfile.write(json.dumps(castData, indent=4, sort_keys=True).encode('utf-8'))        
+    
     nsamples = int(num_frames*num_channels)
 
     # Write wave file

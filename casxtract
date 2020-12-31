@@ -754,10 +754,10 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
             # Director sound type
             logging.info("%s: is a sound file"%(cast_file))
             castData['type'] = 'sound'
-            castData['looped'] = (basic_data02 != 0x10)
+            castData['loop'] = (basic_data02 != 0x10)
             for f in kelm:
                 if f.endswith('.snd_'):             
-                    castData['file'] = replace_ext(f, 'mp3')
+                    castData['fileName'] = replace_ext(f, 'mp3')
 
 
         elif data_type == DIR_LSCR_TYPE:
