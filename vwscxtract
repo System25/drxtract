@@ -599,10 +599,11 @@ def read_sprite_channel_info_v4(frameData, i):
     if DEBUG_SPRITE_INFO:
         logging.debug("Sprite[%d] ----------------------------"%(i))
     # Read sprite info
-    spriteType = get_sprite_type_dir4(struct.unpack(">h", frameData[(indx):(indx+2)])[0])
+    spriteType = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    spriteTypeName = get_sprite_type_dir4(spriteType)
     indx = indx + 2
     if DEBUG_SPRITE_INFO:
-        logging.debug("Sprite[%d] spriteType: %s"%(i, spriteType))
+        logging.debug("Sprite[%d] spriteType: %s (%s)"%(i, spriteType, spriteTypeName))
 
     foregroundColor = int(frameData[indx])
     indx += 1
@@ -630,10 +631,10 @@ def read_sprite_channel_info_v4(frameData, i):
     if DEBUG_SPRITE_INFO:
         logging.debug("Sprite[%d] trails: %d"%(i, trails))
 
-    ink_type = get_ink(ink_type & 0x3F)
+    ink_type_name = get_ink(ink_type & 0x3F)
     indx += 1
     if DEBUG_SPRITE_INFO:
-        logging.debug("Sprite[%d] ink_type: %s"%(i, ink_type))
+        logging.debug("Sprite[%d] ink_type: %s (%s)"%(i, ink_type, ink_type_name))
 
     castId = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
     indx = indx + 2
@@ -720,15 +721,16 @@ def read_sprite_channel_info_v5(frameData, i):
     if DEBUG_SPRITE_INFO:
         logging.debug("Sprite[%d] trails: %d"%(i, trails))
 
-    ink_type = get_ink(ink_type & 0x3F)
+    ink_type_name = get_ink(ink_type & 0x3F)
     indx += 1
     if DEBUG_SPRITE_INFO:
-        logging.debug("Sprite[%d] ink_type: %s"%(i, ink_type))
+        logging.debug("Sprite[%d] ink_type: %s (%s)"%(i, ink_type, ink_type_name))
         
-    spriteType = get_sprite_type_dir4(struct.unpack(">h", frameData[(indx):(indx+2)])[0])
+    spriteType = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+    spriteTypeName = get_sprite_type_dir4(spriteType) 
     indx = indx + 2
     if DEBUG_SPRITE_INFO:
-        logging.debug("Sprite[%d] spriteType: %s"%(i, spriteType))
+        logging.debug("Sprite[%d] spriteType: %s (%s)"%(i, spriteType, spriteTypeName))
 
     castId = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
     indx = indx + 2
