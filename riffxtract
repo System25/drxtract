@@ -239,10 +239,10 @@ def parse_riff(fileContent, offset):
         block_type = struct.unpack("cccc", fileContent[index:(index+4)])
         bt = []
         for c in range(0,4):
-            if (block_type[c].decode('ascii') > '\0' and
-                block_type[c].decode('ascii') >= ' ' and
-                block_type[c].decode('ascii') <= 'z'):
-                bt.append(block_type[c].decode('ascii'))
+            if (block_type[c].decode('latin1') > '\0' and
+                block_type[c].decode('latin1') >= ' ' and
+                block_type[c].decode('latin1') <= 'z'):
+                bt.append(block_type[c].decode('latin1'))
             else:
                 bt.append('_')
         block_type = ('%c%c%c%c'%(bt[0], bt[1], bt[2], bt[3]))
