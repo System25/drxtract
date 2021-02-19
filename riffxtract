@@ -252,7 +252,8 @@ def parse_riff(fileContent, offset):
         block_size = struct.unpack(bit_order+"i", fileContent[(index+4):(index+8)])[0]
         logging.info(" Block size: %s"%(block_size))
         
-
+        padding = (block_size % 2)
+        logging.info(" Padding: %s"%(padding))
 
         block_data = fileContent[(index+8):(index + 8 + block_size)]
         if block_type == IMAP_FILE_FORMAT:
@@ -296,7 +297,7 @@ def parse_riff(fileContent, offset):
             
             
         nfiles = nfiles + 1
-        index = index + 8 + block_size
+        index = index + 8 + block_size + padding
 
 
 if __name__ == '__main__':
