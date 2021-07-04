@@ -1006,9 +1006,9 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
             if options & 0x2:
                 autoTab = True
             
-            unknown13 =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            scrollHeight =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
             idx += 2
-            logging.debug("unknown13 = %s"%(unknown13))             
+            logging.debug("scrollHeight = %s"%(scrollHeight))             
             
             castData['wordWrap'] = wordWrap    
             castData['boxType'] = boxType    
@@ -1024,6 +1024,7 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
             castData['height'] = bottom - top 
             castData['width'] = right - left
             castData['pageHeight'] = pageHeight
+            castData['scrollHeight'] = scrollHeight
             
         elif data_type == DIR_TEXT_TYPE:
             logging.info("%s: is a text label"%(cast_file))
@@ -1061,21 +1062,49 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
             idx += 2
             logging.debug("right = %s"%(right)) 
             
-            unknown1 =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
-            idx += 2
-            logging.debug("unknown1 = %s"%(unknown1)) 
+            antialias =  int(header_data[idx])
+            idx += 1            
+            if antialias==0:
+                antialias = False
+            else:
+                antialias = True                
+            logging.debug("antiAlias = %s"%(antialias))
+            
+            boxType =  int(header_data[idx])
+            idx += 1            
+            logging.debug("boxType = %s"%(boxType))               
+            
+            if boxType == 0:
+                boxType = 'adjust'
+            if boxType == 1:
+                boxType = 'scroll'
+            if boxType == 2:
+                boxType = 'fixed'
+            if boxType == 3:
+                boxType = 'limit'
             
             unknown2 =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
             idx += 2
             logging.debug("unknown2 = %s"%(unknown2))
-             
-            castData['content']['top'] = top            
-            castData['content']['left'] = left            
-            castData['content']['bottom'] = bottom            
-            castData['content']['width'] = txt_width
-            castData['content']['height'] = txt_height
-            castData['content']['h_padding'] = h_padding
-            castData['content']['w_padding'] = w_padding               
+
+            anti_threshold =  struct.unpack(cast_bit_order+"h", header_data[idx:idx+2])[0]
+            idx += 2
+            if anti_threshold < 0:
+                anti_threshold = 0
+            logging.debug("anti_threshold = %s"%(anti_threshold))
+            
+            
+            castData['boxType'] = boxType
+            castData['antiAlias'] = antialias
+            castData['antiAliasThreshold'] = anti_threshold
+            castData['width'] = txt_width
+            castData['height'] = txt_height
+            castData['top'] = top
+            castData['left'] = left
+            castData['bottom'] = bottom
+            castData['right'] = right            
+            castData['h_padding'] = h_padding
+            castData['w_padding'] = w_padding
                 
             for f in kelm:
                 if f.endswith('.RTE1'):            
@@ -1086,7 +1115,7 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
                     castData['text'] = fdata.decode("ISO-8859-1")
 
                 if f.endswith('.RTE2'):            
-                    castData['file'] = replace_ext(f, 'png')            
+                    castData['fileName'] = replace_ext(f, 'png')            
             
         elif data_type == DIR_SHAPE_TYPE:
             logging.info("%s: is a shape"%(cast_file))
