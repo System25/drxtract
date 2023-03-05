@@ -57,7 +57,10 @@ if __name__ == '__main__':
             sys.argv[2], # director file
             sys.argv[3]  # work directory
         )
+        logging.debug("======================================================")
+        logging.debug("Extracting the RIFF file content by using the command:")
         logging.debug(cmd)
+        logging.debug("------------------------------------------------------")
         os.system(cmd)
         
         # Extract the score labels
@@ -65,7 +68,10 @@ if __name__ == '__main__':
             basepath, # Scripts path
             sys.argv[3] # work directory
         )
+        logging.debug("======================================================")
+        logging.debug("Extracting the score labels by using the command:")        
         logging.debug(cmd)
+        logging.debug("------------------------------------------------------")
         os.system(cmd)
         
         # Extract the font map
@@ -73,7 +79,10 @@ if __name__ == '__main__':
             basepath, # Scripts path
             sys.argv[3] # work directory
         )
+        logging.debug("======================================================")
+        logging.debug("Extracting the font map by using the command:")  
         logging.debug(cmd)
+        logging.debug("------------------------------------------------------")
         os.system(cmd)        
         
         # Extract the casting elements
@@ -82,7 +91,10 @@ if __name__ == '__main__':
             sys.argv[1], # pc or mac
             sys.argv[3]  # work directory
         )
+        logging.debug("======================================================")
+        logging.debug("Extracting the casting elements by using the command:")  
         logging.debug(cmd)
+        logging.debug("------------------------------------------------------")
         os.system(cmd)
         
         # Extract the score
@@ -90,6 +102,9 @@ if __name__ == '__main__':
             basepath, # Scripts path
             sys.argv[3] # work directory
         )
+        logging.debug("======================================================")
+        logging.debug("Extracting the score by using the command:")  
         logging.debug(cmd)
+        logging.debug("------------------------------------------------------")
         os.system(cmd)
 

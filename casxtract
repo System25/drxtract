@@ -223,6 +223,7 @@ def get_transtition(transition_id):
 
 # ====================================================================================================================================
 def parse_key_file(key_file):
+    logging.debug("Parsing key file: %s ----------------------------------------"%(key_file))
     key_data = {}
 
     with open(key_file, mode='rb') as file:
@@ -239,12 +240,11 @@ def parse_key_file(key_file):
         indx = indx + 4
         logging.debug("Unknown: %08x"%(unk))
 
-        unk = struct.unpack(bit_order+"i", fdata[(indx):(indx+4)])[0]
+        nelements = struct.unpack(bit_order+"i", fdata[(indx):(indx+4)])[0]
         indx = indx + 4
-        logging.debug("Unknown: %08x"%(unk))
+        logging.debug("Number of elements: %08x"%(nelements))
 
-
-        while len(fdata) >= indx + 12:
+        for n in range(nelements-1):
             nfile = struct.unpack(bit_order+"i", fdata[(indx+0):(indx+4)])[0]
             cas_index = struct.unpack(bit_order+"i", fdata[(indx+4):(indx+8)])[0]
 
@@ -278,11 +278,13 @@ def parse_key_file(key_file):
 
                 key_value = "KEY['%s'] = '%s.%s'"%(cas_index, nfile, file_ext)
                 logging.debug(key_value)
+    
 
     return key_data
 
 # ====================================================================================================================================
 def parse_cas_file(cas_file):
+    logging.debug("Parsing cas file: %s ----------------------------------------"%(cas_file))
     cas_data = []
 
     with open(cas_file, mode='rb') as file:
@@ -303,6 +305,7 @@ def parse_cas_file(cas_file):
 
 # ====================================================================================================================================
 def parse_vwcf_file(vwcf_file):
+    logging.debug("Parsing vwcf file: %s ----------------------------------------"%(vwcf_file))
     config = {}
     with open(vwcf_file, mode='rb') as file:
         fdata = file.read()
@@ -428,6 +431,7 @@ def parse_vwcf_file(vwcf_file):
 
 # ====================================================================================================================================
 def parse_lctx_file(lctx_file):
+    logging.debug("Parsing lctx file: %s ----------------------------------------"%(lctx_file))
     lctx_data = []
 
     with open(lctx_file, mode='rb') as file:
@@ -474,6 +478,7 @@ def parse_lctx_file(lctx_file):
 
 # ====================================================================================================================================
 def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
+    logging.debug("Parsing cast file: %s ----------------------------------------"%(cast_file))
 
     with open(cast_file, mode='rb') as file:
         fdata = file.read()
@@ -1360,7 +1365,7 @@ if __name__ == '__main__':
             lctx_elements = parse_lctx_file(os.path.join(sys.argv[2], BINDIR, lctx_file))
         
         
-        logging.info('There is %i elements in the casting!'%(len(cas_elements)))
+        logging.info('There are %i elements in the casting!'%(len(cas_elements)))
         
         # Extract casting elements
         for elm in range(1, len(cas_elements)+1):
