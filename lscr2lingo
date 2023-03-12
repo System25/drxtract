@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 # Author: Abraham Macias Paredes
 # E-mail: system252001@yahoo.es
@@ -14,6 +14,8 @@ import os
 import struct
 import re
 import logging
+import base64
+import json
 from shutil import copyfile
 
 logging.basicConfig(level=logging.DEBUG)
@@ -195,6 +197,10 @@ operations_stack = []
 
 
 # ====================================================================================================================================
+def write_code(file, code):
+    file.write(code.encode('utf-8'))
+
+# ====================================================================================================================================
 def clear_stack():
     operations_stack = []
 
@@ -218,12 +224,12 @@ def pop_s():
 def flush_stack(f, spacing):
     op = pop()
     while op is not None:
-        f.write("\n")
-        f.write(spacing)
-        f.write("%s"%(op))
+        write_code(f, "\n")
+        write_code(f, spacing)
+        write_code(f, "%s"%(op))
         op = pop()
 
-    f.write("\n")
+    write_code(f, "\n")
 
 # ====================================================================================================================================
 def to_string(strval):
@@ -283,10 +289,10 @@ def parse_lnam_file(lnam_file):
 
 
         for i in range(0, nnames):
-            nbytes = ord(fdata[indx])
+            nbytes = int(fdata[indx])
             indx = indx + 1
 
-            name = fdata[indx:(indx + nbytes)]
+            name = fdata[indx:(indx + nbytes)].decode('ISO-8859-1')
             indx = indx + nbytes
 
             name_list.append(name)
@@ -296,6 +302,10 @@ def parse_lnam_file(lnam_file):
 
 # ====================================================================================================================================
 def lscr2lingo(lscr_file, name_list):
+    file_ext = "lingo"
+    nfiles = lscr_file[0:lscr_file.find('.')]
+    file_name = "%s.%s"%(nfiles, file_ext)
+    
     with open(lscr_file, mode='rb') as file:
         fdata = file.read()
         
@@ -439,17 +449,21 @@ def lscr2lingo(lscr_file, name_list):
         # In some lingo 
         for i in range(0, con_nconstants):
             logging.debug("idx = %s"%(idx))
-            if (unknown_22 & 0xFF00) != 0:
-               # I don't really know if this is the reason
-               # uint32: Value type ID 
-               logging.debug("4 bytes")
-               constant_type = struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
-               idx += 4
-               bytes_per_const = 8
+            if bytes_per_const == 8:
+                # uint32: Value type ID 
+                logging.debug("4 bytes constant ID")
+                constant_type = struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
+                idx += 4
             else:
-                # uint16: Value type ID 
-               constant_type = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
-               idx += 2
+                # uint16: Value type ID
+                logging.debug("2 bytes constant ID")
+                constant_type = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+                idx += 2
+                if constant_type == 0:
+                    logging.debug("It may be a 4 bytes constant ID")
+                    constant_type = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+                    idx += 2
+                    bytes_per_const = 8
 
             # uint32: Data address, relative to the base address given in the header 
             constant_offset = struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
@@ -467,7 +481,7 @@ def lscr2lingo(lscr_file, name_list):
                 idxc += 4
                 #logging.debug("strlength = %s"%(strlength)) 
 
-                strval = str(fdata[idxc:idxc+strlength])
+                strval = fdata[idxc:idxc+strlength].decode('ISO-8859-1')
                 constants.append(to_string(strval))
 
 
@@ -489,10 +503,6 @@ def lscr2lingo(lscr_file, name_list):
 
             logging.debug("constants[%s] = %s"%(i, constants[i])) 
 
-
-        file_ext = "lingo"
-        nfiles = lscr_file[0:lscr_file.find('.')]
-        file_name = "%s.%s"%(nfiles, file_ext)
 
         logging.debug(u"FILE: Saving script file to: %s"%(file_name))
 
@@ -615,13 +625,13 @@ def lscr2lingo(lscr_file, name_list):
 
                 args = ''
                 for c in range(0, bc_narg):
-                     if args == '':
-                          args = ('%s'%(paramns[c]))
-                     else:
-                          args = args + ', ' + ('%s'%(paramns[c]))
+                    if args == '':
+                        args = ('%s'%(paramns[c]))
+                    else:
+                        args = args + ', ' + ('%s'%(paramns[c]))
 
                 if fname != 'noname':
-                    file.write("on %s %s\n"%(fname, args))
+                    write_code(file, "on %s %s\n"%(fname, args))
 
                 spacing = '    '
 
@@ -631,7 +641,7 @@ def lscr2lingo(lscr_file, name_list):
                 # Search for loops and globals
                 idxc = bc_off
                 while (idxc - bc_off) < bc_length:
-                    opcode = ord(fdata[idxc])
+                    opcode = int(fdata[idxc])
                     idxc = idxc + 1
 
                     if ((opcode not in ONE_BYTE_OPCODES) and
@@ -645,7 +655,7 @@ def lscr2lingo(lscr_file, name_list):
 
                     elif opcode in TWO_BYTE_OPCODES:
                         # Two bytes operation
-                        op1 = ord(fdata[idxc])
+                        op1 = int(fdata[idxc])
                         idxc = idxc + 1
 
                         if opcode == 0x54:
@@ -698,8 +708,8 @@ def lscr2lingo(lscr_file, name_list):
                 window_to_tell = None
 
                 for gv in global_vars:
-                    file.write(spacing)
-                    file.write("global %s\n"%(gv))
+                    write_code(file, spacing)
+                    write_code(file, "global %s\n"%(gv))
 
                 idxc = bc_off
                 while (idxc - bc_off) < bc_length:
@@ -715,17 +725,17 @@ def lscr2lingo(lscr_file, name_list):
                                 if label_types[idxc].startswith('end') or label_types[idxc] == 'else':
                                     spacing = spacing[0:(len(spacing) - 4)]
 
-                                file.write(spacing)
-                                file.write("%s\n"%(label_types[idxc]))
+                                write_code(file, spacing)
+                                write_code(file, "%s\n"%(label_types[idxc]))
                                 if not label_types[idxc].startswith('end'):
                                     spacing = spacing + '    '
 
                             else:
-                                file.write("label%08x\n"%(idxc))
+                                write_code(file, "label%08x\n"%(idxc))
 
-                    file.write(spacing)
+                    write_code(file, spacing)
 
-                    opcode = ord(fdata[idxc])
+                    opcode = int(fdata[idxc])
                     idxc = idxc + 1
 
                     if ((opcode not in ONE_BYTE_OPCODES) and
@@ -737,14 +747,14 @@ def lscr2lingo(lscr_file, name_list):
                     if opcode in ONE_BYTE_OPCODES:
                         # One byte operation
                         if WRITE_OPCODES:
-                            file.write("-- [0x%04x]: 0x%02x"%(idxc - 1, opcode))
+                            write_code(file, "-- [0x%04x]: 0x%02x"%(idxc - 1, opcode))
 
                         if opcode == 0x01:
                             flush_stack(file, spacing)
                             if (idxc - bc_off) < bc_length:
-                                file.write('\n')
-                                file.write(spacing)
-                                file.write('exit\n')
+                                write_code(file, '\n')
+                                write_code(file, spacing)
+                                write_code(file, 'exit\n')
 
                         elif opcode == 0x03:
                             push('0')
@@ -960,9 +970,9 @@ def lscr2lingo(lscr_file, name_list):
                                     params = params + ' ' + p
                                 p = pop()
 
-                            file.write("\n")
-                            file.write(spacing)
-                            file.write('tell ' + window_to_tell + ' to ' + params)
+                            write_code(file, "\n")
+                            write_code(file, spacing)
+                            write_code(file, 'tell ' + window_to_tell + ' to ' + params)
 
                         elif opcode == 0x1F:
                             push('transpose(' + pop_s() + ')')
@@ -970,11 +980,11 @@ def lscr2lingo(lscr_file, name_list):
 
                     elif opcode in TWO_BYTE_OPCODES:
                         # Two bytes operation
-                        op1 = ord(fdata[idxc])
+                        op1 = int(fdata[idxc])
                         idxc = idxc + 1
 
                         if WRITE_OPCODES:
-                            file.write("-- [0x%04x]: 0x%02x 0x%02x"%(idxc - 2, opcode, op1))
+                            write_code(file, "-- [0x%04x]: 0x%02x 0x%02x"%(idxc - 2, opcode, op1))
 
 
                         if opcode == 0x41:
@@ -1013,7 +1023,7 @@ def lscr2lingo(lscr_file, name_list):
                             if (op1 % bytes_per_const) > 0:
                                 bytes_per_const = (op1 % bytes_per_const)
 
-                            constant_value = constants[op1 / bytes_per_const]
+                            constant_value = constants[int(op1 / bytes_per_const)]
                             if constant_value in SPECIAL_CONSTANTS:
                                 constant_value = SPECIAL_CONSTANTS[constant_value]
                             push('%s'%(constant_value))
@@ -1054,46 +1064,46 @@ def lscr2lingo(lscr_file, name_list):
 
                         elif opcode == 0x4E:
                             # Pop one value and use it to set the global variable with name from namelist[XX].    
-                            file.write("\n")
-                            file.write(spacing)
-                            file.write('put %s into %s'%(pop_s(), name_list[op1]))                         
+                            write_code(file, "\n")
+                            write_code(file, spacing)
+                            write_code(file, 'put %s into %s'%(pop_s(), name_list[op1]))                         
                             
                         elif opcode == 0x4F:
                             # Pop one value and use it to set the global variable with name from namelist[XX].    
-                            file.write("\n")
-                            file.write(spacing)
-                            file.write('put %s into %s'%(pop_s(), name_list[op1]))
+                            write_code(file, "\n")
+                            write_code(file, spacing)
+                            write_code(file, 'put %s into %s'%(pop_s(), name_list[op1]))
 
                         elif opcode == 0x50:
                             # Pop one value and use it to set a property.
-                            file.write("\n")
-                            file.write(spacing)
-                            file.write('set_property("%s", %s);'%(name_list[op1], pop_s()))
+                            write_code(file, "\n")
+                            write_code(file, spacing)
+                            write_code(file, 'set_property("%s", %s);'%(name_list[op1], pop_s()))
 
                         elif opcode == 0x51:
                             # Pop one value and use it to set a parameter. 
-                            file.write("\n")
-                            file.write(spacing)
+                            write_code(file, "\n")
+                            write_code(file, spacing)
                             if (op1 % bytes_per_const) > 0:
                                 bytes_per_const = (op1 % bytes_per_const)
 
-                            file.write('put %s into %s'%(pop_s(), paramns[op1 / bytes_per_const]))
+                            write_code(file, 'put %s into %s'%(pop_s(), paramns[op1 / bytes_per_const]))
 
                         elif opcode == 0x52:
                             # Pop one value and use it to set a local variable.
-                            file.write("\n")
-                            file.write(spacing)
+                            write_code(file, "\n")
+                            write_code(file, spacing)
                             if (op1 % bytes_per_const) > 0:
                                 bytes_per_const = (op1 % bytes_per_const)
 
-                            file.write('put %s into %s'%(pop_s(), localvs[op1 / bytes_per_const]))
+                            write_code(file, 'put %s into %s'%(pop_s(), localvs[op1 / bytes_per_const]))
 
                         elif opcode == 0x54:
                             # Unconditional backwards jump by XX bytes, relative to the first byte of this instruction.
                             if WRITE_JUMPS:
-                                file.write("\n")
-                                file.write(spacing)
-                                file.write('-- goto label%04x;'%(idxc - 2 - op1))
+                                write_code(file, "\n")
+                                write_code(file, spacing)
+                                write_code(file, '-- goto label%04x;'%(idxc - 2 - op1))
                             flush_stack(file, spacing)
 
 
@@ -1104,9 +1114,9 @@ def lscr2lingo(lscr_file, name_list):
                                 # The function must return something
                                 push('%s(%s)'%(lfnames[op1], params[1:]))
                             else:
-                                file.write("\n")
-                                file.write(spacing)
-                                file.write('%s(%s)'%(lfnames[op1], params))
+                                write_code(file, "\n")
+                                write_code(file, spacing)
+                                write_code(file, '%s(%s)'%(lfnames[op1], params))
 
                         elif opcode == 0x57:
                             # Call the external function with name from namelist[XX].
@@ -1118,12 +1128,12 @@ def lscr2lingo(lscr_file, name_list):
                                 else:
                                     push('%s(%s)'%(name_list[op1], params[1:]))
                             else:
-                                file.write("\n")
-                                file.write(spacing)
+                                write_code(file, "\n")
+                                write_code(file, spacing)
                                 if name_list[op1] in NO_PAREN_FUNCTIONS:
-                                    file.write('%s %s'%(name_list[op1], params))
+                                    write_code(file, '%s %s'%(name_list[op1], params))
                                 else:
-                                    file.write('%s(%s)'%(name_list[op1], params))
+                                    write_code(file, '%s(%s)'%(name_list[op1], params))
 
                         elif opcode == 0x58:
                             # Call an object method
@@ -1136,9 +1146,9 @@ def lscr2lingo(lscr_file, name_list):
                                 # The function must return something
                                 push('%s(%s)'%(obj, params[1:]))
                             else:
-                                file.write("\n")
-                                file.write(spacing)
-                                file.write('%s(%s)'%(obj, params))
+                                write_code(file, "\n")
+                                write_code(file, spacing)
+                                write_code(file, '%s(%s)'%(obj, params))
 
                         elif opcode == 0x59:
                             if op1 == 0x16:
@@ -1152,36 +1162,36 @@ def lscr2lingo(lscr_file, name_list):
                                 else:
                                     op_type = ' UNKNOWN '
 
-                                file.write("\n")
-                                file.write(spacing)
-                                file.write('put %s into %s %s'%(op_value, op_type, op_var))
+                                write_code(file, "\n")
+                                write_code(file, spacing)
+                                write_code(file, 'put %s into %s %s'%(op_value, op_type, op_var))
 
                             elif op1 == 0x25:
                                 op_var = int(pop())
                                 op_value = pop_s()
 
-                                file.write("\n")
-                                file.write(spacing)
+                                write_code(file, "\n")
+                                write_code(file, spacing)
                                 if (op_var % bytes_per_const) > 0:
                                     bytes_per_const = (op_var % bytes_per_const)
 
-                                file.write('put %s after %s'%(op_value, localvs[op_var / bytes_per_const]))
+                                write_code(file, 'put %s after %s'%(op_value, localvs[op_var / bytes_per_const]))
 
                             elif op1 == 0x35:
                                 op_var = int(pop())
                                 op_value = pop_s()
 
-                                file.write("\n")
-                                file.write(spacing)
+                                write_code(file, "\n")
+                                write_code(file, spacing)
                                 if (op_var % bytes_per_const) > 0:
                                     bytes_per_const = (op_var % bytes_per_const)
 
-                                file.write('put %s before %s'%(localvs[op_value, op_var / bytes_per_const]))
+                                write_code(file, 'put %s before %s'%(localvs[op_value, op_var / bytes_per_const]))
 
                             else:
-                                file.write("\n")
-                                file.write(spacing)
-                                file.write("ERROR: Missing subcommand! (0x%02x) :("%(op1))
+                                write_code(file, "\n")
+                                write_code(file, spacing)
+                                write_code(file, "ERROR: Missing subcommand! (0x%02x) :("%(op1))
 
                         # TODO! Complete this
 
@@ -1224,9 +1234,9 @@ def lscr2lingo(lscr_file, name_list):
 
                             op_vname = '%s'%(localvs[op_vind / bytes_per_const])
 
-                            file.write("\n")
-                            file.write(spacing)
-                            file.write('delete ' + op_type + ' of ' + op_vname)
+                            write_code(file, "\n")
+                            write_code(file, spacing)
+                            write_code(file, 'delete ' + op_type + ' of ' + op_vname)
 
                         elif opcode == 0x5C:
                             if op1 == 0x01:
@@ -1238,8 +1248,8 @@ def lscr2lingo(lscr_file, name_list):
 
                             elif op1 == 0x07:
                                 # Pop a setting ID from the stack and push its value
-                                file.write("\n")
-                                file.write(spacing)
+                                write_code(file, "\n")
+                                write_code(file, spacing)
                                 setting_id = int(pop())
                                 setting_name = 'UNKNOWN_PROPERTY_%s'%(setting_id)
                                 if setting_id < len(SYSTEM_PROPERTIES):
@@ -1247,25 +1257,25 @@ def lscr2lingo(lscr_file, name_list):
                                 push("the %s"%(setting_name))                                
                                 
                             else:
-                                file.write("\n")
-                                file.write(spacing)
-                                file.write("ERROR: Missing subcommand! (0x%02x) :("%(op1))
+                                write_code(file, "\n")
+                                write_code(file, spacing)
+                                write_code(file, "ERROR: Missing subcommand! (0x%02x) :("%(op1))
 
                         elif opcode == 0x5D:
                             if op1 == 0x07:
                                 # Pop a setting ID from the stack and push its value
-                                file.write("\n")
-                                file.write(spacing)
+                                write_code(file, "\n")
+                                write_code(file, spacing)
                                 setting_id = int(pop())
                                 setting_name = 'UNKNOWN_PROPERTY_%s'%(setting_id)
                                 if setting_id < len(SYSTEM_PROPERTIES):
                                     setting_name = SYSTEM_PROPERTIES[setting_id]
-                                file.write("put %s into the %s"%(pop_s(), setting_name))
+                                write_code(file, "put %s into the %s"%(pop_s(), setting_name))
                                 
                             else:
-                                file.write("\n")
-                                file.write(spacing)
-                                file.write("ERROR: Missing subcommand! (0x%02x) :("%(op1))
+                                write_code(file, "\n")
+                                write_code(file, spacing)
+                                write_code(file, "ERROR: Missing subcommand! (0x%02x) :("%(op1))
 
 
                         elif opcode == 0x5F:
@@ -1281,9 +1291,9 @@ def lscr2lingo(lscr_file, name_list):
                         elif opcode == 0x62:
                             # set the someProperty of someVariable to 1
                             # Pop [property-owning object, new value] from the stack and set the property of the object with the name at namelist[XX].
-                            file.write("\n")
-                            file.write(spacing)
-                            file.write('put %s into %s.%s '%(pop_s(), pop_s(), name_list[op1]))
+                            write_code(file, "\n")
+                            write_code(file, spacing)
+                            write_code(file, 'put %s into %s.%s '%(pop_s(), pop_s(), name_list[op1]))
 
                         elif opcode == 0x63:
                             # property to tell  
@@ -1291,15 +1301,15 @@ def lscr2lingo(lscr_file, name_list):
 
                         elif opcode == 0x64:
                             # Push a copy of a value already on the stack, relative to the top where 00 is the top slot, 01 is one slot beneath the top, etc. 
-                            file.write("\n")
-                            file.write(spacing)
-                            file.write("ERROR: I don't know to implement the copy command! :(")
+                            write_code(file, "\n")
+                            write_code(file, spacing)
+                            write_code(file, "ERROR: I don't know to implement the copy command! :(")
 
                         elif opcode == 0x65:
                             # Pop and discard XX values from the top of the stack.
-                            file.write("\n")
-                            file.write(spacing)
-                            file.write("ERROR: I don't know to implement the discard command! :(")
+                            write_code(file, "\n")
+                            write_code(file, spacing)
+                            write_code(file, "ERROR: I don't know to implement the discard command! :(")
 
                         elif opcode == 0x66:
                             # Pop an empty list and push the value of a read-only property named at namelist[XX]. 
@@ -1322,19 +1332,19 @@ def lscr2lingo(lscr_file, name_list):
                             else:
                                 obj = params[0:params.index(',')]
                                 params = params[params.index(',')+2:]
-                                file.write("\n")
-                                file.write(spacing)
+                                write_code(file, "\n")
+                                write_code(file, spacing)
                                 if name_list[cindex] in NO_PAREN_FUNCTIONS:
-                                    file.write('%s.%s %s'%(obj, name_list[cindex], params))
+                                    write_code(file, '%s.%s %s'%(obj, name_list[cindex], params))
                                 else:
-                                    file.write('%s.%s(%s)'%(obj, name_list[cindex], params))
+                                    write_code(file, '%s.%s(%s)'%(obj, name_list[cindex], params))
 
                         else:
                             # Unknown operation
                             flush_stack(file, spacing)
-                            file.write("\n")
-                            file.write(spacing)
-                            file.write('unknown_op2(0x%02x, 0x%02x);'%(opcode, op1))
+                            write_code(file, "\n")
+                            write_code(file, spacing)
+                            write_code(file, 'unknown_op2(0x%02x, 0x%02x);'%(opcode, op1))
 
                     else:
                         # Three bytes operation 
@@ -1345,7 +1355,7 @@ def lscr2lingo(lscr_file, name_list):
                         idxc = idxc + 1
 
                         if WRITE_OPCODES:
-                            file.write("-- [0x%04x]: 0x%02x 0x%02x 0x%02x"%(idxc - 3, opcode, op1, op2))
+                            write_code(file, "-- [0x%04x]: 0x%02x 0x%02x 0x%02x"%(idxc - 3, opcode, op1, op2))
 
                         if opcode == 0x81:
                             # Push the integer ((XX * 0x100) + YY).
@@ -1380,27 +1390,27 @@ def lscr2lingo(lscr_file, name_list):
 
                         elif opcode == 0x8F:
                             # Pop one value and use it to set the global variable with name from namelist[XX].    
-                            file.write("\n")
-                            file.write(spacing)
-                            file.write('put %s into %s'%(pop_s(), name_list[(op1 * 256 + op2)]))
+                            write_code(file, "\n")
+                            write_code(file, spacing)
+                            write_code(file, 'put %s into %s'%(pop_s(), name_list[(op1 * 256 + op2)]))
 
                         elif opcode == 0x90:
                             # Pop one value and use it to set a property.
-                            file.write("\n")
-                            file.write(spacing)
-                            file.write('put %s into %s'%(pop_s(), name_list[(op1 * 256 + op2)]))
+                            write_code(file, "\n")
+                            write_code(file, spacing)
+                            write_code(file, 'put %s into %s'%(pop_s(), name_list[(op1 * 256 + op2)]))
 
                         elif opcode == 0x93:
                             # Unconditional jump: Advance by ((XX * 0x100) + YY) bytes, relative to the first byte of this instruction.
                             flush_stack(file, spacing)
                             if WRITE_JUMPS:
-                                file.write("\n")
-                                file.write(spacing)
-                                file.write('-- goto label%04x;'%(idxc - 3 + (op1 * 256 + op2)))
+                                write_code(file, "\n")
+                                write_code(file, spacing)
+                                write_code(file, '-- goto label%04x;'%(idxc - 3 + (op1 * 256 + op2)))
                             if label_types[idxc - 3 + (op1 * 256 + op2)] == 'end repeat':
-                                file.write('\n')
-                                file.write(spacing)
-                                file.write('exit repeat')
+                                write_code(file, '\n')
+                                write_code(file, spacing)
+                                write_code(file, 'exit repeat')
                                 if label_types[idxc] == 'else':
                                     label_types[idxc] = 'end if'
 
@@ -1408,16 +1418,16 @@ def lscr2lingo(lscr_file, name_list):
                         elif opcode == 0x95:
                             # Conditional jump: Pop a value, and if it is logically FALSE, advance by ((XX * 0x100) + YY) bytes, relative to the first byte of this instruction.
                             if WRITE_JUMPS:
-                                file.write("\n")
-                                file.write(spacing)
-                                file.write('-- if (!pop()) goto label%04x;'%(idxc - 3 + (op1 * 256 + op2)))
-                            file.write("\n")
-                            file.write(spacing)
+                                write_code(file, "\n")
+                                write_code(file, spacing)
+                                write_code(file, '-- if (!pop()) goto label%04x;'%(idxc - 3 + (op1 * 256 + op2)))
+                            write_code(file, "\n")
+                            write_code(file, spacing)
                             erpos = idxc - 3 + (op1 * 256 + op2)
                             if (erpos in label_types) and (label_types[erpos] == 'end repeat'):
-                                file.write('if not %s then exit repeat'%(pop_s()))
+                                write_code(file, 'if not %s then exit repeat'%(pop_s()))
                             else:
-                                file.write('if %s then'%(pop_s()))
+                                write_code(file, 'if %s then'%(pop_s()))
                                 spacing = spacing + '    '
 
                         elif opcode == 0x96:
@@ -1428,9 +1438,9 @@ def lscr2lingo(lscr_file, name_list):
                                 # The function must return something
                                 push('%s(%s)'%(lfnames[cindex], params[1:]))
                             else:
-                                file.write("\n")
-                                file.write(spacing)
-                                file.write('%s(%s)'%(lfnames[cindex], params))
+                                write_code(file, "\n")
+                                write_code(file, spacing)
+                                write_code(file, '%s(%s)'%(lfnames[cindex], params))
 
                         elif opcode == 0x97:
                             # Call the external function with name from namelist[XX].
@@ -1443,12 +1453,12 @@ def lscr2lingo(lscr_file, name_list):
                                 else:
                                     push('%s(%s)'%(name_list[cindex], params[1:]))
                             else:
-                                file.write("\n")
-                                file.write(spacing)
+                                write_code(file, "\n")
+                                write_code(file, spacing)
                                 if name_list[cindex] in NO_PAREN_FUNCTIONS:
-                                    file.write('%s %s'%(name_list[cindex], params))
+                                    write_code(file, '%s %s'%(name_list[cindex], params))
                                 else:
-                                    file.write('%s(%s)'%(name_list[cindex], params))
+                                    write_code(file, '%s(%s)'%(name_list[cindex], params))
 
                         elif opcode == 0x9F:
                             # Push the value of the contextual property with the name at namelist[XX].
@@ -1456,26 +1466,26 @@ def lscr2lingo(lscr_file, name_list):
 
                         elif opcode == 0xa0:
                             # Pop one value and use it to set a property.
-                            file.write("\n")
-                            file.write(spacing)
-                            file.write('put %s into %s'%(pop_s(), name_list[(op1 * 256 + op2)]))
+                            write_code(file, "\n")
+                            write_code(file, spacing)
+                            write_code(file, 'put %s into %s'%(pop_s(), name_list[(op1 * 256 + op2)]))
 
                         elif opcode == 0xa1:
                             # Pop one value and use it to set a parameter. 
-                            file.write("\n")
-                            file.write(spacing)
+                            write_code(file, "\n")
+                            write_code(file, spacing)
                             pindex = (op1 * 256 + op2)
                             if (pindex % bytes_per_const) > 0:
                                 bytes_per_const = (pindex % bytes_per_const)
-                            file.write('%s = %s;'%(paramns[pindex / bytes_per_const], pop_s()))
+                            write_code(file, '%s = %s;'%(paramns[pindex / bytes_per_const], pop_s()))
 
                         elif opcode == 0xa2:
                             # Pop one value and use it to set a local variable.
-                            file.write("\n")
-                            file.write(spacing)
+                            write_code(file, "\n")
+                            write_code(file, spacing)
                             if ((op1 * 256 + op2) % bytes_per_const) > 0:
                                 bytes_per_const = ((op1 * 256 + op2) % bytes_per_const)
-                            file.write('%s = %s;'%(localvs[(op1 * 256 + op2) / bytes_per_const], pop_s()))
+                            write_code(file, '%s = %s;'%(localvs[(op1 * 256 + op2) / bytes_per_const], pop_s()))
 
                         elif opcode == 0xa6:
                             # Pop an empty list and push the value of a read-only property named at namelist[XX]. 
@@ -1498,28 +1508,28 @@ def lscr2lingo(lscr_file, name_list):
                             else:
                                 obj = params[0:params.index(',')]
                                 params = params[params.index(',')+2:]
-                                file.write("\n")
-                                file.write(spacing)
+                                write_code(file, "\n")
+                                write_code(file, spacing)
                                 if name_list[cindex] in NO_PAREN_FUNCTIONS:
-                                    file.write('%s.%s %s'%(obj, name_list[cindex], params))
+                                    write_code(file, '%s.%s %s'%(obj, name_list[cindex], params))
                                 else:
-                                    file.write('%s.%s(%s)'%(obj, name_list[cindex], params))
+                                    write_code(file, '%s.%s(%s)'%(obj, name_list[cindex], params))
 
                         else:
                             # Unknown operation
                             flush_stack(file, spacing)
-                            file.write("\n")
-                            file.write(spacing)
-                            file.write('unknown_op3(0x%02x, 0x%02x, 0x%02x);'%(opcode, op1, op2))
+                            write_code(file, "\n")
+                            write_code(file, spacing)
+                            write_code(file, 'unknown_op3(0x%02x, 0x%02x, 0x%02x);'%(opcode, op1, op2))
 
                     if WRITE_OPCODES:
-                        file.write("\n")
+                        write_code(file, "\n")
 
                 if fname != 'noname':
-                    file.write("end %s\n\n"%(fname))
+                    write_code(file, "end %s\n\n"%(fname))
 
             file.close()
- 
+    return file_name
 
 # ====================================================================================================================================
 if __name__ == '__main__':
@@ -1557,5 +1567,19 @@ if __name__ == '__main__':
 
         # Get cast file data
         name_list = parse_lnam_file(sys.argv[4])
-        lscr2lingo(os.path.join(sys.argv[2], sys.argv[3]), name_list)
+        file_name = lscr2lingo(os.path.join(sys.argv[2], sys.argv[3]), name_list)
+        
+        # Save include decompiled code into the JSON file
+        script = ''
+        with open(file_name, mode='rb') as file:
+            script = file.read()
+        
+        castData = {}
+        with open(os.path.join(sys.argv[2], 'data.json'), mode='r', encoding='utf-8') as file:
+            text = file.read()
+            castData = json.loads(text)
+            
+        castData['code'] = base64.b64encode(script).decode('ascii')
+        with open(os.path.join(sys.argv[2], 'data.json'), 'wb') as file:
+            file.write(json.dumps(castData, indent=4, sort_keys=True).encode('utf-8'))
         
