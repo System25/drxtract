@@ -786,13 +786,18 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
                     logging.warn("There is no %s file (maybe empty file)"%(src))
 
                 if lnam_file is not None:
-                    os.system('%slscr2lingo %s %s %s %s'%(
+                    cmd = '%slscr2lingo %s %s %s %s'%(
                         basepath, # Scripts path
                         sys.argv[1], # pc or mac
                         dest_dir, # work directory
                         script_file, # script file name
                         lnam_file
-                    ))
+                    )
+                    logging.debug("======================================================")
+                    logging.debug("Decompiling lingo script by using the command:")        
+                    logging.debug(cmd)
+                    logging.debug("------------------------------------------------------")
+                    os.system(cmd)
                     
                     codefile = os.path.join(dest_dir, replace_ext(script_file, 'lingo'))
                     if os.path.isfile(codefile):
@@ -1241,40 +1246,65 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
                     logging.warn("There is no %s file (maybe empty file)"%(src))
 
                 if f.endswith('.BITD'):
-                    os.system('%s/bitd2bmp %s %s'%(
+                    cmd = '%s/bitd2bmp %s %s'%(
                         os.path.dirname(sys.argv[0]), # Scripts path
                         dest_dir, # work directory
                         f # BITD file name
-                    ))
+                    )
+                    logging.debug("======================================================")
+                    logging.debug("Extracting image by using the command:")        
+                    logging.debug(cmd)
+                    logging.debug("------------------------------------------------------")
+                    os.system(cmd)
                     
                 if f.endswith('.snd_'):
-                    os.system('%s/snd2wav %s %s'%(
+                    cmd = '%s/snd2wav %s %s'%(
                         os.path.dirname(sys.argv[0]), # Scripts path
                         dest_dir, # work directory
                         f # snd file name
-                    ))
+                    )
+                    logging.debug("======================================================")
+                    logging.debug("Extracting sound by using the command:")        
+                    logging.debug(cmd)
+                    logging.debug("------------------------------------------------------")
+                    os.system(cmd)
                     
                 if f.endswith('.STXT'):
-                    os.system('%s/stxt2json %s %s "%s"'%(
+                    cmd = '%s/stxt2json %s %s "%s"'%(
                         os.path.dirname(sys.argv[0]), # Scripts path
                         sys.argv[1], # pc or mac
                         dest_dir, # work directory
                         f # stxt file name
-                    ))
+                    )
+                    logging.debug("======================================================")
+                    logging.debug("Extracting text information by using the command:")        
+                    logging.debug(cmd)
+                    logging.debug("------------------------------------------------------")
+                    os.system(cmd)
 
                 if f.endswith('.RTE2'):
-                    os.system('%s/rte22bmp %s "%s"'%(
+                    cmd = '%s/rte22bmp %s "%s"'%(
                         os.path.dirname(sys.argv[0]), # Scripts path
                         dest_dir, # work directory
                         f # rte2 file name
-                    ))                        
+                    )
+                    logging.debug("======================================================")
+                    logging.debug("Extracting image by using the command:")        
+                    logging.debug(cmd)
+                    logging.debug("------------------------------------------------------")
+                    os.system(cmd)
                         
                 if f.endswith('.CLUT'):
-                    os.system('%s/clut2json %s %s'%(
+                    cmd = '%s/clut2json %s %s'%(
                         os.path.dirname(sys.argv[0]), # Scripts path
                         dest_dir, # work directory
                         f # CLUT file name
-                    ))
+                    )
+                    logging.debug("======================================================")
+                    logging.debug("Extracting palette information by using the command:")        
+                    logging.debug(cmd)
+                    logging.debug("------------------------------------------------------")
+                    os.system(cmd)
 
 
 # ====================================================================================================================================
