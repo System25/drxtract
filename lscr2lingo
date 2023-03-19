@@ -21,7 +21,7 @@ from shutil import copyfile
 logging.basicConfig(level=logging.DEBUG)
 
 # For debugging purposes
-WRITE_OPCODES = False
+WRITE_OPCODES = True
 WRITE_JUMPS = False
 
 # Default bit order for MAC
@@ -145,7 +145,8 @@ NO_PAREN_FUNCTIONS = [
     'put',
     'window',
     'forget',
-    'alert'
+    'alert',
+    'go'
 ]
 
 SPECIAL_CONSTANTS = {
@@ -303,7 +304,7 @@ def parse_lnam_file(lnam_file):
 # ====================================================================================================================================
 def lscr2lingo(lscr_file, name_list):
     file_ext = "lingo"
-    nfiles = lscr_file[0:lscr_file.find('.')]
+    nfiles = lscr_file[0:lscr_file.rfind('.')]
     file_name = "%s.%s"%(nfiles, file_ext)
     
     with open(lscr_file, mode='rb') as file:
@@ -366,8 +367,8 @@ def lscr2lingo(lscr_file, name_list):
             logging.error("bad filesize (%s, %s, %s)"%(filesize1, filesize0, len(fdata))) 
             sys.exit(-1)
 
-        # $0040-$0041 uint16 Offset to the function records block  
-        frb_offset = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+        # $0040-$0041 uint16 Offset to the properties records block  
+        prb_offset = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
         idx += 2
 
         unknown_17 =  struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
@@ -375,18 +376,15 @@ def lscr2lingo(lscr_file, name_list):
         unknown_18 =  struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
         idx += 2
 
-        # Offset to the function records block repeated
-        frb_offset_cp = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+        # $0045-$0046 uint16 Offset to the function records block  
+        frb_offset = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
         idx += 2
 
-        logging.debug("frb_offset = %s"%(frb_offset)) 
+        logging.debug("prb_offset = %s"%(prb_offset)) 
         logging.debug("unknown_17 = %s"%(unknown_17)) 
         logging.debug("unknown_18 = %s"%(unknown_18)) 
-        logging.debug("frb_offset_cp = %s"%(frb_offset_cp)) 
+        logging.debug("frb_offset = %s"%(frb_offset)) 
 
-        if frb_offset != frb_offset_cp:
-            logging.error("bad offset to the function records block (%s, %s)"%(frb_offset, frb_offset_cp))
-            sys.exit(-1)
 
         # $0048-$0049 uint16 Number of function records 
         frb_nrecords = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
@@ -404,8 +402,7 @@ def lscr2lingo(lscr_file, name_list):
         logging.debug("frb_offset_cp = %s"%(frb_offset_cp)) 
 
         if frb_offset != frb_offset_cp:
-            logging.error("bad offset to the function records block (%s, %s)"%(frb_offset, frb_offset_cp)) 
-            sys.exit(-1)
+            logging.warning("Bad copy #2 of offset to the function records block (%s, %s)"%(frb_offset, frb_offset_cp)) 
 
         # $004E-$004F    uint16  Number of constants 
         con_nconstants = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
@@ -508,6 +505,25 @@ def lscr2lingo(lscr_file, name_list):
 
         with open(file_name, 'wb') as file:
 
+            if frb_offset != prb_offset:
+                # Read the properties record blocks once to get all the properties names
+                idx = prb_offset
+                pnames = []
+                i = 0
+                while idx < frb_offset:
+                    # $0000-$0001  uint16  Namelist index for the property's name, or 0xFFFF if there is no name(?)
+                    namelist_index = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+                    idx += 2
+
+                    fname = 'noname'
+                    if namelist_index >= 0 and namelist_index < len(name_list):
+                        fname = name_list[namelist_index]
+                    logging.debug('pnames[%d]=%s'%(i, fname))
+                    i += 1
+                    pnames.append(fname)            
+            
+                write_code(file, "property %s\n"%(', '.join(pnames)))
+            
             # Read the functions record blocks once to get all the local function names
             idx = frb_offset
             lfnames = []
@@ -674,10 +690,10 @@ def lscr2lingo(lscr_file, name_list):
 
                     else:
                         # Three bytes operation 
-                        op1 = ord(fdata[idxc])
+                        op1 = int(fdata[idxc])
                         idxc = idxc + 1
 
-                        op2 = ord(fdata[idxc])
+                        op2 = int(fdata[idxc])
                         idxc = idxc + 1
 
                         if opcode == 0x93:
@@ -714,7 +730,6 @@ def lscr2lingo(lscr_file, name_list):
                 idxc = bc_off
                 while (idxc - bc_off) < bc_length:
                     if idxc in label_indexes:
-                        flush_stack(file, spacing)
                         nends = 1
                         if (idxc in label_types) and label_types[idxc].startswith('end'):
                             nends = label_indexes.count(idxc)
@@ -943,7 +958,7 @@ def lscr2lingo(lscr_file, name_list):
                             op2 = pop_s()
                             op1 = pop_s()
 
-                            push('sprite_intersects(' + op1 + ', ' + op2 + ')')
+                            push('%s intersects %s'%(op1, op2))
 
                         elif opcode == 0x1A:
                             op2 = pop_s()
@@ -952,7 +967,6 @@ def lscr2lingo(lscr_file, name_list):
                             push('sprite_within(' + op1 + ', ' + op2 + ')')
 
                         elif opcode == 0x1B:
-                            pop_s()
                             push('field ' + pop_s())
 
                         elif opcode == 0x1C:
@@ -974,6 +988,13 @@ def lscr2lingo(lscr_file, name_list):
                             write_code(file, spacing)
                             write_code(file, 'tell ' + window_to_tell + ' to ' + params)
 
+                        elif opcode == 0x1E:
+                            # Convert to list
+                            lval = pop_s()
+                            if lval.startswith('<'):
+                                lval = lval[1:]
+                            push('[%s]'%(lval))                            
+                            
                         elif opcode == 0x1F:
                             push('transpose(' + pop_s() + ')')
 
@@ -1053,14 +1074,14 @@ def lscr2lingo(lscr_file, name_list):
                             if (op1 % bytes_per_const) > 0:
                                 bytes_per_const = (op1 % bytes_per_const)
 
-                            push('%s'%(paramns[op1 / bytes_per_const]))
+                            push('%s'%(paramns[int(op1 / bytes_per_const)]))
 
                         elif opcode == 0x4C:
                             # Push the value of a function call parameter. The parameter records seem to be 6 bytes long, so the first is pushed with 4B 00, the second with 4B 06, etc.   
                             if (op1 % bytes_per_const) > 0:
                                 bytes_per_const = (op1 % bytes_per_const)
 
-                            push('%s'%(localvs[op1 / bytes_per_const]))
+                            push('%s'%(localvs[int(op1 / bytes_per_const)]))
 
                         elif opcode == 0x4E:
                             # Pop one value and use it to set the global variable with name from namelist[XX].    
@@ -1078,7 +1099,7 @@ def lscr2lingo(lscr_file, name_list):
                             # Pop one value and use it to set a property.
                             write_code(file, "\n")
                             write_code(file, spacing)
-                            write_code(file, 'set_property("%s", %s);'%(name_list[op1], pop_s()))
+                            write_code(file, 'set %s = %s'%(name_list[op1], pop_s()))
 
                         elif opcode == 0x51:
                             # Pop one value and use it to set a parameter. 
@@ -1087,7 +1108,7 @@ def lscr2lingo(lscr_file, name_list):
                             if (op1 % bytes_per_const) > 0:
                                 bytes_per_const = (op1 % bytes_per_const)
 
-                            write_code(file, 'put %s into %s'%(pop_s(), paramns[op1 / bytes_per_const]))
+                            write_code(file, 'put %s into %s'%(pop_s(), paramns[int(op1 / bytes_per_const)]))
 
                         elif opcode == 0x52:
                             # Pop one value and use it to set a local variable.
@@ -1096,7 +1117,7 @@ def lscr2lingo(lscr_file, name_list):
                             if (op1 % bytes_per_const) > 0:
                                 bytes_per_const = (op1 % bytes_per_const)
 
-                            write_code(file, 'put %s into %s'%(pop_s(), localvs[op1 / bytes_per_const]))
+                            write_code(file, 'put %s into %s'%(pop_s(), localvs[int(op1 / bytes_per_const)]))
 
                         elif opcode == 0x54:
                             # Unconditional backwards jump by XX bytes, relative to the first byte of this instruction.
@@ -1104,7 +1125,6 @@ def lscr2lingo(lscr_file, name_list):
                                 write_code(file, "\n")
                                 write_code(file, spacing)
                                 write_code(file, '-- goto label%04x;'%(idxc - 2 - op1))
-                            flush_stack(file, spacing)
 
 
                         elif opcode == 0x56:
@@ -1152,19 +1172,13 @@ def lscr2lingo(lscr_file, name_list):
 
                         elif opcode == 0x59:
                             if op1 == 0x16:
-                                op_type = int(pop())
-                                op_var = pop_s()
+                                op_var = int(pop())
                                 op_value = pop_s()
-                                op_types = ['field']
-
-                                if op_type < len(op_types):
-                                    op_type = op_types[op_type]
-                                else:
-                                    op_type = ' UNKNOWN '
 
                                 write_code(file, "\n")
                                 write_code(file, spacing)
-                                write_code(file, 'put %s into %s %s'%(op_value, op_type, op_var))
+
+                                write_code(file, 'put %s into field %s'%(op_value, op_var))
 
                             elif op1 == 0x25:
                                 op_var = int(pop())
@@ -1175,7 +1189,16 @@ def lscr2lingo(lscr_file, name_list):
                                 if (op_var % bytes_per_const) > 0:
                                     bytes_per_const = (op_var % bytes_per_const)
 
-                                write_code(file, 'put %s after %s'%(op_value, localvs[op_var / bytes_per_const]))
+                                write_code(file, 'put %s after %s'%(op_value, localvs[int(op_var / bytes_per_const)]))
+                                
+                            elif op1 == 0x26:
+                                op_var = int(pop())
+                                op_value = pop_s()
+
+                                write_code(file, "\n")
+                                write_code(file, spacing)
+
+                                write_code(file, 'put %s after field %s'%(op_value, op_var))
 
                             elif op1 == 0x35:
                                 op_var = int(pop())
@@ -1186,8 +1209,17 @@ def lscr2lingo(lscr_file, name_list):
                                 if (op_var % bytes_per_const) > 0:
                                     bytes_per_const = (op_var % bytes_per_const)
 
-                                write_code(file, 'put %s before %s'%(localvs[op_value, op_var / bytes_per_const]))
+                                write_code(file, 'put %s before %s'%(localvs[int(op_value, op_var / bytes_per_const)]))
 
+                            elif op1 == 0x36:
+                                op_var = int(pop())
+                                op_value = pop_s()
+
+                                write_code(file, "\n")
+                                write_code(file, spacing)
+
+                                write_code(file, 'put %s before field %s'%(op_value, op_var))
+                                
                             else:
                                 write_code(file, "\n")
                                 write_code(file, spacing)
@@ -1232,7 +1264,7 @@ def lscr2lingo(lscr_file, name_list):
                             if (op_vind % bytes_per_const) > 0:
                                 bytes_per_const = (op_vind % bytes_per_const)
 
-                            op_vname = '%s'%(localvs[op_vind / bytes_per_const])
+                            op_vname = '%s'%(localvs[int(op_vind / bytes_per_const)])
 
                             write_code(file, "\n")
                             write_code(file, spacing)
@@ -1245,6 +1277,20 @@ def lscr2lingo(lscr_file, name_list):
                                 op_var = pop_s()
                                 op_types = ['chars', 'words', 'items', 'lines']
                                 push('the number of %s of %s'%(op_types[op_type - 1], op_var))
+                                
+                            elif op1 == 0x06:
+                                # the <property> of sprite ID
+                                op_property = int(pop())
+                                op_var = pop_s()
+                                op_properties = [
+                                    'type', 'backColor', 'bottom', 'castNum', 'constraint', 'cursor',
+                                    'foreColor', 'height', 'UNKNOWN', 'ink', 'left', 'lineSize', 'locH',
+                                    'locV', 'movieRate', 'movieTime', 'UNKNOWN', 'puppet', 'right',
+                                    'startTime', 'stopTime', 'stretch', 'top', 'trails', 'visible',
+                                    'volume', 'width', 'UNKNOWN', 'scriptNum', 'moveableSprite',
+                                    'UNKNOWN', 'scoreColor'
+                                ]
+                                push('the %s of sprite %s'%(op_properties[op_property - 1], op_var))
 
                             elif op1 == 0x07:
                                 # Pop a setting ID from the stack and push its value
@@ -1254,7 +1300,18 @@ def lscr2lingo(lscr_file, name_list):
                                 setting_name = 'UNKNOWN_PROPERTY_%s'%(setting_id)
                                 if setting_id < len(SYSTEM_PROPERTIES):
                                     setting_name = SYSTEM_PROPERTIES[setting_id]
-                                push("the %s"%(setting_name))                                
+                                push("the %s"%(setting_name))     
+                                
+                            elif op1 == 0x09:
+                                # the <property> of cast ID
+                                op_property = int(pop())
+                                op_var = pop_s()
+                                op_properties = [
+                                    'name', 'text', 'UNKNOWN', 'UNKNOWN', 'UNKNOWN', 'UNKNOWN',
+                                    'UNKNOWN', 'picture', 'UNKNOWN', 'number', 'size', 'UNKNOWN',
+                                    'UNKNOWN', 'UNKNOWN', 'UNKNOWN', 'UNKNOWN', 'foreColor', 'backColor'
+                                ]
+                                push('the %s of cast %s'%(op_properties[op_property - 1], op_var))
                                 
                             else:
                                 write_code(file, "\n")
@@ -1262,7 +1319,24 @@ def lscr2lingo(lscr_file, name_list):
                                 write_code(file, "ERROR: Missing subcommand! (0x%02x) :("%(op1))
 
                         elif opcode == 0x5D:
-                            if op1 == 0x07:
+                            if op1 == 0x06:
+                                # the <property> of sprite ID
+                                write_code(file, "\n")
+                                write_code(file, spacing)
+                                op_property = int(pop())
+                                op_var = pop_s()
+                                op_property_id = pop_s()
+                                op_properties = [
+                                    'type', 'backColor', 'bottom', 'castNum', 'constraint', 'cursor',
+                                    'foreColor', 'height', 'UNKNOWN', 'ink', 'left', 'lineSize', 'locH',
+                                    'locV', 'movieRate', 'movieTime', 'UNKNOWN', 'puppet', 'right',
+                                    'startTime', 'stopTime', 'stretch', 'top', 'trails', 'visible',
+                                    'volume', 'width', 'UNKNOWN', 'scriptNum', 'moveableSprite',
+                                    'UNKNOWN', 'scoreColor'
+                                ]
+                                write_code(file, 'set the %s of sprite %s = %s'%(op_properties[op_property - 1], op_property_id, op_var))
+                                
+                            elif op1 == 0x07:
                                 # Pop a setting ID from the stack and push its value
                                 write_code(file, "\n")
                                 write_code(file, spacing)
@@ -1282,6 +1356,13 @@ def lscr2lingo(lscr_file, name_list):
                             # Push the value of the contextual property with the name at namelist[XX].
                             push('the %s'%(name_list[op1]))
 
+                        elif opcode == 0x60:
+                            # set the <property> to <value>
+                            params = pop_s()
+                            write_code(file, "\n")
+                            write_code(file, spacing)
+                            write_code(file, 'set the %s = %s'%(name_list[op1], params))   
+                            
                         # TODO! Complete this
                         elif opcode == 0x61:
                             # (the someProperty of someVariable)
@@ -1301,15 +1382,22 @@ def lscr2lingo(lscr_file, name_list):
 
                         elif opcode == 0x64:
                             # Push a copy of a value already on the stack, relative to the top where 00 is the top slot, 01 is one slot beneath the top, etc. 
-                            write_code(file, "\n")
-                            write_code(file, spacing)
-                            write_code(file, "ERROR: I don't know to implement the copy command! :(")
+                            tmp = []
+                            for i in range(0, op1):
+                                tmp.append(pop_s())
+                                
+                            val = pop_s()
+                            push(val)
+                            
+                            for i in range(0, op1):
+                                push(tmp.pop())
+                            
+                            push(val)
 
                         elif opcode == 0x65:
                             # Pop and discard XX values from the top of the stack.
-                            write_code(file, "\n")
-                            write_code(file, spacing)
-                            write_code(file, "ERROR: I don't know to implement the discard command! :(")
+                            for i in range(0, op1):
+                                pop_s()
 
                         elif opcode == 0x66:
                             # Pop an empty list and push the value of a read-only property named at namelist[XX]. 
@@ -1348,10 +1436,10 @@ def lscr2lingo(lscr_file, name_list):
 
                     else:
                         # Three bytes operation 
-                        op1 = ord(fdata[idxc])
+                        op1 = int(fdata[idxc])
                         idxc = idxc + 1
 
-                        op2 = ord(fdata[idxc])
+                        op2 = int(fdata[idxc])
                         idxc = idxc + 1
 
                         if WRITE_OPCODES:
@@ -1477,7 +1565,7 @@ def lscr2lingo(lscr_file, name_list):
                             pindex = (op1 * 256 + op2)
                             if (pindex % bytes_per_const) > 0:
                                 bytes_per_const = (pindex % bytes_per_const)
-                            write_code(file, '%s = %s;'%(paramns[pindex / bytes_per_const], pop_s()))
+                            write_code(file, '%s = %s;'%(paramns[int(pindex / bytes_per_const)], pop_s()))
 
                         elif opcode == 0xa2:
                             # Pop one value and use it to set a local variable.
@@ -1485,7 +1573,7 @@ def lscr2lingo(lscr_file, name_list):
                             write_code(file, spacing)
                             if ((op1 * 256 + op2) % bytes_per_const) > 0:
                                 bytes_per_const = ((op1 * 256 + op2) % bytes_per_const)
-                            write_code(file, '%s = %s;'%(localvs[(op1 * 256 + op2) / bytes_per_const], pop_s()))
+                            write_code(file, '%s = %s;'%(localvs[int((op1 * 256 + op2) / bytes_per_const)], pop_s()))
 
                         elif opcode == 0xa6:
                             # Pop an empty list and push the value of a read-only property named at namelist[XX]. 
