@@ -996,7 +996,21 @@ def lscr2lingo(lscr_file, name_list):
                             push('[%s]'%(lval))                            
                             
                         elif opcode == 0x1F:
-                            push('transpose(' + pop_s() + ')')
+                            lval = pop_s()
+                            if lval.startswith('<'):
+                                lval = lval[1:]
+                            plval = ''
+                            pv = lval.split(', ')
+                            for i in range(0, int(len(pv) / 2)):
+                                p = pv[i*2]
+                                v = pv[i*2+1]
+                                plval = plval + ', ' + p + ': ' + v
+                            
+                            if plval == '':
+                                plval = ':'
+                            else:
+                                plval = plval[2:]
+                            push('[%s]'%(plval))
 
 
                     elif opcode in TWO_BYTE_OPCODES:
@@ -1284,11 +1298,11 @@ def lscr2lingo(lscr_file, name_list):
                                 op_var = pop_s()
                                 op_properties = [
                                     'type', 'backColor', 'bottom', 'castNum', 'constraint', 'cursor',
-                                    'foreColor', 'height', 'UNKNOWN', 'ink', 'left', 'lineSize', 'locH',
-                                    'locV', 'movieRate', 'movieTime', 'UNKNOWN', 'puppet', 'right',
+                                    'foreColor', 'height', 'UNKNOWN1', 'ink', 'left', 'lineSize', 'locH',
+                                    'locV', 'movieRate', 'movieTime', 'UNKNOWN2', 'puppet', 'right',
                                     'startTime', 'stopTime', 'stretch', 'top', 'trails', 'visible',
-                                    'volume', 'width', 'UNKNOWN', 'scriptNum', 'moveableSprite',
-                                    'UNKNOWN', 'scoreColor'
+                                    'volume', 'width', 'blend', 'scriptNum', 'moveableSprite',
+                                    'UNKNOWN3', 'scoreColor'
                                 ]
                                 push('the %s of sprite %s'%(op_properties[op_property - 1], op_var))
 
@@ -1319,6 +1333,7 @@ def lscr2lingo(lscr_file, name_list):
                                 write_code(file, "ERROR: Missing subcommand! (0x%02x) :("%(op1))
 
                         elif opcode == 0x5D:
+
                             if op1 == 0x06:
                                 # the <property> of sprite ID
                                 write_code(file, "\n")
@@ -1326,15 +1341,17 @@ def lscr2lingo(lscr_file, name_list):
                                 op_property = int(pop())
                                 op_var = pop_s()
                                 op_property_id = pop_s()
+                                
                                 op_properties = [
                                     'type', 'backColor', 'bottom', 'castNum', 'constraint', 'cursor',
-                                    'foreColor', 'height', 'UNKNOWN', 'ink', 'left', 'lineSize', 'locH',
-                                    'locV', 'movieRate', 'movieTime', 'UNKNOWN', 'puppet', 'right',
+                                    'foreColor', 'height', 'UNKNOWN1', 'ink', 'left', 'lineSize', 'locH',
+                                    'locV', 'movieRate', 'movieTime', 'UNKNOWN2', 'puppet', 'right',
                                     'startTime', 'stopTime', 'stretch', 'top', 'trails', 'visible',
-                                    'volume', 'width', 'UNKNOWN', 'scriptNum', 'moveableSprite',
-                                    'UNKNOWN', 'scoreColor'
+                                    'volume', 'width', 'blend', 'scriptNum', 'moveableSprite',
+                                    'UNKNOWN3', 'scoreColor'
                                 ]
-                                write_code(file, 'set the %s of sprite %s = %s'%(op_properties[op_property - 1], op_property_id, op_var))
+
+                                write_code(file, 'set the %s of sprite %s to %s'%(op_properties[op_property - 1], op_property_id, op_var))
                                 
                             elif op1 == 0x07:
                                 # Pop a setting ID from the stack and push its value
@@ -1345,6 +1362,22 @@ def lscr2lingo(lscr_file, name_list):
                                 if setting_id < len(SYSTEM_PROPERTIES):
                                     setting_name = SYSTEM_PROPERTIES[setting_id]
                                 write_code(file, "put %s into the %s"%(pop_s(), setting_name))
+                                
+                            elif op1 == 0x09:
+                                # the <property> of cast ID
+                                write_code(file, "\n")
+                                write_code(file, spacing)
+                                op_property = int(pop())
+                                op_var = pop_s()
+                                cast_id = pop_s()
+                                
+                                op_properties = [
+                                    'name', 'text', 'UNKNOWN', 'UNKNOWN', 'UNKNOWN', 'UNKNOWN',
+                                    'UNKNOWN', 'picture', 'UNKNOWN', 'number', 'size', 'UNKNOWN',
+                                    'UNKNOWN', 'UNKNOWN', 'UNKNOWN', 'UNKNOWN', 'foreColor', 'backColor'
+                                ]
+                                
+                                write_code(file, 'set the %s of cast %s to %s'%(op_properties[op_property - 1], cast_id, op_var))
                                 
                             else:
                                 write_code(file, "\n")
@@ -1661,13 +1694,4 @@ if __name__ == '__main__':
         script = ''
         with open(file_name, mode='rb') as file:
             script = file.read()
-        
-        castData = {}
-        with open(os.path.join(sys.argv[2], 'data.json'), mode='r', encoding='utf-8') as file:
-            text = file.read()
-            castData = json.loads(text)
-            
-        castData['code'] = base64.b64encode(script).decode('ascii')
-        with open(os.path.join(sys.argv[2], 'data.json'), 'wb') as file:
-            file.write(json.dumps(castData, indent=4, sort_keys=True).encode('utf-8'))
         
