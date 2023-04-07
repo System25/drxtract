@@ -33,26 +33,53 @@ MMAP_FILE_FORMAT = 'mmap'
 FREE_FILE_FORMAT = 'free'
 
 # Save other blocks (for investigation purposes)
-SAVE_OTHER_BLOCKS = True
+SAVE_OTHER_BLOCKS = False
+
+# ====================================================================================================================================
+def read_chunk(fileContent, index):
+    block_type = struct.unpack("cccc", fileContent[index:(index+4)])
+    bt = []
+    for c in range(0,4):
+        if (block_type[c].decode('ascii') > '\0' and
+            block_type[c].decode('ascii') >= ' ' and
+            block_type[c].decode('ascii') <= 'z'):
+            bt.append(block_type[c].decode('ascii'))
+        else:
+            bt.append('_')
+    block_type = ('%c%c%c%c'%(bt[0], bt[1], bt[2], bt[3]))
+    logging.info("==================================")
+    logging.info(" Block type: %s"%(block_type))
+
+    block_size = struct.unpack(bit_order+"i", fileContent[(index+4):(index+8)])[0]
+    logging.info(" Block size: %s"%(block_size))
+
+    padding = (block_size % 2)
+    logging.info(" Padding: %s"%(padding))
+
+    block_data = fileContent[(index+8):(index + 8 + block_size)]
+    
+    return block_type, block_size, padding, block_data
 
 # ====================================================================================================================================
 def parse_imap(data):
-    # Unknown block data
-    content = struct.unpack(bit_order+"hhiiiii", data)
-    logging.debug("IMAP[0]: %s"%(content[0]))
-    logging.debug("IMAP[1]: %s"%(content[1]))
-    logging.debug("IMAP[2]: %s"%(content[2]))
-    logging.debug("IMAP[3]: %s"%(content[3]))
-    logging.debug("IMAP[4]: %s"%(content[4]))
-    logging.debug("IMAP[5]: %s"%(content[5]))
-    logging.debug("IMAP[6]: %s"%(content[6]))
+    # Input MAP
+    # https://docs.google.com/document/d/1jDBXE4Wv1AEga-o1Wi8xtlNZY4K2fHxW2Xs8RgARrqk/edit#heading=h.dq1rrg8abhxt
+    logging.debug("==================================")
+    logging.debug(" Parse input map: %s bytes"%(len(data)))
+    content = struct.unpack(bit_order+"iiihhii", data)
+    logging.debug("IMAP[0] Memory MAP count: %s"%(content[0]))
+    logging.debug("IMAP[1] Memory MAP offset  %s"%(content[1]))
+    logging.debug("IMAP[2] Memory MAP file version: %s"%(content[2]))
+    logging.debug("IMAP[3] Reserved: %s"%(content[3]))
+    logging.debug("IMAP[4] Unknown: %s"%(content[4]))
+    logging.debug("IMAP[5] Reserved2: %s"%(content[5]))
+    
+    return content[1]
 
 # ====================================================================================================================================
 def parse_mmap(data, fileContent, offset):
     # This file types will be ignored
     types_to_ignore = [IMAP_FILE_FORMAT, MMAP_FILE_FORMAT, FREE_FILE_FORMAT]
-    global SAVE_OTHER_BLOCKS
-    SAVE_OTHER_BLOCKS = False
 
     # Unknown block data
     content = struct.unpack(bit_order+"hhiiiii", data[0:24])
@@ -236,33 +263,20 @@ def parse_riff(fileContent, offset):
     index = offset + 12
     nfiles = 1
     while index < len(fileContent):
-        block_type = struct.unpack("cccc", fileContent[index:(index+4)])
-        bt = []
-        for c in range(0,4):
-            if (block_type[c].decode('ascii') > '\0' and
-                block_type[c].decode('ascii') >= ' ' and
-                block_type[c].decode('ascii') <= 'z'):
-                bt.append(block_type[c].decode('ascii'))
-            else:
-                bt.append('_')
-        block_type = ('%c%c%c%c'%(bt[0], bt[1], bt[2], bt[3]))
-        logging.debug("==================================")
-        logging.info(" Block type: %s"%(block_type))
-
-        block_size = struct.unpack(bit_order+"i", fileContent[(index+4):(index+8)])[0]
-        logging.info(" Block size: %s"%(block_size))
+        block_type, block_size, padding, block_data = read_chunk(fileContent, index)
         
-        padding = (block_size % 2)
-        logging.info(" Padding: %s"%(padding))
-
-        block_data = fileContent[(index+8):(index + 8 + block_size)]
         if block_type == IMAP_FILE_FORMAT:
             # Parse 'imap' block
-            parse_imap(block_data)
+            mmap_offset = parse_imap(block_data)
+            
+            block_type, block_size, padding, block_data = read_chunk(fileContent, mmap_offset)
+            if block_type == MMAP_FILE_FORMAT:
+                # Parse 'mmap' block
+                parse_mmap(block_data, fileContent, offset)
+            else:
+                logging.error("Wrong MMAP location!")
+                sys.exit(-1)
 
-        elif block_type == MMAP_FILE_FORMAT:
-            # Parse 'mmap' block
-            parse_mmap(block_data, fileContent, offset)
 
         elif SAVE_OTHER_BLOCKS:
             logging.info(" Other block type: %s. Saving!"%(block_type))
