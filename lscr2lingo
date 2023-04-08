@@ -1186,7 +1186,7 @@ def lscr2lingo(lscr_file, name_list):
 
                         elif opcode == 0x59:
                             if op1 == 0x16:
-                                op_var = int(pop())
+                                op_var = pop_s()
                                 op_value = pop_s()
 
                                 write_code(file, "\n")
@@ -1195,7 +1195,7 @@ def lscr2lingo(lscr_file, name_list):
                                 write_code(file, 'put %s into field %s'%(op_value, op_var))
 
                             elif op1 == 0x25:
-                                op_var = int(pop())
+                                op_var = pop_s()
                                 op_value = pop_s()
 
                                 write_code(file, "\n")
@@ -1206,7 +1206,7 @@ def lscr2lingo(lscr_file, name_list):
                                 write_code(file, 'put %s after %s'%(op_value, localvs[int(op_var / bytes_per_const)]))
                                 
                             elif op1 == 0x26:
-                                op_var = int(pop())
+                                op_var = pop_s()
                                 op_value = pop_s()
 
                                 write_code(file, "\n")
@@ -1215,7 +1215,7 @@ def lscr2lingo(lscr_file, name_list):
                                 write_code(file, 'put %s after field %s'%(op_value, op_var))
 
                             elif op1 == 0x35:
-                                op_var = int(pop())
+                                op_var = pop_s()
                                 op_value = pop_s()
 
                                 write_code(file, "\n")
@@ -1226,7 +1226,7 @@ def lscr2lingo(lscr_file, name_list):
                                 write_code(file, 'put %s before %s'%(localvs[int(op_value, op_var / bytes_per_const)]))
 
                             elif op1 == 0x36:
-                                op_var = int(pop())
+                                op_var = pop_s()
                                 op_value = pop_s()
 
                                 write_code(file, "\n")
@@ -1292,6 +1292,18 @@ def lscr2lingo(lscr_file, name_list):
                                 op_types = ['chars', 'words', 'items', 'lines']
                                 push('the number of %s of %s'%(op_types[op_type - 1], op_var))
                                 
+                            elif op1 == 0x03:
+                                # the <property> of menuItem <ID> of menu <ID>
+                                op_property = int(pop())
+                                op_menu_id = pop_s()
+                                op_menu_item_id = pop_s()
+                                
+                                op_properties = [
+                                    'name', 'checkMark', 'enabled', 'script'
+                                ]
+
+                                push('the %s of menuItem %s of menu %s'%(op_properties[op_property - 1], op_menu_item_id, op_menu_id))
+                                
                             elif op1 == 0x06:
                                 # the <property> of sprite ID
                                 op_property = int(pop())
@@ -1308,8 +1320,6 @@ def lscr2lingo(lscr_file, name_list):
 
                             elif op1 == 0x07:
                                 # Pop a setting ID from the stack and push its value
-                                write_code(file, "\n")
-                                write_code(file, spacing)
                                 setting_id = int(pop())
                                 setting_name = 'UNKNOWN_PROPERTY_%s'%(setting_id)
                                 if setting_id < len(SYSTEM_PROPERTIES):
@@ -1327,14 +1337,40 @@ def lscr2lingo(lscr_file, name_list):
                                 ]
                                 push('the %s of cast %s'%(op_properties[op_property - 1], op_var))
                                 
+                            elif op1 == 0x0d:
+                                # (digital video property)
+                                # the <property> of cast ID
+                                op_property = int(pop())
+                                op_var = pop_s()
+                                op_properties = [
+                                    'UNKNOWN1', 'UNKNOWN2', 'UNKNOWN3', 'UNKNOWN4', 'UNKNOWN5', 'UNKNOWN6',
+                                    'UNKNOWN7', 'UNKNOWN8', 'UNKNOWN9', 'UNKNOWNA', 'UNKNOWNB', 'loop',
+                                    'duration', 'controller', 'directToStage', 'sound'
+                                ]
+                                push('the %s of cast %s'%(op_properties[op_property - 1], op_var))
+                                
                             else:
                                 write_code(file, "\n")
                                 write_code(file, spacing)
                                 write_code(file, "ERROR: Missing subcommand! (0x%02x) :("%(op1))
 
                         elif opcode == 0x5D:
+                            if op1 == 0x03:
+                                # the <property> of menuItem <ID> of menu <ID> to <value>
+                                write_code(file, "\n")
+                                write_code(file, spacing)
+                                op_property = int(pop())
+                                op_var = pop_s()
+                                op_menu_id = pop_s()
+                                op_menu_item_id = pop_s()
+                                
+                                op_properties = [
+                                    'name', 'checkMark', 'enabled', 'script'
+                                ]
 
-                            if op1 == 0x06:
+                                write_code(file, 'set the %s of menuItem %s of menu %s to %s'%(op_properties[op_property - 1], op_menu_item_id, op_menu_id, op_var))
+
+                            elif op1 == 0x06:
                                 # the <property> of sprite ID
                                 write_code(file, "\n")
                                 write_code(file, spacing)
@@ -1375,6 +1411,23 @@ def lscr2lingo(lscr_file, name_list):
                                     'name', 'text', 'UNKNOWN', 'UNKNOWN', 'UNKNOWN', 'UNKNOWN',
                                     'UNKNOWN', 'picture', 'UNKNOWN', 'number', 'size', 'UNKNOWN',
                                     'UNKNOWN', 'UNKNOWN', 'UNKNOWN', 'UNKNOWN', 'foreColor', 'backColor'
+                                ]
+                                
+                                write_code(file, 'set the %s of cast %s to %s'%(op_properties[op_property - 1], cast_id, op_var))
+                                
+                            elif op1 == 0x0d:
+                                # (digital video property)
+                                # the <property> of cast ID
+                                write_code(file, "\n")
+                                write_code(file, spacing)
+                                op_property = int(pop())
+                                op_var = pop_s()
+                                cast_id = pop_s()
+                                
+                                op_properties = [
+                                    'UNKNOWN1', 'UNKNOWN2', 'UNKNOWN3', 'UNKNOWN4', 'UNKNOWN5', 'UNKNOWN6',
+                                    'UNKNOWN7', 'UNKNOWN8', 'UNKNOWN9', 'UNKNOWNA', 'UNKNOWNB', 'loop',
+                                    'duration', 'controller', 'directToStage', 'sound'
                                 ]
                                 
                                 write_code(file, 'set the %s of cast %s to %s'%(op_properties[op_property - 1], cast_id, op_var))
