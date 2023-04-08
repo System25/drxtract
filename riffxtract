@@ -31,6 +31,7 @@ RIFX_FILE_FORMAT = 'RIFX'
 IMAP_FILE_FORMAT = 'imap'
 MMAP_FILE_FORMAT = 'mmap'
 FREE_FILE_FORMAT = 'free'
+JUNK_FILE_FORMAT = 'junk'
 
 # Save other blocks (for investigation purposes)
 SAVE_OTHER_BLOCKS = False
@@ -79,24 +80,22 @@ def parse_imap(data):
 # ====================================================================================================================================
 def parse_mmap(data, fileContent, offset):
     # This file types will be ignored
-    types_to_ignore = [IMAP_FILE_FORMAT, MMAP_FILE_FORMAT, FREE_FILE_FORMAT]
+    types_to_ignore = [IMAP_FILE_FORMAT, MMAP_FILE_FORMAT, FREE_FILE_FORMAT, JUNK_FILE_FORMAT]
 
     # Unknown block data
     content = struct.unpack(bit_order+"hhiiiii", data[0:24])
-    logging.debug("MMAP[0]: %s"%(content[0]))
-    logging.debug("MMAP[1]: %s"%(content[1]))
+    logging.debug("MMAP[0] Property size: %s"%(content[0]))
+    logging.debug("MMAP[1] Resource size?: %s"%(content[1]))
     # Number Of Files (including nulls at the end of the directory)
     no_files_wnull = content[2]
     # Number Of Files (not including the nulls at the end of the directory)
     no_files_wonull = content[3]
     logging.debug("MMAP: Number of files (including nulls) %s"%(no_files_wnull))
     logging.debug("MMAP: Number of files (without nulls) %s"%(no_files_wonull))
-    # Padding
-    if content[4] != -1 or content[5] != -1:
-        logging.debug("WARNING: Bad nmap padding %s %s"%(content[4], content[5]))
-        #sys.exit(-1)
 
-    logging.debug("MMAP[6]: %s"%(content[6]))
+    logging.debug("MMAP[4] First junk resource ID?: %s"%(content[6]))
+    logging.debug("MMAP[5] Old memory map resource ID?: %s"%(content[6]))
+    logging.debug("MMAP[6] First free resource ID?: %s"%(content[6]))
 
     # Ignore RIFX file data
     file_format = struct.unpack("cccc", data[24:28])
