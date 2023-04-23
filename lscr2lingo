@@ -152,7 +152,8 @@ NO_PAREN_FUNCTIONS = [
 SPECIAL_CONSTANTS = {
     '""': 'empty',
     '"\\r"': 'return',
-    '"\\""': 'quote'
+    '"\\""': 'quote',
+    '"\\x03"': 'enter'
 }
 
 SYSTEM_PROPERTIES = [
@@ -163,6 +164,7 @@ SYSTEM_PROPERTIES = [
     'checkBoxAccess',
     'checkBoxType',
     'colorDepth',
+    'UNKNOWN_SYSTEM_PROPERTY_07',
     'exitLock',
     'fixStageSize',
     'UNKNOWN_SYSTEM_PROPERTY_0A',
@@ -243,7 +245,8 @@ def to_string(strval):
     strval = strval.replace("\r", "\\r")
     strval = strval.replace("\t", "\\t")
     strval = strval.replace("\v", "\\v")
-    return '"' + strval + '"'
+    strval = strval.replace("\v", "\\v")
+    return '"' + strval.encode("unicode_escape").decode('ascii') + '"'
 
 
 # ====================================================================================================================================
@@ -1024,7 +1027,10 @@ def lscr2lingo(lscr_file, name_list):
 
                         if opcode == 0x41:
                             # Push integer of value XX, which must be between 1 and 127, inclusive.
-                            push('%s'%(op1))
+                            v = int(op1)
+                            if v > 127:
+                                v = v - 256
+                            push('%s'%(v))
 
                         elif opcode == 0x42:
                             # Pop the specified number of values off the top of the stack, create an unparenthesized argument list containing them 
@@ -1242,50 +1248,68 @@ def lscr2lingo(lscr_file, name_list):
                         # TODO! Complete this
 
                         elif opcode == 0x5B:
-                            op_type = 'UNKNOWN'
+                            if op1 == 0x06:
+                                op_str = pop_s()       # The string to slice
+                                op_ll_pos = pop_s()    # Last line position
+                                op_fl_pos = pop_s()    # First line position
+                                op_li_pos = pop_s()    # Last item position
+                                op_fi_pos = pop_s()    # First item position (items separated by the itemDelimiter, which is a comma by default)
+                                op_lw_pos = pop_s()    # Last word position
+                                op_fw_pos = pop_s()    # First word position
+                                op_lc_pos = pop_s()    # Last char position
+                                op_fc_pos = pop_s()    # First char position
 
-                            op_vind = pop_s()      # The local variable
-                            op_ll_pos = pop_s()    # Last line position
-                            op_fl_pos = pop_s()    # First line position
-                            op_li_pos = pop_s()    # Last item position
-                            op_fi_pos = pop_s()    # First item position (items separated by the itemDelimiter, which is a comma by default)
-                            op_lw_pos = pop_s()    # Last word position
-                            op_fw_pos = pop_s()    # First word position
-                            op_lc_pos = pop_s()    # Last char position
-                            op_fc_pos = pop_s()    # First char position
+                                operation = ''
 
-                            if op_fl_pos != '0':
-                                op_type = 'line ' + op_fl_pos
-                                if op_ll_pos != '0':
-                                    op_type = op_type + ' to ' + op_ll_pos
+                                if op_fc_pos != '0':
+                                    operation = operation + ('char %s '%(op_fc_pos))
+                                    if op_lc_pos != '0':
+                                        operation = operation + ('to %s '%(op_lc_pos))
+                                    operation = operation + 'of '
 
-                            if op_fi_pos != '0':
-                                op_type = 'item ' + op_fi_pos
-                                if op_li_pos != '0':
-                                    op_type = op_type + ' to ' + op_li_pos
+                                if op_fw_pos != '0':
+                                    operation = operation + ('word %s '%(op_fw_pos))
+                                    if op_lw_pos != '0':
+                                        operation = operation + ('to %s '%(op_lw_pos))
+                                    operation = operation + 'of '
 
-                            if op_fw_pos != '0':
-                                op_type = 'word ' + op_fw_pos
-                                if op_lw_pos != '0':
-                                    op_type = op_type + ' to ' + op_lw_pos
+                                if op_fi_pos != '0':
+                                    operation = operation + ('item %s '%(op_fi_pos))
+                                    if op_li_pos != '0':
+                                        operation = operation + ('to %s '%(op_li_pos))
+                                    operation = operation + 'of '
 
-                            if op_fc_pos != '0':
-                                op_type = 'char ' + op_fc_pos
-                                if op_lc_pos != '0':
-                                    op_type = op_type + ' to ' + op_lc_pos
+                                if op_fl_pos != '0':
+                                    operation = operation + ('line %s '%(op_fl_pos))
+                                    if op_ll_pos != '0':
+                                        operation = operation + ('to %s '%(op_ll_pos))
+                                    operation = operation + 'of '
 
-                            op_vind = int(op_vind)
-                            if (op_vind % bytes_per_const) > 0:
-                                bytes_per_const = (op_vind % bytes_per_const)
+                                operation = operation + 'field ' + op_str
 
-                            op_vname = '%s'%(localvs[int(op_vind / bytes_per_const)])
-
-                            write_code(file, "\n")
-                            write_code(file, spacing)
-                            write_code(file, 'delete ' + op_type + ' of ' + op_vname)
+                                write_code(file, "\n")
+                                write_code(file, spacing)
+                                write_code(file, 'delete ' + operation)
+                            else:
+                                write_code(file, "\n")
+                                write_code(file, spacing)
+                                write_code(file, "ERROR: Missing subcommand! (0x%02x) :("%(op1))
 
                         elif opcode == 0x5C:
-                            if op1 == 0x01:
+                            if op1 == 0x00:
+                                # Date/time/char operations
+                                op_type = int(pop())
+                                op_types = ['floatPrecision', 'mouseDownScript', 'mouseUpScript', 'keyDownScript',
+                                            'keyUpScript', 'timeoutScript', 'short time', 'abbreviated time', 'long time',
+                                            'short date', 'abbreviated date', 'long date', 'last char', 'last word',
+                                            'last item', 'last line']
+                                if (op_type < 0x0c):
+                                    push('the %s'%(op_types[op_type]))
+                                else:
+                                    op_var = pop_s()
+                                    push('the %s of %s'%(op_types[op_type], op_var))
+                                
+                            elif op1 == 0x01:
                                 # the number of chars in someText
                                 op_type = int(pop())
                                 op_var = pop_s()
@@ -1384,7 +1408,7 @@ def lscr2lingo(lscr_file, name_list):
                                     'locV', 'movieRate', 'movieTime', 'UNKNOWN2', 'puppet', 'right',
                                     'startTime', 'stopTime', 'stretch', 'top', 'trails', 'visible',
                                     'volume', 'width', 'blend', 'scriptNum', 'moveableSprite',
-                                    'UNKNOWN3', 'scoreColor'
+                                    'editableText', 'scoreColor'
                                 ]
 
                                 write_code(file, 'set the %s of sprite %s to %s'%(op_properties[op_property - 1], op_property_id, op_var))
