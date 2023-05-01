@@ -250,6 +250,17 @@ def to_string(strval):
 
 
 # ====================================================================================================================================
+def unpack_float80(b):
+    e = struct.unpack(">H", b[0:2])[0] 
+    q = struct.unpack(">Q", b[2:10])[0]
+    m = (q*2.0)/(1<<64)
+    
+    str = '%s'%(m*pow(2, e - 16383))
+    
+    return str
+
+
+# ====================================================================================================================================
 def parse_lnam_file(lnam_file):
     name_list = []
 
@@ -491,9 +502,17 @@ def lscr2lingo(lscr_file, name_list):
                 sys.exit(-1)
 
             elif constant_type == 9:
-                # Floating point 
-                logging.error("TODO! floating point treatment: %s"%(constant_type))
-                sys.exit(-1)
+                # Floating point
+                idxc = con_offset + constant_offset
+                
+                # uint32: String length
+                floatlength = struct.unpack(lsrc_bit_order+"i", fdata[idxc:idxc+4])[0]
+                idxc += 4
+                logging.debug("floatlength = %s"%(floatlength))
+                
+                floatVal =  unpack_float80(fdata[idxc:idxc+floatlength])
+                logging.debug("floatVal = %s"%(floatVal))
+                constants.append(floatVal)
 
 
             else:
@@ -1071,7 +1090,7 @@ def lscr2lingo(lscr_file, name_list):
 
                         elif opcode == 0x45:
                             # Push a symbol with a name from namelist[XX]. Note that the name will be stored as "name", not "#name". 
-                            push('%s'%(name_list[op1]))
+                            push('#%s'%(name_list[op1]))
 
                         elif opcode == 0x46:
                             # Push a object with a name from namelist[XX]. 
@@ -1355,9 +1374,9 @@ def lscr2lingo(lscr_file, name_list):
                                 op_property = int(pop())
                                 op_var = pop_s()
                                 op_properties = [
-                                    'name', 'text', 'UNKNOWN', 'UNKNOWN', 'UNKNOWN', 'UNKNOWN',
-                                    'UNKNOWN', 'picture', 'UNKNOWN', 'number', 'size', 'UNKNOWN',
-                                    'UNKNOWN', 'UNKNOWN', 'UNKNOWN', 'UNKNOWN', 'foreColor', 'backColor'
+                                    'name', 'text', 'UNKNOWN2', 'UNKNOWN3', 'UNKNOWN4', 'UNKNOWN5',
+                                    'UNKNOWN6', 'picture', 'hilite', 'number', 'size', 'UNKNOWN8',
+                                    'UNKNOWN9', 'UNKNOWNA', 'UNKNOWNB', 'UNKNOWNC', 'foreColor', 'backColor'
                                 ]
                                 push('the %s of cast %s'%(op_properties[op_property - 1], op_var))
                                 
@@ -1379,7 +1398,24 @@ def lscr2lingo(lscr_file, name_list):
                                 write_code(file, "ERROR: Missing subcommand! (0x%02x) :("%(op1))
 
                         elif opcode == 0x5D:
-                            if op1 == 0x03:
+                            if op1 == 0x00:
+                                # Date/time/char operations
+                                write_code(file, "\n")
+                                write_code(file, spacing)
+                                op_type = int(pop())
+                                op_types = ['floatPrecision', 'mouseDownScript', 'mouseUpScript', 'keyDownScript',
+                                            'keyUpScript', 'timeoutScript', 'short time', 'abbreviated time', 'long time',
+                                            'short date', 'abbreviated date', 'long date', 'last char', 'last word',
+                                            'last item', 'last line']
+                                if (op_type < 0x0c):
+                                    op_val = pop_s()
+                                    write_code(file, 'set the %s to %s'%(op_types[op_type], op_val))
+                                else:
+                                    op_var = pop_s()
+                                    op_val = pop_s()
+                                    write_code(file, 'set the %s of %s to %s'%(op_types[op_type], op_var, op_val))
+                                    
+                            elif op1 == 0x03:
                                 # the <property> of menuItem <ID> of menu <ID> to <value>
                                 write_code(file, "\n")
                                 write_code(file, spacing)
@@ -1432,9 +1468,9 @@ def lscr2lingo(lscr_file, name_list):
                                 cast_id = pop_s()
                                 
                                 op_properties = [
-                                    'name', 'text', 'UNKNOWN', 'UNKNOWN', 'UNKNOWN', 'UNKNOWN',
-                                    'UNKNOWN', 'picture', 'UNKNOWN', 'number', 'size', 'UNKNOWN',
-                                    'UNKNOWN', 'UNKNOWN', 'UNKNOWN', 'UNKNOWN', 'foreColor', 'backColor'
+                                    'name', 'text', 'UNKNOWN2', 'UNKNOWN3', 'UNKNOWN4', 'UNKNOWN5',
+                                    'UNKNOWN6', 'picture', 'hilite', 'number', 'size', 'UNKNOWNA',
+                                    'UNKNOWNB', 'UNKNOWNC', 'UNKNOWND', 'UNKNOWNE', 'foreColor', 'backColor'
                                 ]
                                 
                                 write_code(file, 'set the %s of cast %s to %s'%(op_properties[op_property - 1], cast_id, op_var))
@@ -1610,6 +1646,7 @@ def lscr2lingo(lscr_file, name_list):
                                 write_code(file, spacing)
                                 write_code(file, 'exit repeat')
                                 if label_types[idxc] == 'else':
+                                    label_indexes.remove(idxc)
                                     label_types[idxc] = 'end if'
 
 
@@ -1624,6 +1661,7 @@ def lscr2lingo(lscr_file, name_list):
                             erpos = idxc - 3 + (op1 * 256 + op2)
                             if (erpos in label_types) and (label_types[erpos] == 'end repeat'):
                                 write_code(file, 'if not %s then exit repeat'%(pop_s()))
+                                label_indexes.remove(erpos)
                             else:
                                 write_code(file, 'if %s then'%(pop_s()))
                                 spacing = spacing + '    '
