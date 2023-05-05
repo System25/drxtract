@@ -497,22 +497,21 @@ def lscr2lingo(lscr_file, name_list):
 
 
             elif constant_type == 4:
-                # 32 bits integer
-                logging.error("TODO! integer treatment: %s"%(constant_type)) 
-                sys.exit(-1)
+                # 32 bits integer constant
+                constants.append(constant_offset)
 
             elif constant_type == 9:
                 # Floating point
                 idxc = con_offset + constant_offset
                 
-                # uint32: String length
+                # uint32: Float length
                 floatlength = struct.unpack(lsrc_bit_order+"i", fdata[idxc:idxc+4])[0]
                 idxc += 4
-                logging.debug("floatlength = %s"%(floatlength))
+                #logging.debug("floatlength = %s"%(floatlength))
                 
-                floatVal =  unpack_float80(fdata[idxc:idxc+floatlength])
-                logging.debug("floatVal = %s"%(floatVal))
-                constants.append(floatVal)
+                float_val =  unpack_float80(fdata[idxc:idxc+floatlength])
+                #logging.debug("float Value = %s"%(float_val))
+                constants.append(float_val)
 
 
             else:
