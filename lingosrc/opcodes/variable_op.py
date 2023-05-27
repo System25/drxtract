@@ -4,7 +4,7 @@
 
 from .opcode import Param1Opcode
 from lingosrc.ast import LocalVariable, GlobalVariable, PropertyName, \
-    Statement, ParameterName, Node
+    Function, ParameterName, Node
 from lingosrc.model import Context
 from typing import List
 
@@ -17,7 +17,7 @@ class VariableOpcode(Param1Opcode):
         Param1Opcode.__init__(self, 0x46)
     
     def process(self, context: Context, stack: List[Node], \
-                statements_list: List[Statement], index: int):
+                function: Function, index: int):
         op1 = self.param1
         stack.append(LocalVariable(context.name_list[op1], index))
 
@@ -29,9 +29,13 @@ class GlobalVariableOpcode(Param1Opcode):
         Param1Opcode.__init__(self, 0x48)
     
     def process(self, context: Context, stack: List[Node], \
-                statements_list: List[Statement], index: int):
+                function: Function, index: int):
         op1 = self.param1
-        stack.append(GlobalVariable(context.name_list[op1], index))
+        gv = GlobalVariable(context.name_list[op1], index)
+        stack.append(gv)
+        
+        if not gv in function.global_vars:
+            function.global_vars.append(gv)
     
 #
 # Use global variable Opcode.
@@ -49,7 +53,7 @@ class PropertyNameOpcode(Param1Opcode):
         Param1Opcode.__init__(self, 0x4A)
     
     def process(self, context: Context, stack: List[Node], \
-                statements_list: List[Statement], index: int):
+                function: Function, index: int):
         op1 = self.param1
         stack.append(PropertyName(context.name_list[op1], index))
 
@@ -61,7 +65,7 @@ class ParameterNameOpcode(Param1Opcode):
         Param1Opcode.__init__(self, 0x4A)
 
     def process(self, context: Context, stack: List[Node], \
-                statements_list: List[Statement], index: int):
+                function: Function, index: int):
         op1 = self.param1
         if (op1 % context.bytes_per_constant) > 0:
             context.bytes_per_constant = (op1 % context.bytes_per_constant)
@@ -78,7 +82,7 @@ class LocalVariableOpcode(Param1Opcode):
         Param1Opcode.__init__(self, 0x4B)
     
     def process(self, context: Context, stack: List[Node], \
-                statements_list: List[Statement], index: int):
+                function: Function, index: int):
         op1 = self.param1
         if (op1 % context.bytes_per_constant) > 0:
             context.bytes_per_constant = (op1 % context.bytes_per_constant)

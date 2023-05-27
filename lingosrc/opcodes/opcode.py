@@ -3,7 +3,7 @@
 # License: GNU GPL v2 (see LICENSE file for details).
 
 from abc import ABCMeta, abstractmethod
-from lingosrc.ast import Statement, Node
+from lingosrc.ast import Function, Node
 from lingosrc.model.context import Context
 from typing import List
 
@@ -20,7 +20,7 @@ class Opcode:
 
     @abstractmethod
     def process(self, context: Context, stack: List[Node], \
-                statements_list: List[Statement], index: int):
+                function: Function, index: int):
         pass
 
 #

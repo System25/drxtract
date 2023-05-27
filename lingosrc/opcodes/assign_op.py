@@ -6,7 +6,7 @@ from .opcode import Param1Opcode, BiOpcode
 from lingosrc.ast import LocalVariable, GlobalVariable, PropertyName, \
    BinaryOperation, BinaryOperationNames, SpAssignOperation, \
    UnaryOperation, UnaryOperationNames, Statement, ParameterName, Node, \
-   ConstantValue
+   ConstantValue, Function
 from lingosrc.model import Context
 from typing import List
 
@@ -18,12 +18,15 @@ class AssignGlobalVariableOpcode(Param1Opcode):
         Param1Opcode.__init__(self, 0x4E)
     
     def process(self, context: Context, stack: List[Node], \
-                statements_list: List[Statement], index: int):
+                function: Function, index: int):
         op1 = self.param1
         op = BinaryOperation(BinaryOperationNames.ASSIGN, index)
         op.left = GlobalVariable(context.name_list[op1], index)
         op.right = stack.pop()
-        statements_list.append(Statement(op, index))
+        function.statements.append(Statement(op, index))
+        
+        if not op.left in function.global_vars:
+            function.global_vars.append(op.left)
 
     
 #
@@ -42,7 +45,7 @@ class LoadPropertyOpcode(Param1Opcode):
         Param1Opcode.__init__(self, 0x5F)
 
     def process(self, context: Context, stack: List[Node], \
-                statements_list: List[Statement], index: int):
+                function: Function, index: int):
         op1 = self.param1
         op = PropertyName(context.name_list[op1], index)
         stack.append(op)
@@ -55,7 +58,7 @@ class DropAndLoadPropertyOpcode(Param1Opcode):
         Param1Opcode.__init__(self, 0x5F)
     
     def process(self, context: Context, stack: List[Node], \
-                statements_list: List[Statement], index: int):
+                function: Function, index: int):
         stack.pop()
         op1 = self.param1
         op = PropertyName(context.name_list[op1], index)
@@ -69,12 +72,12 @@ class AssignPropertyOpcode(Param1Opcode):
         Param1Opcode.__init__(self, 0x50)
     
     def process(self, context: Context, stack: List[Node], \
-                statements_list: List[Statement], index: int):
+                function: Function, index: int):
         op1 = self.param1
         op = BinaryOperation(BinaryOperationNames.ASSIGN, index)
         op.left = PropertyName(context.name_list[op1], index)
         op.right = stack.pop()
-        statements_list.append(Statement(op, index))
+        function.statements.append(Statement(op, index))
 
 #
 # Assign to property Opcode.
@@ -93,7 +96,7 @@ class AssignParameterOpcode(Param1Opcode):
         Param1Opcode.__init__(self, 0x51)
     
     def process(self, context: Context, stack: List[Node], \
-                statements_list: List[Statement], index: int):
+                function: Function, index: int):
         op1 = self.param1
         if (op1 % context.bytes_per_constant) > 0:
             context.bytes_per_constant = (op1 % context.bytes_per_constant)
@@ -103,7 +106,7 @@ class AssignParameterOpcode(Param1Opcode):
         op.left = ParameterName(value, index)
         op.right = stack.pop()
         
-        statements_list.append(Statement(op, index))
+        function.statements.append(Statement(op, index))
 
 #
 # Assign to local variable Opcode.
@@ -113,7 +116,7 @@ class AssignLocalVariableOpcode(Param1Opcode):
         Param1Opcode.__init__(self, 0x52)
     
     def process(self, context: Context, stack: List[Node], \
-                statements_list: List[Statement], index: int):
+                function: Function, index: int):
         op1 = self.param1
         if (op1 % context.bytes_per_constant) > 0:
             context.bytes_per_constant = (op1 % context.bytes_per_constant)
@@ -124,7 +127,7 @@ class AssignLocalVariableOpcode(Param1Opcode):
         op.left = LocalVariable(value, index)
         op.right = stack.pop()
         
-        statements_list.append(Statement(op, index))
+        function.statements.append(Statement(op, index))
 
 
 #
@@ -136,7 +139,7 @@ class AssignModeLocalVarOpcode(BiOpcode):
         self.mode = mode
 
     def process(self, context: Context, stack: List[Node], \
-                statements_list: List[Statement], index: int):
+                function: Function, index: int):
         operand = stack.pop()
         if not isinstance(operand, ConstantValue):
             raise TypeError(
@@ -153,7 +156,7 @@ class AssignModeLocalVarOpcode(BiOpcode):
         op.right = stack.pop()
         op.mode = self.mode
         
-        statements_list.append(Statement(op, index))
+        function.statements.append(Statement(op, index))
 
 #
 # Assing <mode> field Opcode.
@@ -164,14 +167,14 @@ class AssignModeFieldOpcode(BiOpcode):
         self.mode = mode
     
     def process(self, context: Context, stack: List[Node], \
-                statements_list: List[Statement], index: int): 
+                function: Function, index: int): 
         op = SpAssignOperation(BinaryOperationNames.ASSIGN, index)
         op.left = UnaryOperation(UnaryOperationNames.FIELD, index)
         op.left.operand = stack.pop()
         op.right = stack.pop()
         op.mode = self.mode
         
-        statements_list.append(Statement(op, index))
+        function.statements.append(Statement(op, index))
 
 #
 # Assign into local var Opcode.

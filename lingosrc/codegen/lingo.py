@@ -6,7 +6,8 @@
 # Lingo code generation functions.
 #
 
-from lingosrc.ast import Script, Statement, Node
+from lingosrc.ast import Script
+from lingosrc.util import code_indentation
 
 # =============================================================================
 def generate_lingo_code(script: Script) -> str:
@@ -34,10 +35,19 @@ def generate_lingo_code(script: Script) -> str:
             code = " %s"%(', '.join(n.name for n in f.parameters))
         code += "\n"
         
+        for gv in f.global_vars:
+            code = code + code_indentation(1) + "global %s\n"%(gv.name)
+            
+        if len(f.global_vars) > 0:
+            code = code + "\n"
+        
+        if f.statements[-1].code.name == 'exit':
+            del f.statements[-1]
+        
         for st in f.statements:
             code = code + st.generate_lingo(1)
         
-        code += "end %s"%(f.name)
+        code += "\nend %s"%(f.name)
     
     return code
          

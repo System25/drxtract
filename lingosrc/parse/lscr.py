@@ -301,7 +301,7 @@ def parse_opcodes(fdata: bytes, context: Context, bc_off: int,
             elif DEBUG_OPCODES:
                 logging.debug("op0: %s"%(hex(opcode)))
                     
-            parse_obj.process(context, stack, function.statements, idxc)
+            parse_obj.process(context, stack, function, idxc)
             if DEBUG_OPCODES:
                 logging.debug("-> %s"%(parse_obj.__class__.__name__))
             

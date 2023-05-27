@@ -12,5 +12,10 @@ class Node:
         self.name: str = name
         self.position: int = position
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.name == other.name
+        return False
+
     def generate_lingo(self, indentation: int) -> str: 
         return self.name

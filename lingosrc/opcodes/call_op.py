@@ -4,7 +4,7 @@
 
 from .opcode import Param1Opcode
 from lingosrc.ast import CallMethod, CallFunction, Statement, Node, \
-    ToListOperation
+    ToListOperation, Function
 from lingosrc.model import Context
 from typing import List, cast
 
@@ -17,7 +17,7 @@ class CallLocalOpcode(Param1Opcode):
         Param1Opcode.__init__(self, 0x56)
     
     def process(self, context: Context, stack: List[Node], \
-                statements_list: List[Statement], index: int):
+                function: Function, index: int):
         op1 = self.param1
         fname = context.local_func_names[op1]
         
@@ -27,7 +27,7 @@ class CallLocalOpcode(Param1Opcode):
         if op.parameters is not None and op.parameters.name.startswith('<'):
             stack.append(op)
         else:
-            statements_list.append(Statement(op, index))
+            function.statements.append(Statement(op, index))
 
 #
 # Call an external function Opcode.
@@ -37,7 +37,7 @@ class CallExternalOpcode(Param1Opcode):
         Param1Opcode.__init__(self, 0x57)
     
     def process(self, context: Context, stack: List[Node], \
-                statements_list: List[Statement], index: int):
+                function: Function, index: int):
         op1 = self.param1
         fname = context.name_list[op1]
         
@@ -47,7 +47,7 @@ class CallExternalOpcode(Param1Opcode):
         if op.parameters is not None and op.parameters.name.startswith('<'):
             stack.append(op)
         else:
-            statements_list.append(Statement(op, index))
+            function.statements.append(Statement(op, index))
 
 
 #
@@ -58,7 +58,7 @@ class CallMethodOpcode(Param1Opcode):
         Param1Opcode.__init__(self, 0x58)
     
     def process(self, context: Context, stack: List[Node], \
-                statements_list: List[Statement], index: int):
+                function: Function, index: int):
         raise Exception("CallMethodOpcode not implemented!")
 
 #
@@ -69,7 +69,7 @@ class CallExternalMethodOpcode(Param1Opcode):
         Param1Opcode.__init__(self, 0x67)
     
     def process(self, context: Context, stack: List[Node], \
-                statements_list: List[Statement], index: int):
+                function: Function, index: int):
         op1 = self.param1
         fname = context.name_list[op1]
         
@@ -84,4 +84,4 @@ class CallExternalMethodOpcode(Param1Opcode):
         if op.parameters is not None and op.parameters.name.startswith('<'):
             stack.append(op)
         else:
-            statements_list.append(Statement(op, index))
+            function.statements.append(Statement(op, index))

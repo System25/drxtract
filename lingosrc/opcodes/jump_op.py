@@ -4,7 +4,7 @@
 
 from .opcode import Param1Opcode, Param2Opcode
 from lingosrc.ast import ConstantValue, RepeatOperation, JumpOperation, \
-    Statement, Node, JzOperation
+    Statement, Node, JzOperation, Function
 from lingosrc.model import Context
 from typing import List
 
@@ -16,21 +16,21 @@ class JumpOpcode(Param1Opcode):
         Param1Opcode.__init__(self, 0x54)
     
     def process(self, context: Context, stack: List[Node], \
-                statements_list: List[Statement], index: int):
+                function: Function, index: int):
         op1 = self.param1
         start_index = index - 2 - op1
         
         op = RepeatOperation('repeat', start_index)
         op.condition = ConstantValue('TRUE', start_index)
         
-        for stmnt in statements_list:
+        for stmnt in function.statements:
             if stmnt.position >= start_index:
                 op.statements_list.append(stmnt)
         
         for stmnt in op.statements_list:
-            statements_list.remove(stmnt)
+            function.statements.remove(stmnt)
         
-        statements_list.append(Statement(op, index))
+        function.statements.append(Statement(op, index))
 
 #
 # Unconditional jump forward Opcode.
@@ -40,14 +40,14 @@ class FowardJumpOpcode(Param2Opcode):
         Param2Opcode.__init__(self, 0x93)
     
     def process(self, context: Context, stack: List[Node], \
-                statements_list: List[Statement], index: int):
+                function: Function, index: int):
         op1 = self.param1 * 256 + self.param2
         end_index = index + 3 + op1
         
         op = JumpOperation('jump', index)
         op.address = end_index
         
-        statements_list.append(Statement(op, index))
+        function.statements.append(Statement(op, index))
 
 #
 # Conditional jump forward Opcode.
@@ -57,7 +57,7 @@ class ConditionalJumpOpcode(Param2Opcode):
         Param2Opcode.__init__(self, 0x93)
     
     def process(self, context: Context, stack: List[Node], \
-                statements_list: List[Statement], index: int):
+                function: Function, index: int):
         op1 = self.param1 * 256 + self.param2
         end_index = index + 3 + op1
         
@@ -65,5 +65,5 @@ class ConditionalJumpOpcode(Param2Opcode):
         op.address = end_index
         op.condition = stack.pop()
         
-        statements_list.append(Statement(op, index))
+        function.statements.append(Statement(op, index))
 

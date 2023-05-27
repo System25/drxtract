@@ -4,7 +4,7 @@
 
 from .opcode import Opcode, BiOpcode
 from lingosrc.ast import Node, StringOperation, UnaryOperation,\
-    Statement, UnaryOperationNames, StringOperationNames
+    Statement, UnaryOperationNames, StringOperationNames, Function
 from lingosrc.model import Context
 from typing import List
 
@@ -53,7 +53,7 @@ class StringOperationOpcode(Opcode):
         Opcode.__init__(self, 0x17)
     
     def process(self, context: Context, stack: List[Node], \
-                statements_list: List[Statement], index: int):
+                function: Function, index: int):
         op = stack.pop()           # The string to slice
         op = add_modifiers(self, op, stack, index)
         stack.append(op)
@@ -66,7 +66,7 @@ class HiliteOpcode(Opcode):
         Opcode.__init__(self, 0x18)
     
     def process(self, context: Context, stack: List[Node], \
-                statements_list: List[Statement], index: int):
+                function: Function, index: int):
         field = UnaryOperation(UnaryOperationNames.FIELD, index)
         field.operand = stack.pop()  # The field to hilite     
         field = add_modifiers(self, field, stack, index)
@@ -83,7 +83,7 @@ class DeleteSliceOpcode(BiOpcode):
         BiOpcode.__init__(self, 0x5B, 0x06)
 
     def process(self, context: Context, stack: List[Node], \
-                statements_list: List[Statement], index: int):
+                function: Function, index: int):
         field = UnaryOperation(UnaryOperationNames.FIELD, index)
         field.operand = stack.pop()  # The field to hilite     
         field = add_modifiers(self, field, stack, index)
@@ -92,4 +92,4 @@ class DeleteSliceOpcode(BiOpcode):
         op.operand = field
         stack.append(op)
         
-        statements_list.append(Statement(op, index))
+        function.statements.append(Statement(op, index))

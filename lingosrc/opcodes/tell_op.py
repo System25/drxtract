@@ -4,7 +4,7 @@
 
 from .opcode import Opcode
 from lingosrc.ast import WindowTellStartOperation, WindowTellEndOperation, \
-    Statement, Node
+    Function, Node
 from lingosrc.model import Context
 from typing import List
 
@@ -16,7 +16,7 @@ class WindowTellStartOpcode(Opcode):
         Opcode.__init__(self, 0x1C)
     
     def process(self, context: Context, stack: List[Node], \
-                statements_list: List[Statement], index: int):
+                function: Function, index: int):
         op = WindowTellStartOperation('win_tell_start', index)
         op.operand = stack.pop()
         stack.append(op)
@@ -29,12 +29,12 @@ class WindowTellEndOpcode(Opcode):
         Opcode.__init__(self, 0x1D)
     
     def process(self, context: Context, stack: List[Node], \
-                statements_list: List[Statement], index: int):
+                function: Function, index: int):
         op = WindowTellEndOperation('win_tell_end', index)
         p = stack.pop()
         while p is not None:
             op.operands.append(p)
             p = stack.pop()
         
-        statements_list.append(op)
+        function.statements.append(op)
 
