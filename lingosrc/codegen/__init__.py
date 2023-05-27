@@ -3,9 +3,6 @@
 # License: GNU GPL v2 (see LICENSE file for details).
 
 #
-# Script class.
-# 
-class Script:
-  def __init__(self)):
-    self.properties = []
-    self.functions = []
+# Code generation functions.
+#
+from .lingo import generate_lingo_code

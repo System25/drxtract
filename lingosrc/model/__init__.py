@@ -3,9 +3,8 @@
 # License: GNU GPL v2 (see LICENSE file for details).
 
 #
-# Node class.
+# Model classes.
 # 
-class Node:
-  def __init__(self, name, position):
-    self.name = name
-    self.position = position
+
+from .context import Context
+from .header import Header

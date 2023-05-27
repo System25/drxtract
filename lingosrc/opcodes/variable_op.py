@@ -1,0 +1,88 @@
+# Author: Abraham Macias Paredes
+# E-mail: system252001@yahoo.es
+# License: GNU GPL v2 (see LICENSE file for details).
+
+from .opcode import Param1Opcode
+from lingosrc.ast import LocalVariable, GlobalVariable, PropertyName, \
+    Statement, ParameterName, Node
+from lingosrc.model import Context
+from typing import List
+
+
+#
+# Use local variable Opcode.
+#
+class VariableOpcode(Param1Opcode):
+    def __init__(self):
+        Param1Opcode.__init__(self, 0x46)
+    
+    def process(self, context: Context, stack: List[Node], \
+                statements_list: List[Statement], index: int):
+        op1 = self.param1
+        stack.append(LocalVariable(context.name_list[op1], index))
+
+#
+# Use global variable Opcode.
+#
+class GlobalVariableOpcode(Param1Opcode):
+    def __init__(self):
+        Param1Opcode.__init__(self, 0x48)
+    
+    def process(self, context: Context, stack: List[Node], \
+                statements_list: List[Statement], index: int):
+        op1 = self.param1
+        stack.append(GlobalVariable(context.name_list[op1], index))
+    
+#
+# Use global variable Opcode.
+#
+class GlobalVarOpcode(GlobalVariableOpcode):
+    def __init__(self):
+        GlobalVariableOpcode.__init__(self)
+        self.opcode = 0x49
+
+#
+# Use property name Opcode.
+#
+class PropertyNameOpcode(Param1Opcode):
+    def __init__(self):
+        Param1Opcode.__init__(self, 0x4A)
+    
+    def process(self, context: Context, stack: List[Node], \
+                statements_list: List[Statement], index: int):
+        op1 = self.param1
+        stack.append(PropertyName(context.name_list[op1], index))
+
+#
+# Use parameter name Opcode.
+#
+class ParameterNameOpcode(Param1Opcode):
+    def __init__(self):
+        Param1Opcode.__init__(self, 0x4A)
+
+    def process(self, context: Context, stack: List[Node], \
+                statements_list: List[Statement], index: int):
+        op1 = self.param1
+        if (op1 % context.bytes_per_constant) > 0:
+            context.bytes_per_constant = (op1 % context.bytes_per_constant)
+        
+        value = context.parameter_names[int(op1 / context.bytes_per_constant)]
+        
+        stack.append(ParameterName(value, index))
+    
+#
+# Use local variable name Opcode.
+#
+class LocalVariableOpcode(Param1Opcode):
+    def __init__(self):
+        Param1Opcode.__init__(self, 0x4B)
+    
+    def process(self, context: Context, stack: List[Node], \
+                statements_list: List[Statement], index: int):
+        op1 = self.param1
+        if (op1 % context.bytes_per_constant) > 0:
+            context.bytes_per_constant = (op1 % context.bytes_per_constant)
+        
+        value = context.local_var_names[int(op1 / context.bytes_per_constant)]
+        
+        stack.append(LocalVariable(value, index))
