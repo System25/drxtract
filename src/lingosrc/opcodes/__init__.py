@@ -1,0 +1,183 @@
+# Author: Abraham Macias Paredes
+# E-mail: system252001@yahoo.es
+# License: GNU GPL v2 (see LICENSE file for details).
+
+#
+# Opcodes.
+# 
+from typing import List, Dict
+from .opcode import Opcode, BiOpcode, TriOpcode, Param1Opcode, Param2Opcode
+
+from .binary_op import MultiplyOpcode, AddOpcode, SubOpcode, DivOpcode, \
+	ModOpcode, ConcatOpcode, ConcatSpcOpcode, ContainsOpcode, \
+	StartsWithOpcode, LessThanOpcode, LessThanEqOpcode, NotEqOpcode, \
+	EqualOpcode, GreaterThanOpcode, GreaterThanEqOpcode, AndOpcode, \
+	OrOpcode, IntersectsOpcode, WithinOpcode
+
+from .assign_op import AssignGlobalVariableOpcode, AssignGlobalVarOpcode, \
+	LoadPropertyOpcode, DropAndLoadPropertyOpcode, AssignPropertyOpcode, \
+	AssignValToPropertyOpcode, AssignParameterOpcode, \
+	AssignLocalVariableOpcode, AssignIntoLocalVarOpcode, \
+	AssignIntoFieldOpcode, AssignAfterLocalVarOpcode, \
+	AssignAfterFieldOpcode, AssignBeforeLocalVarOpcode, \
+	AssignBeforeFieldOpcode
+
+from .exit_op import ExitOpcode
+
+from .jump_op import JumpOpcode, FowardJumpOpcode, ConditionalJumpOpcode
+
+from .tell_op import WindowTellStartOpcode, WindowTellEndOpcode
+
+from .call_op import CallLocalOpcode, CallExternalOpcode, CallMethodOpcode, \
+	CallExternalMethodOpcode
+
+from .property_op import SpecialPropertiesOpcode, \
+	AssignSpecialPropertiesOpcode, NumberOfElementsOpcode, \
+	MenuitemPropertiesOpcode, AssignMenuitemPropertiesOpcode, \
+	SpritePropertiesOpcode, AssignSpritePropertiesOpcode, \
+	SystemPropertiesOpcode, AssignSystemPropertiesOpcode, \
+	CastPropertiesOpcode, AssignCastPropertiesOpcode, \
+	VideoPropertiesOpcode, AssignVideoPropertiesOpcode, \
+	PropertyAccesorOpcode, AssignPropertyAccesorOpcode
+
+from .stack_op import CopySymbolOpcode, DiscardSymbolsOpcode
+
+from .conversion_op import ToListOpcode, ToDictionaryOpcode, LoadListOpcode, \
+	LoadLListOpcode, LoadLongListOpcode, LoadLongLListOpcode
+
+from .unary_op import MinusOpcode, NotOpcode, FieldOpcode
+
+from .variable_op import VariableOpcode, GlobalVariableOpcode, \
+	GlobalVarOpcode, PropertyNameOpcode, ParameterNameOpcode, \
+	LocalVariableOpcode, LocalVarOpcode
+
+from .constant_op import ZeroOpcode, Int1bOpcode, Int2bOpcode, LiteralOpcode, \
+	Literal2Opcode, SymbolOpcode, PropertyOpcode
+
+TRI_OPCODES_LIST : List[TriOpcode] = [
+]
+
+BI_OPCODES_LIST : List[BiOpcode] = [
+	AssignIntoLocalVarOpcode(),
+	AssignIntoFieldOpcode(),
+	AssignAfterLocalVarOpcode(),
+	AssignAfterFieldOpcode(),
+	AssignBeforeLocalVarOpcode(),
+	AssignBeforeFieldOpcode(),
+	
+	SpecialPropertiesOpcode(),
+	NumberOfElementsOpcode(),
+	MenuitemPropertiesOpcode(),
+	SpritePropertiesOpcode(),
+	SystemPropertiesOpcode(),
+	CastPropertiesOpcode(),
+	VideoPropertiesOpcode()
+]	
+
+OPCODES_LIST: List[Opcode] = [
+	AddOpcode(),
+	SubOpcode(),
+	MultiplyOpcode(),
+	DivOpcode(),
+	ModOpcode(),
+	ConcatOpcode(),
+	ConcatSpcOpcode(),
+	ContainsOpcode(),
+	StartsWithOpcode(),
+	LessThanOpcode(),
+	LessThanEqOpcode(),
+	NotEqOpcode(),
+	EqualOpcode(),
+	GreaterThanOpcode(),
+	GreaterThanEqOpcode(),
+	AndOpcode(),
+	OrOpcode(),
+	IntersectsOpcode(),
+	WithinOpcode(),
+	
+	AssignGlobalVariableOpcode(),
+	AssignGlobalVarOpcode(),
+	LoadPropertyOpcode(),
+	DropAndLoadPropertyOpcode(),
+	AssignPropertyOpcode(),
+	AssignValToPropertyOpcode(),
+	AssignParameterOpcode(),
+	AssignLocalVariableOpcode(),
+	AssignIntoLocalVarOpcode(),
+	AssignIntoFieldOpcode(),
+	AssignAfterLocalVarOpcode(),
+	AssignAfterFieldOpcode(),
+	AssignBeforeLocalVarOpcode(),
+	AssignBeforeFieldOpcode(),
+	
+	ExitOpcode(),
+	
+	JumpOpcode(),
+	FowardJumpOpcode(),
+	ConditionalJumpOpcode(),
+	
+	WindowTellStartOpcode(),
+	WindowTellEndOpcode(),
+	
+	CallLocalOpcode(),
+	CallExternalOpcode(),
+	CallMethodOpcode(),
+	CallExternalMethodOpcode(),
+	
+	SpecialPropertiesOpcode(),
+	AssignSpecialPropertiesOpcode(),
+	NumberOfElementsOpcode(),
+	MenuitemPropertiesOpcode(),
+	AssignMenuitemPropertiesOpcode(),
+	SpritePropertiesOpcode(),
+	AssignSpritePropertiesOpcode(),
+	SystemPropertiesOpcode(),
+	AssignSystemPropertiesOpcode(),
+	CastPropertiesOpcode(),
+	AssignCastPropertiesOpcode(),
+	VideoPropertiesOpcode(),
+	AssignVideoPropertiesOpcode(),
+	PropertyAccesorOpcode(),
+	AssignPropertyAccesorOpcode(),
+	
+	CopySymbolOpcode(),
+	DiscardSymbolsOpcode(),
+	
+	ToListOpcode(),
+	ToDictionaryOpcode(),
+	LoadListOpcode(),
+	LoadLListOpcode(),
+	LoadLongListOpcode(),
+	LoadLongLListOpcode(),
+	
+	MinusOpcode(),
+	NotOpcode(),
+	FieldOpcode(),
+	
+	VariableOpcode(),
+	GlobalVariableOpcode(),
+	GlobalVarOpcode(),
+	PropertyNameOpcode(),
+	ParameterNameOpcode(),
+	LocalVariableOpcode(),
+	LocalVarOpcode(),
+	
+	ZeroOpcode(), 
+	Int1bOpcode(), 
+	Int2bOpcode(), 
+	LiteralOpcode(),
+	Literal2Opcode(), 
+	SymbolOpcode(), 
+	PropertyOpcode()
+]
+
+OPCODES: Dict[int, Opcode] = {op.opcode:op for op in OPCODES_LIST}
+
+BI_OPCODES: Dict[int, BiOpcode] = {
+	(op.opcode * 256 + op.opcode2) :op for op in BI_OPCODES_LIST
+}
+
+TRI_OPCODES: Dict[int, TriOpcode] = {
+	(op.opcode * 65536 + op.opcode2*256 + op.opcode3) :
+	op for op in TRI_OPCODES_LIST
+}
