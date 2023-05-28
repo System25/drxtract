@@ -19,3 +19,6 @@ class Node:
 
     def generate_lingo(self, indentation: int) -> str: 
         return self.name
+
+    def generate_js(self, indentation: int) -> str: 
+        return self.name

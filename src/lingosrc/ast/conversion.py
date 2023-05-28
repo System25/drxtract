@@ -22,6 +22,13 @@ class LoadListOperation(Node):
         oplist.reverse()
         return ', '.join(oplist)
 
+    def generate_js(self, indentation: int) -> str:
+        oplist = list(str(s.generate_js(indentation))
+                      for s in self.operands)
+
+        oplist.reverse()
+        return ', '.join(oplist)
+
 #
 # Convert to list Operation class.
 # 
@@ -39,6 +46,13 @@ class ToListOperation(Node):
 
         oplist.reverse()
         return '[' + ', '.join(oplist) +  ']'
+    
+    def generate_js(self, indentation: int) -> str:       
+        oplist = list(str(s.generate_js(indentation))
+                      for s in self.operand.operands)
+
+        oplist.reverse()
+        return 'list(' + ', '.join(oplist) +  ')'
 #
 # Convert to dictionary Operation class.
 # 
@@ -50,3 +64,21 @@ class ToDictionaryOperation(Node):
         Node.__init__(self, name, position)
         self.operand: LoadListOperation = operand
 
+    def generate_lingo(self, indentation: int) -> str:
+        oplist = []
+        for i in range(0, len(self.operand.operands), 2):
+            sym = self.operand.operands[i].generate_lingo(indentation)
+            val = self.operand.operands[i+1].generate_lingo(indentation)
+                   
+            oplist.append("%s: %s"%(sym, val))
+
+        oplist.reverse()
+        
+        return '[' + ', '.join(oplist) +  ']'
+    
+    def generate_js(self, indentation: int) -> str:       
+        oplist = list(str(s.generate_js(indentation))
+                      for s in self.operand.operands)
+
+        oplist.reverse()
+        return 'propList(' + ', '.join(oplist) +  ')'

@@ -21,7 +21,10 @@ class Statement(Node):
         return (code_indentation(indentation) + 
             self.code.generate_lingo(indentation) + '\n')
 
-
+    def generate_js(self, indentation: int) -> str: 
+        return (code_indentation(indentation) + 
+            self.code.generate_js(indentation) + ';\n')
+        
 #
 # Function class.
 # 
@@ -48,9 +51,16 @@ class CallFunction(Node):
     def generate_lingo(self, indentation: int) -> str: 
         if self.parameters is not None:
             params: Node = cast(Node, self.parameters)
-            return (self.name + ' ' + params.generate_lingo(indentation))
+            return self.name + ' ' + params.generate_lingo(indentation)
         else:
             return self.name
+
+    def generate_js(self, indentation: int) -> str: 
+        if self.parameters is not None:
+            params: Node = cast(Node, self.parameters)
+            return self.name + '(' + params.generate_js(indentation) + ')'
+        else:
+            return self.name + '()'
 
 #
 # Call method operation class.

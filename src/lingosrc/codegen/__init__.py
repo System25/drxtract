@@ -6,3 +6,4 @@
 # Code generation functions.
 #
 from .lingo import generate_lingo_code
+from .js import generate_js_code

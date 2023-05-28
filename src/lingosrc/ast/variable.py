@@ -23,6 +23,8 @@ class GlobalVariable(Node):
     def __init__(self, name: str, position: int):
         Node.__init__(self, name, position)
 
+    def generate_js(self, indentation: int) -> str: 
+        return "_global.%s"%(self.name)
 #
 # Property name class.
 # 

@@ -8,6 +8,19 @@ from enum import Enum
 from typing import Optional, cast, Dict
 
 #
+# Unary Operation names in Javascript.
+# 
+JS_UNA_OP: Dict[str,str] = {
+    'minus': '-',
+    'not': '!',
+    'field': 'field',
+    'hilite': 'hilite',
+    'delete': 'delete',
+    'last': 'last',
+    'number': 'number',
+}
+
+#
 # Binary Operation names in Lingo.
 # 
 LINGO_BIN_OP: Dict[str,str] = {
@@ -35,6 +48,37 @@ LINGO_BIN_OP: Dict[str,str] = {
     'intersects': 'intersects', 
     'within': 'within'
 }
+
+#
+# Binary Operation names in Javascript.
+# 
+JS_BIN_OP: Dict[str,str] = {
+    'add': '+',
+    'sub': '-',
+    'mul': '*',
+    'div': '/',
+    'mod': '%',
+    
+    'concat': '+',
+    'concats': '+ " " +',
+    'contains': '.includes',
+    'start': '.startsWith',
+    
+    'and': '&&',
+    'or': '||',
+    
+    'lt': '<',
+    'lte': '<=',
+    'gt': '>',
+    'gte': '>=',
+    'eq': '==',
+    'ne': '!=',
+    
+    'intersects': '.intersects', 
+    'within': '.within'
+}
+
+
 
 #
 # Binary Operation names enumeration.
@@ -111,6 +155,11 @@ class UnaryOperation(Node):
             operation = operation + ' '
         return "%s%s"%(operation, operand.generate_lingo(indentation))
 
+    def generate_js(self, indentation: int) -> str:
+        operand = cast(Node, self.operand)
+        operation = JS_UNA_OP[self.name]
+        return "%s(%s)"%(operation, operand.generate_js(indentation))
+
 #
 # Binary Operation class.
 # 
@@ -132,8 +181,24 @@ class BinaryOperation(Node):
         
         op = LINGO_BIN_OP[self.name]
         
-        return "(%s %s %s)"%(r.generate_lingo(indentation), op,
-                             l.generate_lingo(indentation))
+        return "(%s %s %s)"%(l.generate_lingo(indentation), op,
+                             r.generate_lingo(indentation))
+
+    def generate_js(self, indentation: int) -> str:
+        l = cast(Node, self.left)
+        r = cast(Node, self.right)
+        
+        if self.name == 'assign':
+            return "%s = %s"%(l.generate_js(indentation),
+                              r.generate_js(indentation))            
+        
+        op: str = JS_BIN_OP[self.name]
+        if op.startswith('.'):
+            return "%s%s(%s)"%(l.generate_js(indentation), op,
+                               r.generate_js(indentation))
+        else:  
+            return "(%s %s %s)"%(l.generate_js(indentation), op,
+                                 r.generate_js(indentation))
 
 #
 # Special Assign Operation class.
@@ -150,10 +215,16 @@ class SpAssignOperation(Node):
     def generate_lingo(self, indentation: int) -> str:
         l = cast(Node, self.left)
         r = cast(Node, self.right)
-        return "put %s %s %s"%(r.generate_lingo(indentation),
-                                    self.mode,
-                                    l.generate_lingo(indentation))
+        return "put %s %s %s"%(l.generate_lingo(indentation),
+                                self.mode,
+                                r.generate_lingo(indentation))
     
+    def generate_js(self, indentation: int) -> str:
+        l = cast(Node, self.left)
+        r = cast(Node, self.right)
+        return "put_%s(%s, %s)"%(self.mode,
+                                 l.generate_js(indentation),
+                                 r.generate_js(indentation))
 #
 # String Operation class.
 # 
