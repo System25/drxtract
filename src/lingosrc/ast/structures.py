@@ -4,7 +4,9 @@
 
 from .node import Node
 from .function import Statement
-from typing import List, Optional
+from typing import List, Optional, cast
+from ..util import code_indentation
+
 #
 # Repeat Operation class.
 # 
@@ -27,6 +29,39 @@ class IfThenOperation(Node):
         self.condition: Optional[Node] = None
         self.if_statements_list: List[Statement] = []
         self.else_statements_list: List[Statement] = []
+
+    def generate_lingo(self, indentation: int) -> str: 
+        cond = cast(Node, self.condition)
+
+        code = "if %s then\n"%(cond.generate_lingo(0))
+        for st in self.if_statements_list:
+            code = code + st.generate_lingo(indentation + 1)
+        
+        if len(self.else_statements_list) > 0:
+            code = code + code_indentation(indentation) + 'else\n'
+            for st in self.else_statements_list:
+                code = code + st.generate_lingo(indentation + 1)            
+        
+        code = code + code_indentation(indentation) + 'end if'
+        return code
+
+    def generate_js(self, indentation: int) -> str: 
+        cond = cast(Node, self.condition)
+        str_cond: str = cond.generate_js(0)
+        if not str_cond.startswith('('):
+            str_cond = "(%s)"%(str_cond)
+
+        code = "if %s {\n"%(str_cond)
+        for st in self.if_statements_list:
+            code = code + st.generate_js(indentation + 1)
+        
+        if len(self.else_statements_list) > 0:
+            code = code + code_indentation(indentation) + '} else {\n'
+            for st in self.else_statements_list:
+                code = code + st.generate_js(indentation + 1)            
+        
+        code = code + code_indentation(indentation) + '}'
+        return code
 
 #
 # Jump Operation class.

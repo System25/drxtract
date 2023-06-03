@@ -8,6 +8,7 @@ from ..model import Context, Header
 from ..util import escape_string, unpack_float80
 from ..opcodes import OPCODES, Opcode, BiOpcode, TriOpcode, \
     Param1Opcode, Param2Opcode, BI_OPCODES, TRI_OPCODES
+from .loop_detection import condition_detect, loop_detect
 import struct
 import logging
 
@@ -267,6 +268,7 @@ def parse_opcodes(fdata: bytes, context: Context, bc_off: int,
     """
     stack: List[Node] = []
     idxc = bc_off
+    index = idxc
     while (idxc - bc_off) < bc_length:
         opcode = int(fdata[idxc])
         idxc = idxc + 1
@@ -278,7 +280,8 @@ def parse_opcodes(fdata: bytes, context: Context, bc_off: int,
                 opcode2 = int(fdata[idxc])
                 idxc = idxc + 1
                 if DEBUG_OPCODES:
-                    logging.debug("op0: %s op1: %s"%(hex(opcode), hex(opcode2)))
+                    logging.debug("[%s] op0: %s op1: %s"%(index, hex(opcode),
+                                                          hex(opcode2)))
                 
                 if isinstance(parse_obj, BiOpcode):
                     parse_obj = BI_OPCODES[opcode * 256 + opcode2]
@@ -286,11 +289,12 @@ def parse_opcodes(fdata: bytes, context: Context, bc_off: int,
                     cast(Param1Opcode, parse_obj).param1 = opcode2
             elif parse_obj.nbytes == 3:
                 opcode2 = int(fdata[idxc])
-                opcode3 = int(fdata[idxc])
+                opcode3 = int(fdata[idxc + 1])
                 idxc = idxc + 2
                 
                 if DEBUG_OPCODES:
-                    logging.debug("op0: %s op1: %s op3: %s"%(hex(opcode),
+                    logging.debug("[%s] op0: %s op1: %s op2: %s"%(index,
+                                                             hex(opcode),
                                                              hex(opcode2),
                                                              hex(opcode3)))
                 
@@ -301,14 +305,19 @@ def parse_opcodes(fdata: bytes, context: Context, bc_off: int,
                     cast(Param2Opcode, parse_obj).param1 = opcode2
                     cast(Param2Opcode, parse_obj).param2 = opcode3
             elif DEBUG_OPCODES:
-                logging.debug("op0: %s"%(hex(opcode)))
+                logging.debug("[%s] op0: %s"%(index, hex(opcode)))
                     
-            parse_obj.process(context, stack, function, idxc)
+            parse_obj.process(context, stack, function, index)
+            index = idxc
             if DEBUG_OPCODES:
                 logging.debug("-> %s"%(parse_obj.__class__.__name__))
             
         else:
             raise Exception("opcode not implemented: %s"%(opcode))
+
+    condition_detect(function)
+    loop_detect(function)
+    
 
 #
 # Get local function names from function record blocks

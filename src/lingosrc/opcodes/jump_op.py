@@ -18,7 +18,7 @@ class JumpOpcode(Param1Opcode):
     def process(self, context: Context, stack: List[Node], \
                 function: Function, index: int):
         op1 = self.param1
-        start_index = index - 2 - op1
+        start_index = index - op1
         
         op = RepeatOperation('repeat', start_index)
         op.condition = ConstantValue('TRUE', start_index)
@@ -42,7 +42,7 @@ class FowardJumpOpcode(Param2Opcode):
     def process(self, context: Context, stack: List[Node], \
                 function: Function, index: int):
         op1 = self.param1 * 256 + self.param2
-        end_index = index + 3 + op1
+        end_index = index + op1
         
         op = JumpOperation('jump', index)
         op.address = end_index
@@ -54,12 +54,12 @@ class FowardJumpOpcode(Param2Opcode):
 #
 class ConditionalJumpOpcode(Param2Opcode):
     def __init__(self):
-        Param2Opcode.__init__(self, 0x93)
+        Param2Opcode.__init__(self, 0x95)
     
     def process(self, context: Context, stack: List[Node], \
                 function: Function, index: int):
         op1 = self.param1 * 256 + self.param2
-        end_index = index + 3 + op1
+        end_index = index + op1
         
         op = JzOperation('jz', index)
         op.address = end_index

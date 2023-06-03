@@ -24,6 +24,7 @@ class TestScript(unittest.TestCase):
     @parameterized.expand([
         ['constants.Lnam', 'constants.Lscr', 'constants.lingo'],
         ['local_var.Lnam', 'local_var.Lscr', 'local_var.lingo'],
+        ['if_else.Lnam', 'if_else.Lscr', 'if_else.lingo'],
     ])
     def test_script(self, lnam_file: str, lsrc_file: str, lingo_file: str):
         

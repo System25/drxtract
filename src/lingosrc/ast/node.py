@@ -14,7 +14,7 @@ class Node:
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
-            return self.name == other.name
+            return self.name == other.name and self.position == other.position
         return False
 
     def generate_lingo(self, indentation: int) -> str: 

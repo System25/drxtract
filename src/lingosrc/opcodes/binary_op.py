@@ -21,8 +21,8 @@ class BinaryOperationOpcode(Opcode):
     def process(self, context: Context, stack: List[Node], \
                 function: Function, index: int):
         op = BinaryOperation(self.opname, index)
-        op.left = stack.pop()
         op.right = stack.pop()
+        op.left = stack.pop()
         stack.append(op)
 
 #

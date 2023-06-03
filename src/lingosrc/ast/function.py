@@ -21,9 +21,13 @@ class Statement(Node):
         return (code_indentation(indentation) + 
             self.code.generate_lingo(indentation) + '\n')
 
-    def generate_js(self, indentation: int) -> str: 
-        return (code_indentation(indentation) + 
-            self.code.generate_js(indentation) + ';\n')
+    def generate_js(self, indentation: int) -> str:
+        js_code:str = self.code.generate_js(indentation);
+        if js_code.endswith('}'):
+            return code_indentation(indentation) + js_code + '\n'
+        else:       
+            return code_indentation(indentation) + js_code + ';\n'
+
         
 #
 # Function class.
