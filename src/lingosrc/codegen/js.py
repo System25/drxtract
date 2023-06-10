@@ -29,8 +29,12 @@ def generate_js_code(script: Script) -> str:
     if len(script.properties) > 0:
         code = code + "property?? %s\n"%(', '.join(script.properties))
     
+    first_function: bool = True
     for f in script.functions:
-        code = code + "OBJ.%s = function("%(f.name)
+        if not first_function:
+            code += "\n"
+        
+        code = code + "function %s("%(f.name)
         if len(f.parameters) > 0:
             code = " %s"%(', '.join(n.name for n in f.parameters))
         code += ") {\n"
@@ -48,6 +52,7 @@ def generate_js_code(script: Script) -> str:
             code = code + st.generate_js(1)
         
         code += "}\n"
+        first_function = False
     
     return code
          

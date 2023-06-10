@@ -18,6 +18,8 @@ from src.lingosrc.codegen import generate_lingo_code
 
 class TestScript(unittest.TestCase):
     
+    maxDiff = None
+    
     def setUp(self):
         os.chdir(os.path.join(os.path.dirname(__file__), 'files', 'lingo/'))
     

@@ -4,6 +4,7 @@
 
 from .node import Node
 from .variable import LocalVariable, GlobalVariable, ParameterName
+from .conversion import LoadListOperation
 from typing import List, Optional, cast
 from ..util import code_indentation
 
@@ -18,6 +19,8 @@ class Statement(Node):
         self.code = code
 
     def generate_lingo(self, indentation: int) -> str: 
+        if isinstance(self.code, CallFunction):
+            cast(CallFunction, self.code).use_parenthesis = False
         return (code_indentation(indentation) + 
             self.code.generate_lingo(indentation) + '\n')
 
@@ -51,11 +54,17 @@ class CallFunction(Node):
     def __init__(self, name: str, position: int):
         Node.__init__(self, name, position)
         self.parameters: Optional[Node] = None
+        self.use_parenthesis: bool = True
 
     def generate_lingo(self, indentation: int) -> str: 
-        if self.parameters is not None:
+        if (self.parameters is not None
+            and len(cast(LoadListOperation, self.parameters).operands) > 0):
+            
             params: Node = cast(Node, self.parameters)
-            return self.name + ' ' + params.generate_lingo(indentation)
+            if self.use_parenthesis:
+                return self.name + '('+params.generate_lingo(indentation)+')'
+            else:    
+                return self.name + ' ' + params.generate_lingo(indentation)
         else:
             return self.name
 

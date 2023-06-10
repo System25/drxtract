@@ -1,4 +1,4 @@
-OBJ.exitFrame = function() {
+function exitFrame() {
     var myLocVar;
     var mySecondLocVar;
     var myThirdLocVar;

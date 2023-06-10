@@ -29,7 +29,11 @@ def generate_lingo_code(script: Script) -> str:
     if len(script.properties) > 0:
         code = code + "property %s\n"%(', '.join(script.properties))
     
+    first_function: bool = True
     for f in script.functions:
+        if not first_function:
+            code += "\n"
+        
         code = code + "on %s"%(f.name)
         if len(f.parameters) > 0:
             code = " %s"%(', '.join(n.name for n in f.parameters))
@@ -48,6 +52,7 @@ def generate_lingo_code(script: Script) -> str:
             code = code + st.generate_lingo(1)
         
         code += "end\n"
+        first_function = False
     
     return code
          
