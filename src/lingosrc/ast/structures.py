@@ -13,10 +13,60 @@ from ..util import code_indentation
 class RepeatOperation(Node):
     """This class represents a repeat loop in the AST"""
     
-    def __init__(self, name: str, position: int):
+    def __init__(self, name: str, position: int, end_position: int):
         Node.__init__(self, name, position)
+        self.end_position: int = end_position
         self.condition: Optional[Node] = None
         self.statements_list: List[Statement] = []
+        self.type: str = 'while'
+        self.start: Optional[Node] = None
+        self.end: Optional[Node] = None
+        self.varname: str = ''
+        self.sign: str = ''
+
+    def generate_lingo(self, indentation: int) -> str: 
+        cond = cast(Node, self.condition)
+        str_cond: str = cond.generate_lingo(0)
+        if str_cond.startswith('('):
+            str_cond = str_cond[1:-1]
+
+        if self.type == 'while':
+            code = "repeat while %s\n"%(str_cond)
+        elif self.type == 'for':
+            code = "repeat with %s = %s %s %s\n"%(self.varname,
+                    cast(Node, self.start).generate_lingo(0),
+                    'to' if self.sign == '+' else 'down to',
+                    cast(Node, self.end).generate_lingo(0))
+        else:
+            code = "repeat with %s in %s\n"%(self.varname, '[]')
+        for st in self.statements_list:
+            code = code + st.generate_lingo(indentation + 1)
+        
+        code = code + code_indentation(indentation) + 'end repeat'
+        return code
+
+    def generate_js(self, indentation: int) -> str: 
+        cond = cast(Node, self.condition)
+        str_cond: str = cond.generate_js(0)
+        if not str_cond.startswith('('):
+            str_cond = "(%s)"%(str_cond)
+
+        if self.type == 'while':
+            code = "while %s {\n"%(str_cond)
+        elif self.type == 'for':
+            code = "for(var %s = %s; %s; %s%s) {\n"%(self.varname,
+                    cast(Node, self.start).generate_lingo(0),
+                    str_cond,
+                    self.varname,
+                    '++' if self.sign == '+' else '--')
+        else:
+            code = "repeat with %s in %s\n"%(self.varname, '[]')
+        
+        for st in self.statements_list:
+            code = code + st.generate_js(indentation + 1)           
+        
+        code = code + code_indentation(indentation) + '}'
+        return code
 
 #
 # If-then Operation class.
@@ -84,3 +134,13 @@ class JzOperation(Node):
         Node.__init__(self, name, position)
         self.condition: Optional[Node] = None
         self.address: Optional[int] = None
+
+#
+# Exit repeat class.
+# 
+class ExitRepeat(Node):
+    """This class represents an exit repeat loop operation"""
+    
+    def __init__(self, position: int):
+        Node.__init__(self, 'exit repeat', position)
+

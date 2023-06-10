@@ -20,7 +20,7 @@ class JumpOpcode(Param1Opcode):
         op1 = self.param1
         start_index = index - op1
         
-        op = RepeatOperation('repeat', start_index)
+        op = RepeatOperation('repeat', start_index, index)
         op.condition = ConstantValue('TRUE', start_index)
         
         for stmnt in function.statements:

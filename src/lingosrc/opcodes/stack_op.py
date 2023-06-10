@@ -24,7 +24,7 @@ class CopySymbolOpcode(Param1Opcode):
 #
 class DiscardSymbolsOpcode(Param1Opcode):
     def __init__(self):
-        Param1Opcode.__init__(self, 0x66)
+        Param1Opcode.__init__(self, 0x65)
     
     def process(self, context: Context, stack: List[Node], \
                 function: Function, index: int):

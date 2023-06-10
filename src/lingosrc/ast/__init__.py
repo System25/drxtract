@@ -20,5 +20,5 @@ from .conversion import LoadListOperation, ToListOperation, \
     ToDictionaryOperation
 from .function import Statement, Function, CallFunction, CallMethod
 from .structures import RepeatOperation, IfThenOperation, JumpOperation, \
-    JzOperation
+    JzOperation, ExitRepeat
 from .win_tell import WindowTellStartOperation, WindowTellEndOperation

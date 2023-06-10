@@ -1,0 +1,14 @@
+on exitFrame
+    put "1 to 10..."
+    repeat with val = 1 to 10
+        put "val=", val
+    end repeat
+    put "10 to 1..."
+    repeat with val = 10 down to 1
+        put "val=", val
+    end repeat
+    put "In list..."
+    repeat with val in [2, 4, 6, 8, 10]
+        put "val=", val
+    end repeat
+end
