@@ -29,6 +29,8 @@ class TestScript(unittest.TestCase):
         ['if_else.Lnam', 'if_else.Lscr', 'if_else.lingo'],
         ['repeat_while.Lnam', 'repeat_while.Lscr', 'repeat_while.lingo'],
         ['repeat_with.Lnam', 'repeat_with.Lscr', 'repeat_with.lingo'],
+        ['global_var_fn.Lnam', 'global_var_fn.Lscr', 'global_var_fn.lingo'],
+        ['global_var_hdr.Lnam', 'global_var_hdr.Lscr', 'global_var_hdr.lingo'],
     ])
     def test_script(self, lnam_file: str, lsrc_file: str, lingo_file: str):
         

@@ -14,4 +14,5 @@ class Script:
     
     def __init__(self):
         self.properties: List[str] = []
+        self.global_vars: List[str] = []
         self.functions: List[Function] = []

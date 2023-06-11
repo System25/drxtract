@@ -27,6 +27,12 @@ class Header:
         self.con_offset: int = -1
         """Base address for constant data"""
         
+        self.grb_nrecords: int = -1
+        """Number of global vars in the header"""
+        
+        self.grb_offset: int = -1
+        """Offset to the global vars records block"""
+        
         self.bytes_per_constant: int = -1
         """Bytes per constant in the constant record block"""
         

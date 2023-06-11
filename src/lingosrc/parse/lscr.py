@@ -90,6 +90,9 @@ def parse_lrcr_file_data(fdata: bytes, name_list: List[str]) -> Script:
     script = Script()
     script.properties = parse_lrcr_prb(fdata, header, name_list)   
     
+    # Read the global vars record blocks
+    script.global_vars = parse_lrcr_grb(fdata, header, name_list)
+    
     # Read the function record blocks once to get the local function names
     parse_frb_func_names(fdata, header, context)
     
@@ -398,11 +401,11 @@ def parse_lrcr_prb(fdata: bytes, header: Header, name_list: List[str]
     logging.debug("====== parse LSCR properties record block =================")
     lsrc_bit_order = '>'    
     pnames: List[str] = []
-    if header.frb_offset != header.prb_offset:
+    if header.grb_offset != header.prb_offset:
         # Read the properties record blocks once to get all the properties names
         idx = header.prb_offset
         i = 0
-        while idx < header.frb_offset:
+        while idx < header.grb_offset:
             # $0000-$0001  uint16  Namelist index for the property's name,
             # or 0xFFFF if there is no name(?)
             namelist_index = struct.unpack(lsrc_bit_order+"h", fdata[
@@ -418,6 +421,64 @@ def parse_lrcr_prb(fdata: bytes, header: Header, name_list: List[str]
     
 
     return pnames
+
+#
+# Parse LSCR global vars record blocks
+# 
+# =============================================================================
+def parse_lrcr_grb(fdata: bytes, header: Header, name_list: List[str]
+                   ) -> List[str]:
+    """
+    Parse a LSCR global vars record blocks and return a list of string with
+    the global var names.
+    
+    Parameters
+    ----------
+    fdata : bytes
+        The bytes inside the LNAM file to parse.
+    header: Header
+        The header of the LSRC file.
+    name_list: List[str]
+        The list of variables names and function names.
+        
+    Returns
+    -------
+    constants
+        a list of strings with the global var names.
+        
+    Raises
+    ------
+    ValueError
+        If some field inside the file is not compliant with the expected
+        file structure.
+        
+    """
+    
+    logging.debug("====== parse LSCR global vars record block ===============")
+    lsrc_bit_order = '>'    
+    gnames: List[str] = []
+    if header.frb_offset != header.grb_offset:
+        # Read the global vars record blocks once to get all the
+        # global vars names
+        idx = header.grb_offset
+        i = 0
+        while idx < header.frb_offset:
+            # $0000-$0001  uint16  Namelist index for the property's name,
+            # or 0xFFFF if there is no name(?)
+            namelist_index = struct.unpack(lsrc_bit_order+"h", fdata[
+                idx:idx+2])[0]
+            idx += 2
+
+            fname = 'noname'
+            if namelist_index >= 0 and namelist_index < len(name_list):
+                fname = name_list[namelist_index]
+            logging.debug('gnames[%d]=%s'%(i, fname))
+            i += 1
+            gnames.append(fname)            
+    
+
+    return gnames
+
 
 #
 # Parse LSCR constant record blocks
@@ -616,19 +677,20 @@ def parse_lrcr_file_header(fdata: bytes) -> Header:
     prb_offset = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
     idx += 2
 
-    unknown_17 =  struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+    # $0042-$0043 uint16 Number of global var records  
+    grb_nrecords =  struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
     idx += 2
     unknown_18 =  struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
     idx += 2
 
-    # $0045-$0046 uint16 Offset to the function records block  
-    frb_offset = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+    # $0045-$0046 uint16 Offset to the global_vars records block  
+    grb_offset = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
     idx += 2
 
     logging.debug("prb_offset = %s"%(prb_offset)) 
-    logging.debug("unknown_17 = %s"%(unknown_17)) 
+    logging.debug("grb_nrecords = %s"%(grb_nrecords)) 
     logging.debug("unknown_18 = %s"%(unknown_18)) 
-    logging.debug("frb_offset = %s"%(frb_offset)) 
+    logging.debug("frb_offset = %s"%(grb_offset)) 
 
 
     # $0048-$0049 uint16 Number of function records 
@@ -638,16 +700,13 @@ def parse_lrcr_file_header(fdata: bytes) -> Header:
     unknown_19 =  struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
     idx += 2
 
-    # Offset to the function records block repeated
-    frb_offset_cp = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+    # $0052-$0053 Offset to the function records block
+    frb_offset = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
     idx += 2
 
     logging.debug("frb_nrecords = %s"%(frb_nrecords)) 
     logging.debug("unknown_19 = %s"%(unknown_19)) 
-    logging.debug("frb_offset_cp = %s"%(frb_offset_cp)) 
-
-    if frb_offset != frb_offset_cp:
-        logging.warning("Bad copy #2 of offset to the function records block (%s, %s)"%(frb_offset, frb_offset_cp)) 
+    logging.debug("frb_offset = %s"%(frb_offset)) 
 
     # $004E-$004F    uint16  Number of constants 
     crb_nconstants = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
@@ -689,4 +748,6 @@ def parse_lrcr_file_header(fdata: bytes) -> Header:
     header.frb_nrecords = frb_nrecords
     header.frb_offset = frb_offset
     header.prb_offset = prb_offset
+    header.grb_nrecords = grb_nrecords
+    header.grb_offset = grb_offset
     return header

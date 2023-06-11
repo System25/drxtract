@@ -28,6 +28,11 @@ def generate_lingo_code(script: Script) -> str:
     code: str = ''
     if len(script.properties) > 0:
         code = code + "property %s\n"%(', '.join(script.properties))
+        
+    if len(script.global_vars) > 0:
+        for gvh in script.global_vars:
+            code = code + "global %s\n"%(gvh)
+        code = code + "\n"
     
     first_function: bool = True
     for f in script.functions:
@@ -39,10 +44,14 @@ def generate_lingo_code(script: Script) -> str:
             code = " %s"%(', '.join(n.name for n in f.parameters))
         code += "\n"
         
+        f.global_vars.sort(key = lambda x: x.name)
+        gv_count: int = 0
         for gv in f.global_vars:
-            code = code + code_indentation(1) + "global %s\n"%(gv.name)
+            if gv.name not in script.global_vars:
+                code = code + code_indentation(1) + "global %s\n"%(gv.name)
+                gv_count = gv_count + 1
             
-        if len(f.global_vars) > 0:
+        if gv_count > 0:
             code = code + "\n"
         
         if f.statements[-1].code.name == 'exit':

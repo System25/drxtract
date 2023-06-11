@@ -385,19 +385,19 @@ def lscr2lingo(lscr_file, name_list):
         prb_offset = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
         idx += 2
 
-        unknown_17 =  struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+        grb_nrecords =  struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
         idx += 2
         unknown_18 =  struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
         idx += 2
 
-        # $0045-$0046 uint16 Offset to the function records block  
-        frb_offset = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+        # $0045-$0046 uint16 Offset to the globals records block  
+        grb_offset = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
         idx += 2
 
         logging.debug("prb_offset = %s"%(prb_offset)) 
-        logging.debug("unknown_17 = %s"%(unknown_17)) 
+        logging.debug("grb_nrecords = %s"%(grb_nrecords)) 
         logging.debug("unknown_18 = %s"%(unknown_18)) 
-        logging.debug("frb_offset = %s"%(frb_offset)) 
+        logging.debug("grb_offset = %s"%(grb_offset)) 
 
 
         # $0048-$0049 uint16 Number of function records 
@@ -408,15 +408,13 @@ def lscr2lingo(lscr_file, name_list):
         idx += 2
 
         # Offset to the function records block repeated
-        frb_offset_cp = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+        frb_offset = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
         idx += 2
 
         logging.debug("frb_nrecords = %s"%(frb_nrecords)) 
         logging.debug("unknown_19 = %s"%(unknown_19)) 
-        logging.debug("frb_offset_cp = %s"%(frb_offset_cp)) 
+        logging.debug("frb_offset = %s"%(frb_offset)) 
 
-        if frb_offset != frb_offset_cp:
-            logging.warning("Bad copy #2 of offset to the function records block (%s, %s)"%(frb_offset, frb_offset_cp)) 
 
         # $004E-$004F    uint16  Number of constants 
         con_nconstants = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
@@ -526,12 +524,12 @@ def lscr2lingo(lscr_file, name_list):
 
         with open(file_name, 'wb') as file:
 
-            if frb_offset != prb_offset:
+            if grb_offset != prb_offset:
                 # Read the properties record blocks once to get all the properties names
                 idx = prb_offset
                 pnames = []
                 i = 0
-                while idx < frb_offset:
+                while idx < grb_offset:
                     # $0000-$0001  uint16  Namelist index for the property's name, or 0xFFFF if there is no name(?)
                     namelist_index = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
                     idx += 2
@@ -544,6 +542,26 @@ def lscr2lingo(lscr_file, name_list):
                     pnames.append(fname)            
             
                 write_code(file, "property %s\n"%(', '.join(pnames)))
+            
+            if frb_offset != grb_offset:
+                # Read the global record blocks once to get all the global var names
+                idx = grb_offset
+                gnames = []
+                i = 0
+                while idx < frb_offset:
+                    # $0000-$0001  uint16  Namelist index for the property's name, or 0xFFFF if there is no name(?)
+                    namelist_index = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+                    idx += 2
+
+                    fname = 'noname'
+                    if namelist_index >= 0 and namelist_index < len(name_list):
+                        fname = name_list[namelist_index]
+                    logging.debug('pnames[%d]=%s'%(i, fname))
+                    i += 1
+                    gnames.append(fname)         
+                    write_code(file, "global %s\n"%(fname))
+            
+                write_code(file, "\n")            
             
             # Read the functions record blocks once to get all the local function names
             idx = frb_offset

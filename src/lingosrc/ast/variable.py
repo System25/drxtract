@@ -23,6 +23,11 @@ class GlobalVariable(Node):
     def __init__(self, name: str, position: int):
         Node.__init__(self, name, position)
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.name == other.name
+        return False
+
     def generate_js(self, indentation: int) -> str: 
         return "_global.%s"%(self.name)
 #
