@@ -6,7 +6,7 @@ from typing import List, cast, Optional
 from ..ast import Statement, Function, JzOperation, RepeatOperation, \
     JumpOperation, IfThenOperation, ExitRepeat, UnaryOperation, \
     UnaryOperationNames, BinaryOperation, BinaryOperationNames, Node, \
-    ConstantValue
+    ConstantValue, CallFunction, LoadListOperation
 
 #
 # Condition detection.
@@ -218,8 +218,19 @@ def loop_detect_in_statements(statements: List[Statement]):
                 ro.statements_list.pop()
                 to_remove.append(p_st)
                 
+            if is_repeat_with_in_list(ro):
+                # Repeat with in list
+                ro.type = 'for_in'
+                first_st: Statement = ro.statements_list[0]
+                first_op: BinaryOperation = cast(BinaryOperation, first_st.code)
+                ro.varname = cast(Node, first_op.left).name
                 
-
+                assign_fn: CallFunction = cast(CallFunction, first_op.right)
+                assign_fn_par:LoadListOperation = cast(
+                    LoadListOperation, assign_fn.parameters)
+                ro.start = assign_fn_par.operands[1]
+                
+                ro.statements_list.pop(0)
 
             
             loop_detect_in_statements(ro.statements_list)
@@ -234,6 +245,62 @@ def loop_detect_in_statements(statements: List[Statement]):
     for st in to_remove:
         statements.remove(st)
     
+def is_repeat_with_in_list(ro: RepeatOperation):
+    """
+    Checks the repeat operation and the previous statement in order
+    to see if this is a repeat-with-in-list operation.
+    
+    Parameters
+    ----------
+    ro : RepeatOperation
+        The repeat operation to check.
+        
+    Returns
+    -------
+    boolean
+        True if this is repeat-while loop.
+    """
+    
+    if not isinstance(ro.condition, BinaryOperation):
+        return False
+    
+    cond: BinaryOperation = cast(BinaryOperation, ro.condition)
+    if (not isinstance(cond.left, ConstantValue) or 
+        not isinstance(cond.right, CallFunction)):
+        return False
+    
+    index: str = cast(ConstantValue, cond.left).name
+    cond_func: CallFunction = cast(CallFunction, cond.right)
+    if index != '1' or cond_func.name != 'count':
+        return False
+    cond_func_par:LoadListOperation = cast(
+        LoadListOperation, cond_func.parameters)
+
+    if len(ro.statements_list) > 0:
+        st: Statement = ro.statements_list[0]
+        if (isinstance(st.code, BinaryOperation)
+            and st.code.name == BinaryOperationNames.ASSIGN.value):
+            first_op: BinaryOperation = cast(BinaryOperation, st.code)
+            
+            if not isinstance(first_op.right, CallFunction):
+                return False
+            
+            assign_fn: CallFunction = cast(CallFunction, first_op.right)
+            if not assign_fn.name == 'getAt':
+                return False
+            
+            assign_fn_par:LoadListOperation = cast(
+                LoadListOperation, assign_fn.parameters)
+
+            if (cond_func_par.operands[0] != assign_fn_par.operands[1]
+                or assign_fn_par.operands[0].name != '1'):
+                return False
+    
+            return True
+    
+    
+
+    return False 
         
 def is_repeat_with(ro: RepeatOperation, previous_st: Optional[Statement]):
     """

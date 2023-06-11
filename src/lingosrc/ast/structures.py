@@ -38,7 +38,9 @@ class RepeatOperation(Node):
                     'to' if self.sign == '+' else 'down to',
                     cast(Node, self.end).generate_lingo(0))
         else:
-            code = "repeat with %s in %s\n"%(self.varname, '[]')
+            code = "repeat with %s in %s\n"%(self.varname,
+                        cast(Node, self.start).generate_lingo(0))
+        
         for st in self.statements_list:
             code = code + st.generate_lingo(indentation + 1)
         
@@ -54,13 +56,14 @@ class RepeatOperation(Node):
         if self.type == 'while':
             code = "while %s {\n"%(str_cond)
         elif self.type == 'for':
-            code = "for(var %s = %s; %s; %s%s) {\n"%(self.varname,
-                    cast(Node, self.start).generate_lingo(0),
-                    str_cond,
+            code = "for(%s = %s; %s; %s%s) {\n"%(self.varname,
+                    cast(Node, self.start).generate_js(0),
+                    str_cond[1:-1],
                     self.varname,
                     '++' if self.sign == '+' else '--')
         else:
-            code = "repeat with %s in %s\n"%(self.varname, '[]')
+            code = "for(%s of %s) {\n"%(self.varname,
+                        cast(Node, self.start).generate_js(0))
         
         for st in self.statements_list:
             code = code + st.generate_js(indentation + 1)           
