@@ -26,17 +26,18 @@ def generate_js_code(script: Script) -> str:
         
     """
     code: str = ''
-    if len(script.properties) > 0:
-        code = code + "property?? %s\n"%(', '.join(script.properties))
     
     first_function: bool = True
     for f in script.functions:
         if not first_function:
             code += "\n"
         
+        if f.name == 'new':
+            f.name = 'birth'
+        
         code = code + "function %s("%(f.name)
         if len(f.parameters) > 0:
-            code = " %s"%(', '.join(n.name for n in f.parameters))
+            code = code + "%s"%(', '.join(n.name for n in f.parameters))
         code += ") {\n"
         
         for lv in f.local_vars:

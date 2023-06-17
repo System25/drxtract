@@ -41,7 +41,7 @@ def generate_lingo_code(script: Script) -> str:
         
         code = code + "on %s"%(f.name)
         if len(f.parameters) > 0:
-            code = " %s"%(', '.join(n.name for n in f.parameters))
+            code = code + " %s"%(', '.join(n.name for n in f.parameters))
         code += "\n"
         
         f.global_vars.sort(key = lambda x: x.name)

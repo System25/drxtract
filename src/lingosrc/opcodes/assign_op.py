@@ -5,8 +5,8 @@
 from .opcode import Param1Opcode, BiOpcode
 from ..ast import GlobalVariable, PropertyName, \
    BinaryOperation, BinaryOperationNames, SpAssignOperation, \
-   UnaryOperation, UnaryOperationNames, Statement, ParameterName, Node, \
-   ConstantValue, Function
+   UnaryOperation, UnaryOperationNames, Statement, Node, \
+   ConstantValue, Function, PropertyAccessorOperation
 from ..model import Context
 from typing import List
 
@@ -75,7 +75,12 @@ class AssignPropertyOpcode(Param1Opcode):
                 function: Function, index: int):
         op1 = self.param1
         op = BinaryOperation(BinaryOperationNames.ASSIGN, index)
-        op.left = PropertyName(context.name_list[op1], index)
+        if context.name_list[op1] in context.properties:
+            op.left = PropertyAccessorOperation(Node('me', index),
+                                                context.name_list[op1],
+                                                index)
+        else:    
+            op.left = PropertyName(context.name_list[op1], index)
         op.right = stack.pop()
         function.statements.append(Statement(op, index))
 
@@ -101,9 +106,8 @@ class AssignParameterOpcode(Param1Opcode):
         if (op1 % context.bytes_per_constant) > 0:
             context.bytes_per_constant = (op1 % context.bytes_per_constant)
         
-        value = context.parameter_names[int(op1 / context.bytes_per_constant)]
         op = BinaryOperation(BinaryOperationNames.ASSIGN, index)
-        op.left = ParameterName(value, index)
+        op.left = function.parameters[int(op1 / context.bytes_per_constant)]
         op.right = stack.pop()
         
         function.statements.append(Statement(op, index))

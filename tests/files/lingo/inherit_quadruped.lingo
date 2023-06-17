@@ -1,0 +1,6 @@
+property hasTail, ancestor
+on birth me, tail
+    put birth(script("Animal"), 4) into ancestor
+    put tail into hasTail
+    return me
+end

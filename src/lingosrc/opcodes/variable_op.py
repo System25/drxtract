@@ -62,7 +62,7 @@ class PropertyNameOpcode(Param1Opcode):
 #
 class ParameterNameOpcode(Param1Opcode):
     def __init__(self):
-        Param1Opcode.__init__(self, 0x4A)
+        Param1Opcode.__init__(self, 0x4B)
 
     def process(self, context: Context, stack: List[Node], \
                 function: Function, index: int):
@@ -70,16 +70,16 @@ class ParameterNameOpcode(Param1Opcode):
         if (op1 % context.bytes_per_constant) > 0:
             context.bytes_per_constant = (op1 % context.bytes_per_constant)
         
-        value = context.parameter_names[int(op1 / context.bytes_per_constant)]
+        value = function.parameters[int(op1 / context.bytes_per_constant)]
         
-        stack.append(ParameterName(value, index))
+        stack.append(ParameterName(value.name, index))
     
 #
 # Use local variable name Opcode.
 #
 class LocalVariableOpcode(Param1Opcode):
     def __init__(self):
-        Param1Opcode.__init__(self, 0x4B)
+        Param1Opcode.__init__(self, 0x4C)
     
     def process(self, context: Context, stack: List[Node], \
                 function: Function, index: int):
@@ -90,12 +90,4 @@ class LocalVariableOpcode(Param1Opcode):
         value = function.local_vars[int(op1 / context.bytes_per_constant)]
         
         stack.append(value)
-        
-    
-#
-# Use local variable Opcode.
-#
-class LocalVarOpcode(LocalVariableOpcode):
-    def __init__(self):
-        LocalVariableOpcode.__init__(self)
-        self.opcode = 0x4C
+

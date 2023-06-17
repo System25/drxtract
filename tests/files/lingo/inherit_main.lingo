@@ -1,0 +1,10 @@
+on exitFrame
+    put "Create an insect"
+    put birth(script("Insect"), 4) into dragonFly
+    put "dragonFly.legCount", the legCount of dragonFly
+    put "dragonFly.wingCount", the wingCount of dragonFly
+    put "Create a quadruped"
+    put birth(script("Quadruped"), 1) into dog
+    put "dog.legCount", the legCount of dog
+    put "dog.hasTail", the hasTail of dog
+end

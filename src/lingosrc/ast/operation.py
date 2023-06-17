@@ -257,7 +257,17 @@ class PropertyAccessorOperation(Node):
     def __init__(self, obj: Node, name: str, position: int):
         Node.__init__(self, 'accessor', position)
         self.obj: Node = obj
-        self.prop: Optional[PropertyName] = None
+        self.prop: str = name
+        
+    def generate_lingo(self, indentation: int) -> str:
+        obj_str = self.obj.generate_lingo(indentation)
+        if obj_str == 'me':
+            return '%s'%(self.prop)
+        else:
+            return "the %s of %s"%(self.prop, obj_str)
+
+    def generate_js(self, indentation: int) -> str: 
+        return "%s.%s"%(self.obj.generate_js(indentation), self.prop)
     
 #
 # Menuitem accessor operation class.

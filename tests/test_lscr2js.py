@@ -31,6 +31,10 @@ class TestScript(unittest.TestCase):
         ['repeat_with.Lnam', 'repeat_with.Lscr', 'repeat_with.js'],
         ['global_var_fn.Lnam', 'global_var_fn.Lscr', 'global_var_fn.js'],
         ['global_var_hdr.Lnam', 'global_var_hdr.Lscr', 'global_var_hdr.js'],
+        ['inherit.Lnam', 'inherit_main.Lscr', 'inherit_main.js'],
+        ['inherit.Lnam', 'inherit_animal.Lscr', 'inherit_animal.js'],
+        ['inherit.Lnam', 'inherit_insect.Lscr', 'inherit_insect.js'],
+        ['inherit.Lnam', 'inherit_quadruped.Lscr', 'inherit_quadruped.js'],
     ])
     def test_script(self, lnam_file: str, lsrc_file: str, lingo_file: str):
         

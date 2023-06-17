@@ -31,6 +31,10 @@ class TestScript(unittest.TestCase):
         ['repeat_with.Lnam', 'repeat_with.Lscr', 'repeat_with.lingo'],
         ['global_var_fn.Lnam', 'global_var_fn.Lscr', 'global_var_fn.lingo'],
         ['global_var_hdr.Lnam', 'global_var_hdr.Lscr', 'global_var_hdr.lingo'],
+        ['inherit.Lnam', 'inherit_main.Lscr', 'inherit_main.lingo'],
+        ['inherit.Lnam', 'inherit_animal.Lscr', 'inherit_animal.lingo'],
+        ['inherit.Lnam', 'inherit_insect.Lscr', 'inherit_insect.lingo'],
+        ['inherit.Lnam', 'inherit_quadruped.Lscr', 'inherit_quadruped.lingo'],
     ])
     def test_script(self, lnam_file: str, lsrc_file: str, lingo_file: str):
         

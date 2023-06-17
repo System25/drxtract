@@ -88,7 +88,8 @@ def parse_lrcr_file_data(fdata: bytes, name_list: List[str]) -> Script:
     
     # Read the properties record blocks
     script = Script()
-    script.properties = parse_lrcr_prb(fdata, header, name_list)   
+    script.properties = parse_lrcr_prb(fdata, header, name_list)
+    context.properties = script.properties
     
     # Read the global vars record blocks
     script.global_vars = parse_lrcr_grb(fdata, header, name_list)

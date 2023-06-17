@@ -68,13 +68,33 @@ class CallFunction(Node):
         else:
             return self.name
 
-    def generate_js(self, indentation: int) -> str: 
+    def generate_js(self, indentation: int) -> str:
+        nm = self.name
+        if nm == 'birth':
+            nm = '_movie.newScript'
+        
+        params_str: str = ''
         if self.parameters is not None:
             params: Node = cast(Node, self.parameters)
-            return self.name + '(' + params.generate_js(indentation) + ')'
-        else:
-            return self.name + '()'
+            params_str = params.generate_js(indentation)
+            
+        if nm == 'new':
+            if params_str.startswith('symbol('):
+                nm = '_movie.newMember'
+            else:
+                nm = '_movie.newScript'
+            
+        return self.generate_js_code(nm, params_str)
 
+    
+    def generate_js_code(self, nm: str, params: str) -> str:
+        if nm in ['return']:
+            if params != '':      
+                return nm + ' ' + params;
+            else:
+                return nm;
+        else:
+            return nm + '(' + params + ')'
 #
 # Call method operation class.
 # 

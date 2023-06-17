@@ -1,0 +1,5 @@
+property legCount
+on birth me, legs
+    put legs into legCount
+    return me
+end

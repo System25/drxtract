@@ -15,4 +15,4 @@ class Context:
         self.bytes_per_constant: int = None
         self.name_list: List[str] = []
         self.local_func_names: List[str] = []
-        self.parameter_names: List[str] = []
+        self.properties: List[str] = []
