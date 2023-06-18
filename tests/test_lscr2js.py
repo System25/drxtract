@@ -35,6 +35,8 @@ class TestScript(unittest.TestCase):
         ['inherit.Lnam', 'inherit_animal.Lscr', 'inherit_animal.js'],
         ['inherit.Lnam', 'inherit_insect.Lscr', 'inherit_insect.js'],
         ['inherit.Lnam', 'inherit_quadruped.Lscr', 'inherit_quadruped.js'],
+        ['put_after.Lnam', 'put_after.Lscr', 'put_after.js'],
+        ['put_after_field.Lnam', 'put_after_field.Lscr', 'put_after_field.js'],
     ])
     def test_script(self, lnam_file: str, lsrc_file: str, lingo_file: str):
         

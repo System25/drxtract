@@ -346,7 +346,7 @@ if __name__ == '__main__':
             if sys.argv[2].upper().endswith('.EXE'):
                 # Try to find DRX header inside the EXE file
                 content = fileContent
-                index = content.find(RIFX_FILE_FORMAT)
+                index = content.find(RIFX_FILE_FORMAT.encode('ascii'))
                 found = False
                 while index >= 0 and not found:
                     rifx_offset += index
@@ -356,7 +356,7 @@ if __name__ == '__main__':
                     else:
                         content = content[4:]
                         rifx_offset += 4
-                        index = content.find(RIFX_FILE_FORMAT)
+                        index = content.find(RIFX_FILE_FORMAT.encode('ascii'))
 
             parse_riff(fileContent, rifx_offset)
 

@@ -77,4 +77,11 @@ if __name__ == '__main__':
         print("========================\n")
         print(lingo)
 
+        # Save file
+        file_ext = "lingo"
+        lscr_file = os.path.join(sys.argv[2], sys.argv[3])
+        nfiles = lscr_file[0:lscr_file.rfind('.')]
+        file_name = "%s.%s"%(nfiles, file_ext)
+        with open(file_name, 'wb') as file:
+            file.write(lingo.encode('utf-8'))
         

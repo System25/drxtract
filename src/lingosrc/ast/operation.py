@@ -215,16 +215,23 @@ class SpAssignOperation(Node):
     def generate_lingo(self, indentation: int) -> str:
         l = cast(Node, self.left)
         r = cast(Node, self.right)
-        return "put %s %s %s"%(l.generate_lingo(indentation),
+        return "put %s %s %s"%(r.generate_lingo(indentation),
                                 self.mode,
-                                r.generate_lingo(indentation))
+                                l.generate_lingo(indentation))
     
     def generate_js(self, indentation: int) -> str:
         l = cast(Node, self.left)
         r = cast(Node, self.right)
-        return "put_%s(%s, %s)"%(self.mode,
-                                 l.generate_js(indentation),
-                                 r.generate_js(indentation))
+        left: str = l.generate_js(indentation);
+        if left.startswith('field(') and left.endswith(')'):
+            left += '.text'
+        
+        if self.mode == 'after':
+            return "%s = %s + %s"%(left, left, r.generate_js(indentation))
+        elif self.mode == 'before':
+            return "%s = %s + %s"%(left, r.generate_js(indentation), left)
+        else:
+            return "%s = %s"%(left, r.generate_js(indentation))
 #
 # String Operation class.
 # 
