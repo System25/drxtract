@@ -15,7 +15,7 @@ from .binary_op import MultiplyOpcode, AddOpcode, SubOpcode, DivOpcode, \
 	OrOpcode, IntersectsOpcode, WithinOpcode
 
 from .assign_op import AssignGlobalVariableOpcode, AssignGlobalVarOpcode, \
-	LoadPropertyOpcode, DropAndLoadPropertyOpcode, AssignPropertyOpcode, \
+	LoadPropertyOpcode, AssignPropertyOpcode, \
 	AssignValToPropertyOpcode, AssignParameterOpcode, \
 	AssignLocalVariableOpcode, AssignIntoLocalVarOpcode, \
 	AssignIntoFieldOpcode, AssignAfterLocalVarOpcode, \
@@ -99,7 +99,6 @@ OPCODES_LIST: List[Opcode] = [
 	AssignGlobalVariableOpcode(),
 	AssignGlobalVarOpcode(),
 	LoadPropertyOpcode(),
-	DropAndLoadPropertyOpcode(),
 	AssignPropertyOpcode(),
 	AssignValToPropertyOpcode(),
 	AssignParameterOpcode(),

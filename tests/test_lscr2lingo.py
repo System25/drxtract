@@ -40,6 +40,7 @@ class TestScript(unittest.TestCase):
         ['put_after_field.Lnam', 'put_after_field.Lscr',
          'put_after_field.lingo'],
         ['keys.Lnam', 'keys.Lscr', 'keys.lingo'],
+        ['actor_list.Lnam', 'actor_list.Lscr', 'actor_list.lingo'],
     ])
     def test_script(self, lnam_file: str, lsrc_file: str, lingo_file: str):
         

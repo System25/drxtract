@@ -39,6 +39,7 @@ class TestScript(unittest.TestCase):
         ['put_after.Lnam', 'put_after.Lscr', 'put_after.js'],
         ['put_after_field.Lnam', 'put_after_field.Lscr', 'put_after_field.js'],
         ['keys.Lnam', 'keys.Lscr', 'keys.js'],
+        ['actor_list.Lnam', 'actor_list.Lscr', 'actor_list.js'],
     ])
     def test_script(self, lnam_file: str, lsrc_file: str, lingo_file: str):
         

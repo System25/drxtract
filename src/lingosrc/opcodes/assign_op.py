@@ -51,20 +51,6 @@ class LoadPropertyOpcode(Param1Opcode):
         stack.append(op)
 
 #
-# Load property Opcode.
-#
-class DropAndLoadPropertyOpcode(Param1Opcode):
-    def __init__(self):
-        Param1Opcode.__init__(self, 0x5F)
-    
-    def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
-        stack.pop()
-        op1 = self.param1
-        op = PropertyName(context.name_list[op1], index)
-        stack.append(op)   
-
-#
 # Assign to property Opcode.
 #
 class AssignPropertyOpcode(Param1Opcode):

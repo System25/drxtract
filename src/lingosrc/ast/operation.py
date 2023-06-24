@@ -3,7 +3,7 @@
 # License: GNU GPL v2 (see LICENSE file for details).
 
 from .node import Node
-from .variable import PropertyName, Menu, MenuItem
+from .variable import Menu, MenuItem
 from enum import Enum
 from typing import Optional, cast, Dict
 
@@ -176,8 +176,12 @@ class BinaryOperation(Node):
         r = cast(Node, self.right)
         
         if self.name == 'assign':
-            return "put %s into %s"%(r.generate_lingo(indentation),
-                                     l.generate_lingo(indentation))            
+            left: str = l.generate_lingo(indentation)
+            right: str = r.generate_lingo(indentation)
+            if left.startswith("the "):
+                return "set %s = %s"%(left, right)
+            else:
+                return "put %s into %s"%(right, left)            
         
         op = LINGO_BIN_OP[self.name]
         

@@ -38,6 +38,14 @@ class PropertyName(Node):
     
     def __init__(self, name: str, position: int):
         Node.__init__(self, name, position)
+ 
+
+    def generate_lingo(self, indentation: int) -> str: 
+        return "the %s"%(self.name)
+
+    def generate_js(self, indentation: int) -> str: 
+        default_obj: str = '_movie'
+        return "%s.%s"%(default_obj, self.name)
     
 #
 # Parameter name class.
