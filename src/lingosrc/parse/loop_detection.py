@@ -74,6 +74,11 @@ def condition_detect_in_statements(statements: List[Statement],
             jzop: JzOperation = cast(JzOperation, st.code)
             address = jzop.address
             jzOperations.append(jzop)
+            # exit repeat in if part?
+            if repeat_op is not None:
+                ro = cast(RepeatOperation, repeat_op)
+                if ro.end_position < cast(int, address):
+                    address = None
         
 
     # Create if-else-endif statements
@@ -114,6 +119,7 @@ def condition_detect_in_statements(statements: List[Statement],
         for st in ifop.if_statements_list:
             statements.remove(st)
 
+        break_detect_in_statements(ifop.if_statements_list, repeat_op)
         condition_detect_in_statements(ifop.if_statements_list, repeat_op)
             
         # else part        
@@ -143,7 +149,45 @@ def condition_detect_in_statements(statements: List[Statement],
                  
             ifop.if_statements_list.pop()
             
+            break_detect_in_statements(ifop.else_statements_list, repeat_op)
             condition_detect_in_statements(ifop.else_statements_list, repeat_op)
+
+
+#
+# Break loop detection inside if or else operation.
+# 
+# =============================================================================
+def break_detect_in_statements(statements: List[Statement],
+                                   repeat_op: Optional[RepeatOperation]):
+    """
+    Checks the AST of the statements inside an if or else and search for
+    break.
+    
+    Parameters
+    ----------
+    statements : List[Statement]
+        The statements to check.
+    repeat_op : Optional[RepeatOperation]
+        The possible loop that contains the statements.
+        
+    """
+    
+    if repeat_op is None or len(statements)<2:
+        return
+    
+    # Check the last statement before "else" jump
+    last_st: Statement = statements[-2]
+    if isinstance(last_st.code, JumpOperation):
+        jop = cast(JumpOperation, last_st.code)
+        address: int = cast(int, jop.address)
+        ro = cast(RepeatOperation, repeat_op)
+        if ro.end_position < address:
+            st = Statement(ExitRepeat(jop.position), jop.position)
+            else_jump = statements.pop()
+            statements.pop()
+            statements.append(st)
+            statements.append(else_jump)
+
 
 #
 # Loop detection.

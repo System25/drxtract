@@ -38,7 +38,8 @@ from .property_op import SpecialPropertiesOpcode, \
 	SystemPropertiesOpcode, AssignSystemPropertiesOpcode, \
 	CastPropertiesOpcode, AssignCastPropertiesOpcode, \
 	VideoPropertiesOpcode, AssignVideoPropertiesOpcode, \
-	PropertyAccesorOpcode, AssignPropertyAccesorOpcode
+	PropertyAccesorOpcode, AssignPropertyAccesorOpcode, \
+	KeyPropertyAccesorOpcode
 
 from .stack_op import CopySymbolOpcode, DiscardSymbolsOpcode
 
@@ -139,6 +140,7 @@ OPCODES_LIST: List[Opcode] = [
 	AssignVideoPropertiesOpcode(),
 	PropertyAccesorOpcode(),
 	AssignPropertyAccesorOpcode(),
+	KeyPropertyAccesorOpcode(),
 	
 	CopySymbolOpcode(),
 	DiscardSymbolsOpcode(),

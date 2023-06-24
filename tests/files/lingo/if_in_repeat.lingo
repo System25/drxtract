@@ -1,0 +1,20 @@
+on exitFrame
+    put "first loop"
+    repeat with i = 1 to 10
+        put "i=", i
+        if ((i mod 2) = 0) then
+            put "i is even"
+        else
+            put "i is odd"
+        end if
+    end repeat
+    put "Second loop"
+    repeat with i = 1 to 10
+        put "i=", i
+        if (i = 9) then
+            exit repeat
+        else
+            put "do not exit yet"
+        end if
+    end repeat
+end

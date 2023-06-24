@@ -29,6 +29,7 @@ class TestScript(unittest.TestCase):
         ['if_else.Lnam', 'if_else.Lscr', 'if_else.lingo'],
         ['repeat_while.Lnam', 'repeat_while.Lscr', 'repeat_while.lingo'],
         ['repeat_with.Lnam', 'repeat_with.Lscr', 'repeat_with.lingo'],
+        ['if_in_repeat.Lnam', 'if_in_repeat.Lscr', 'if_in_repeat.lingo'],
         ['global_var_fn.Lnam', 'global_var_fn.Lscr', 'global_var_fn.lingo'],
         ['global_var_hdr.Lnam', 'global_var_hdr.Lscr', 'global_var_hdr.lingo'],
         ['inherit.Lnam', 'inherit_main.Lscr', 'inherit_main.lingo'],
@@ -38,6 +39,7 @@ class TestScript(unittest.TestCase):
         ['put_after.Lnam', 'put_after.Lscr', 'put_after.lingo'],
         ['put_after_field.Lnam', 'put_after_field.Lscr',
          'put_after_field.lingo'],
+        ['keys.Lnam', 'keys.Lscr', 'keys.lingo'],
     ])
     def test_script(self, lnam_file: str, lsrc_file: str, lingo_file: str):
         

@@ -275,6 +275,22 @@ class PropertyAccessorOperation(Node):
 
     def generate_js(self, indentation: int) -> str: 
         return "%s.%s"%(self.obj.generate_js(indentation), self.prop)
+
+#
+# Key property accessor operation class.
+# 
+class KeyPropertyAccessorOperation(Node):
+    """This class represents a _key property access in the AST"""
+    
+    def __init__(self, name: str, position: int):
+        Node.__init__(self, 'accessor', position)
+        self.prop: str = name
+        
+    def generate_lingo(self, indentation: int) -> str:
+        return "the %s"%(self.prop)
+
+    def generate_js(self, indentation: int) -> str: 
+        return "_key.%s"%(self.prop)
     
 #
 # Menuitem accessor operation class.

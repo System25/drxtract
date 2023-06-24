@@ -147,3 +147,5 @@ class ExitRepeat(Node):
     def __init__(self, position: int):
         Node.__init__(self, 'exit repeat', position)
 
+    def generate_js(self, indentation: int) -> str: 
+        return 'break'

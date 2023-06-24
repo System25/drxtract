@@ -14,7 +14,7 @@ from .variable import LocalVariable, GlobalVariable, PropertyName,\
 from .operation import UnaryOperation, BinaryOperation, StringOperation,\
     SpAssignOperation, UnaryStringOperation, PropertyAccessorOperation, \
     MenuitemAccessorOperation, BinaryOperationNames, UnaryOperationNames, \
-    StringOperationNames
+    StringOperationNames, KeyPropertyAccessorOperation
 from .constant_val import ConstantValue, Symbol
 from .conversion import LoadListOperation, ToListOperation, \
     ToDictionaryOperation

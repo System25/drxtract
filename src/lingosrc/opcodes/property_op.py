@@ -7,7 +7,7 @@ from ..ast import Function, Sprite, StringOperationNames, \
     GlobalVariable, PropertyName, DateTimeFunction, UnaryStringOperation, \
     UnaryOperationNames, BinaryOperation, BinaryOperationNames, \
     MenuitemAccessorOperation, Menu, MenuItem, PropertyAccessorOperation, \
-    Cast, Node, ConstantValue
+    Cast, Node, ConstantValue, KeyPropertyAccessorOperation, LoadListOperation
 from ..model import Context
 from typing import List, cast, Optional
 
@@ -352,3 +352,22 @@ class AssignPropertyAccesorOpcode(PropertyAccesorOpcode):
         op.left = stack.pop()
         op.right = value
         stack.append(op) 
+
+#
+# Key Property accesor Opcode.
+#
+class KeyPropertyAccesorOpcode(Param1Opcode):
+    def __init__(self):
+        Param1Opcode.__init__(self, 0x66)
+    
+    def process(self, context: Context, stack: List[Node], \
+                function: Function, index: int):
+        op1 = self.param1
+        prop = context.name_list[op1]
+        empty_val = stack.pop()
+        if (not isinstance(empty_val, LoadListOperation)
+            or len(cast(LoadListOperation, empty_val).operands) > 0):
+            raise Exception("The KeyPropertyAccessorOperation parameter should" +
+                            " be an empty list")
+        op = KeyPropertyAccessorOperation(prop, index)
+        stack.append(op)

@@ -1,0 +1,15 @@
+on exitFrame
+    if the commandDown then
+        put "COMMAND"
+    end if
+    if the shiftDown then
+        put "SHIFT"
+    end if
+    if the controlDown then
+        put "CONTROL"
+    end if
+    if the optionDown then
+        put "OPTION"
+    end if
+    put "last key: ", the key, " code:", the keyCode
+end
