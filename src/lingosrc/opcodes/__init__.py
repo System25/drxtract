@@ -69,10 +69,15 @@ BI_OPCODES_LIST : List[BiOpcode] = [
 	SpecialPropertiesOpcode(),
 	NumberOfElementsOpcode(),
 	MenuitemPropertiesOpcode(),
+	AssignMenuitemPropertiesOpcode(),
 	SpritePropertiesOpcode(),
+	AssignSpritePropertiesOpcode(),
 	SystemPropertiesOpcode(),
+	AssignSystemPropertiesOpcode(),
 	CastPropertiesOpcode(),
-	VideoPropertiesOpcode()
+	AssignCastPropertiesOpcode(),
+	VideoPropertiesOpcode(),
+	AssignVideoPropertiesOpcode()
 ]	
 
 OPCODES_LIST: List[Opcode] = [

@@ -11,4 +11,7 @@ on exitFrame
     put "bg color: ", the backColor of sprite 1
     put "cast fore color", the foreColor of cast 1
     put "cast bg color", the backColor of cast 1
+    set the locV of sprite 1 = 10
+    set the locH of sprite 1 = 10
+    set the foreColor of cast 1 = 1
 end

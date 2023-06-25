@@ -11,4 +11,7 @@ function exitFrame() {
     put("bg color: ", sprite(1).backColor);
     put("cast fore color", member(1).foreColor);
     put("cast bg color", member(1).backColor);
+    sprite(1).locV = 10;
+    sprite(1).locH = 10;
+    member(1).foreColor = 1;
 }
