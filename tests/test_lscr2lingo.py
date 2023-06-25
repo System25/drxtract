@@ -42,6 +42,8 @@ class TestScript(unittest.TestCase):
         ['keys.Lnam', 'keys.Lscr', 'keys.lingo'],
         ['actor_list.Lnam', 'actor_list.Lscr', 'actor_list.lingo'],
         ['go.Lnam', 'go.Lscr', 'go.lingo'],
+        ['sprite_props.Lnam', 'sprite_props.Lscr', 'sprite_props.lingo'],
+        
     ])
     def test_script(self, lnam_file: str, lsrc_file: str, lingo_file: str):
         

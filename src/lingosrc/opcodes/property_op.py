@@ -24,15 +24,15 @@ OPERATION_TYPES: List[StringOperationNames] = [StringOperationNames.CHAR,
 
 MENUITEM_PROPERTIES = ['name', 'checkMark', 'enabled', 'script']
 
-SPRITE_PROPERTIES = ['type', 'backColor', 'bottom', 'castNum', 'constraint',
-                     'cursor', 'foreColor', 'height', 'UNKNOWN1', 'ink',
-                     'left', 'lineSize', 'locH', 'locV', 'movieRate',
+SPRITE_PROPERTIES = ['UNKNOWN0', 'type', 'backColor', 'bottom', 'castNum',
+                     'constraint', 'cursor', 'foreColor', 'height', 'UNKNOWN1',
+                     'ink', 'left', 'lineSize', 'locH', 'locV', 'movieRate',
                      'movieTime', 'UNKNOWN2', 'puppet', 'right',
                      'startTime', 'stopTime', 'stretch', 'top', 'trails',
                      'visible', 'volume', 'width', 'blend', 'scriptNum',
                      'moveableSprite', 'UNKNOWN3', 'scoreColor']
 
-CAST_PROPERTIES = ['name', 'text', 'UNKNOWN2', 'UNKNOWN3', 'UNKNOWN4',
+CAST_PROPERTIES = ['UNKNOWN0', 'name', 'text', 'UNKNOWN2', 'UNKNOWN3', 'UNKNOWN4',
                    'UNKNOWN5', 'UNKNOWN6', 'picture', 'hilite', 'number',
                    'size', 'UNKNOWN8', 'UNKNOWN9', 'UNKNOWNA', 'UNKNOWNB',
                    'UNKNOWNC', 'foreColor', 'backColor']
@@ -259,11 +259,12 @@ class CastPropertiesOpcode(BiOpcode):
     
     def process(self, context: Context, stack: List[Node], \
                 function: Function, index: int):
-        property_index = int(cast(ConstantValue, stack.pop()).name)
-        cast_id = cast(ConstantValue, stack.pop()).name
-        cast = Cast(cast_id, index)
+        p_index: ConstantValue = cast(ConstantValue, stack.pop())
+        property_index = int(p_index.name)
+        cast_id: ConstantValue = cast(ConstantValue, stack.pop())
+        cast_member = Cast(cast_id.name, index)
         prop = CAST_PROPERTIES[property_index]
-        op = PropertyAccessorOperation(cast, prop, index)
+        op = PropertyAccessorOperation(cast_member, prop, index)
         stack.append(op)
     
 #

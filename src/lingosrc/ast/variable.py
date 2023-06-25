@@ -6,9 +6,17 @@ from .node import Node
 from typing import List
 
 KNOWN_SYMBOLS: List[str] = [
-    "loop", "next", "previous"
+    "loop", "next", "previous", "ancestor"
 ]
-    
+
+KNOWN_PROPERTIES = {
+    'actorList': '_movie',
+    'loop': '_movie',
+    'next': '_movie',
+    'previous': '_movie',
+    'ancestor': 'me',
+}
+
 #
 # Local variable class.
 # 
@@ -51,8 +59,10 @@ class PropertyName(Node):
             return "the %s"%(self.name)
 
     def generate_js(self, indentation: int) -> str: 
-        default_obj: str = '_movie'
-        return "%s.%s"%(default_obj, self.name)
+        obj_name: str = 'me'
+        if self.name in KNOWN_PROPERTIES.keys():
+            obj_name = KNOWN_PROPERTIES[self.name]
+        return "%s.%s"%(obj_name, self.name)
     
 #
 # Parameter name class.
@@ -101,6 +111,13 @@ class Sprite(Node):
     def __init__(self, name: str, position: int):
         Node.__init__(self, name, position)
 
+    def generate_lingo(self, indentation: int) -> str: 
+        return "sprite %s"%(self.name)
+
+    def generate_js(self, indentation: int) -> str: 
+        return "sprite(%s)"%(self.name)
+
+
 #
 # System object reference class.
 # 
@@ -119,3 +136,8 @@ class Cast(Node):
     def __init__(self, name: str, position: int):
         Node.__init__(self, name, position)
 
+    def generate_lingo(self, indentation: int) -> str: 
+        return "cast %s"%(self.name)
+
+    def generate_js(self, indentation: int) -> str: 
+        return "member(%s)"%(self.name)
