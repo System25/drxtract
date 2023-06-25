@@ -3,7 +3,11 @@
 # License: GNU GPL v2 (see LICENSE file for details).
 
 from .node import Node
+from typing import List
 
+KNOWN_SYMBOLS: List[str] = [
+    "loop", "next", "previous"
+]
     
 #
 # Local variable class.
@@ -41,7 +45,10 @@ class PropertyName(Node):
  
 
     def generate_lingo(self, indentation: int) -> str: 
-        return "the %s"%(self.name)
+        if self.name in KNOWN_SYMBOLS:
+            return self.name
+        else:
+            return "the %s"%(self.name)
 
     def generate_js(self, indentation: int) -> str: 
         default_obj: str = '_movie'

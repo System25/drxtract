@@ -84,6 +84,14 @@ class CallFunction(Node):
             else:
                 nm = '_movie.newScript'
             
+        if nm == 'go':
+            if params_str.startswith('_movie.'):
+                p = params_str[len('_movie.'):]
+                nm = '_movie.go' + p.capitalize()
+                params_str = ''
+            else:
+                nm = '_movie.go'
+            
         return self.generate_js_code(nm, params_str)
 
     
