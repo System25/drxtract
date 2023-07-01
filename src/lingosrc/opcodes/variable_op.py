@@ -3,7 +3,7 @@
 # License: GNU GPL v2 (see LICENSE file for details).
 
 from .opcode import Param1Opcode
-from ..ast import LocalVariable, GlobalVariable, PropertyName, \
+from ..ast import LocalVariable, GlobalVariable, DefinedPropertyName, \
     Function, ParameterName, Node
 from ..model import Context
 from typing import List
@@ -55,7 +55,7 @@ class PropertyNameOpcode(Param1Opcode):
     def process(self, context: Context, stack: List[Node], \
                 function: Function, index: int):
         op1 = self.param1
-        stack.append(PropertyName(context.name_list[op1], index))
+        stack.append(DefinedPropertyName(context.name_list[op1], index))
 
 #
 # Use parameter name Opcode.

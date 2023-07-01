@@ -10,4 +10,5 @@ function exitFrame() {
     dog = _movie.newScript(script("Quadruped"), 1);
     put("dog.legCount", dog.legCount);
     put("dog.hasTail", dog.hasTail);
+    put("dog.legCount", countLegs(dog));
 }

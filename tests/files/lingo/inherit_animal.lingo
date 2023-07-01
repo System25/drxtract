@@ -3,3 +3,7 @@ on birth me, legs
     put legs into legCount
     return me
 end
+
+on countLegs me
+    return legCount
+end

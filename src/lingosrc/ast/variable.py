@@ -53,7 +53,7 @@ class PropertyName(Node):
  
 
     def generate_lingo(self, indentation: int) -> str: 
-        if self.name in KNOWN_SYMBOLS:
+        if self.name in KNOWN_SYMBOLS or isinstance(self, DefinedPropertyName):
             return self.name
         else:
             return "the %s"%(self.name)
@@ -63,7 +63,16 @@ class PropertyName(Node):
         if self.name in KNOWN_PROPERTIES.keys():
             obj_name = KNOWN_PROPERTIES[self.name]
         return "%s.%s"%(obj_name, self.name)
+
+#
+# Defined Property name class.
+# 
+class DefinedPropertyName(PropertyName):
+    """This class represents a property name in the AST"""
     
+    def __init__(self, name: str, position: int):
+        PropertyName.__init__(self, name, position)
+
 #
 # Parameter name class.
 # 

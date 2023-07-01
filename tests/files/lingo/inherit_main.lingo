@@ -7,4 +7,5 @@ on exitFrame
     put birth(script("Quadruped"), 1) into dog
     put "dog.legCount", the legCount of dog
     put "dog.hasTail", the hasTail of dog
+    put "dog.legCount", countLegs(dog)
 end
