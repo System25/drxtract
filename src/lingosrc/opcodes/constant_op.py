@@ -100,7 +100,8 @@ class SymbolOpcode(Param1Opcode):
 #
 class PropertyOpcode(Param1Opcode):
     def __init__(self):
-        Param1Opcode.__init__(self, 0x45)
+        # TODO! Find code!!!
+        Param1Opcode.__init__(self, 0x99)
 
     def process(self, context: Context, stack: List[Node], \
                 function: Function, index: int):

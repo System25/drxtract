@@ -85,8 +85,8 @@ class CallFunction(Node):
                 nm = '_movie.newScript'
             
         if nm == 'go':
-            if params_str.startswith('_movie.'):
-                p = params_str[len('_movie.'):]
+            if params_str.startswith('symbol(\''):
+                p = params_str[len('symbol(\''):-2]
                 nm = '_movie.go' + p.capitalize()
                 params_str = ''
             else:

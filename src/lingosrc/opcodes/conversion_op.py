@@ -26,7 +26,7 @@ class ToListOpcode(Opcode):
 #
 class ToDictionaryOpcode(Opcode):
     def __init__(self):
-        Opcode.__init__(self, 0x1D)
+        Opcode.__init__(self, 0x1F)
     
     def process(self, context: Context, stack: List[Node], \
                 function: Function, index: int):

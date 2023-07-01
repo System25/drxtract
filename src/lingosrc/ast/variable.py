@@ -6,14 +6,11 @@ from .node import Node
 from typing import List
 
 KNOWN_SYMBOLS: List[str] = [
-    "loop", "next", "previous", "ancestor"
+    "ancestor"
 ]
 
 KNOWN_PROPERTIES = {
     'actorList': '_movie',
-    'loop': '_movie',
-    'next': '_movie',
-    'previous': '_movie',
     'ancestor': 'me',
 }
 

@@ -74,6 +74,9 @@ class ToDictionaryOperation(Node):
 
         oplist.reverse()
         
+        if len(oplist) == 0:
+            return '[:]'
+        
         return '[' + ', '.join(oplist) +  ']'
     
     def generate_js(self, indentation: int) -> str:       
