@@ -43,6 +43,7 @@ class TestScript(unittest.TestCase):
         ['actor_list.Lnam', 'actor_list.Lscr', 'actor_list.lingo'],
         ['go.Lnam', 'go.Lscr', 'go.lingo'],
         ['sprite_props.Lnam', 'sprite_props.Lscr', 'sprite_props.lingo'],
+        ['intersects.Lnam', 'intersects.Lscr', 'intersects.lingo'],
         
     ])
     def test_script(self, lnam_file: str, lsrc_file: str, lingo_file: str):

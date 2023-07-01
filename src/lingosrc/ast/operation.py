@@ -45,8 +45,8 @@ LINGO_BIN_OP: Dict[str,str] = {
     'eq': '=',
     'ne': '<>',
     
-    'intersects': 'intersects', 
-    'within': 'within'
+    'intersects': 'sprite... intersects', 
+    'within': 'sprite... within'
 }
 
 #
@@ -183,8 +183,12 @@ class BinaryOperation(Node):
             else:
                 return "put %s into %s"%(right, left)            
         
-        op = LINGO_BIN_OP[self.name]
-        
+        op:str = LINGO_BIN_OP[self.name]
+        if op.startswith('sprite... '):
+            return "sprite %s %s %s"%(l.generate_lingo(indentation),
+                                      op.removeprefix('sprite... '),
+                                      r.generate_lingo(indentation))
+                
         return "(%s %s %s)"%(l.generate_lingo(indentation), op,
                              r.generate_lingo(indentation))
 
@@ -198,7 +202,7 @@ class BinaryOperation(Node):
         
         op: str = JS_BIN_OP[self.name]
         if op.startswith('.'):
-            return "%s%s(%s)"%(l.generate_js(indentation), op,
+            return "sprite(%s)%s(sprite(%s))"%(l.generate_js(indentation), op,
                                r.generate_js(indentation))
         else:  
             return "(%s %s %s)"%(l.generate_js(indentation), op,
