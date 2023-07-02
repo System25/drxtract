@@ -29,7 +29,6 @@ class ConstantValue(Node):
         Node.__init__(self, name, position)
 
     def generate_lingo(self, indentation: int) -> str:
-        print("value=%s"%(self.name))
         if self.name in PREDEFINED_CONSTANTS.keys():
             return PREDEFINED_CONSTANTS[self.name]
         

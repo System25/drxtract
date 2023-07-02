@@ -1,0 +1,21 @@
+on exitFrame
+    set myLocalVar = the text of field 2
+    put "Number of chars: ", the number of chars of myLocalVar
+    put "First char: ", char 1 of myLocalVar
+    put "Last char: ", char 62 of myLocalVar
+    put "Number of words: ", the number of words of myLocalVar
+    put "First word: ", word 1 of myLocalVar
+    put "Last word: ", word 12 of myLocalVar
+    put "Number of lines: ", the number of lines of myLocalVar
+    put "First line: ", line 1 of myLocalVar
+    put "Last line: ", line 2 of myLocalVar
+    put "2,2,2=", char 2 of word 2 of line 2 of myLocalVar
+    put "Number of items: ", the number of items of myLocalVar
+    put "First item: ", item 1 of myLocalVar
+    put "2, 2, 2, 2=", char 2 of word 2 of item 1 of line 2 of myLocalVar
+    set myAbcs = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    put "char 2,4 = ", char 2 to 4 of myAbcs
+    put "word 2, 4 = ", word 2 to 4 of myLocalVar
+    put "lines 1,2 = ", line 1 to 2 of myLocalVar
+    put "items 1, 1=", item 1 to 1 of myLocalVar
+end

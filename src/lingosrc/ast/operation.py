@@ -17,7 +17,7 @@ JS_UNA_OP: Dict[str,str] = {
     'hilite': 'hilite',
     'delete': 'delete',
     'last': 'last',
-    'number': 'number',
+    'number': 'length',
 }
 
 #
@@ -129,6 +129,7 @@ class UnaryOperationNames(Enum):
 # String Operation names enumeration.
 # 
 class StringOperationNames(Enum):
+    UNKNOWN = 'UNKNOWN'
     WORD = 'word'
     CHAR = 'char'
     ITEM = 'item'
@@ -252,6 +253,29 @@ class StringOperation(Node):
         self.end: Optional[Node] = None
         self.of: Optional[Node] = None
     
+    def generate_lingo(self, indentation: int) -> str:
+        if self.end is None:
+            return '%s %s of %s'%(self.name,
+                                  cast(Node, self.start).generate_lingo(0),
+                                  cast(Node, self.of).generate_lingo(0))
+            
+        return '%s %s to %s of %s'%(self.name,
+                      cast(Node, self.start).generate_lingo(0),
+                      cast(Node, self.end).generate_lingo(0),
+                      cast(Node, self.of).generate_lingo(0))
+    
+    def generate_js(self, indentation: int) -> str:
+        if self.end is None:
+            return '%s.getPropRef("%s", %s)'%(
+                cast(Node, self.of).generate_js(0),
+                self.name,
+                cast(Node, self.start).generate_js(0))
+            
+        return '%s.getPropRef("%s", %s, %s)'%(
+            cast(Node, self.of).generate_js(0),
+            self.name,
+            cast(Node, self.start).generate_js(0),
+            cast(Node, self.end).generate_js(0))
 #
 # Unary String Operation class.
 # 
@@ -262,7 +286,26 @@ class UnaryStringOperation(Node):
         Node.__init__(self, name.value, position)
         self.type: Optional[StringOperationNames] = None
         self.of: Optional[Node] = None
-    
+
+    def generate_lingo(self, indentation: int) -> str:
+        operand = cast(Node, self.of)
+        if self.type is not None:
+            op_type = cast(StringOperationNames, self.type).value   
+            return "the %s of %ss of %s"%(self.name, op_type,
+                                         operand.generate_lingo(indentation))
+        
+        return "the %s of %s"%(self.name, operand.generate_lingo(indentation))
+
+    def generate_js(self, indentation: int) -> str:
+        operand = cast(Node, self.of)
+        operation = JS_UNA_OP[self.name]
+        if self.type is not None:
+            op_type = cast(StringOperationNames, self.type).value
+            return "%s.%s.%s"%(operand.generate_js(indentation),
+                               op_type,
+                               operation)
+        
+        return "%s.%s"%(operand.generate_js(indentation), operation)
 #
 # Property accessor operation class.
 # 

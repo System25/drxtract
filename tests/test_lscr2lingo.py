@@ -47,6 +47,7 @@ class TestScript(unittest.TestCase):
         ['prop_list.Lnam', 'prop_list.Lscr', 'prop_list.lingo'],
         ['predef_constants.Lnam', 'predef_constants.Lscr', 
          'predef_constants.lingo'],
+        ['string_sp_op.Lnam', 'string_sp_op.Lscr', 'string_sp_op.lingo'],
         
     ])
     def test_script(self, lnam_file: str, lsrc_file: str, lingo_file: str):

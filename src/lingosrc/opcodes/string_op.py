@@ -33,15 +33,16 @@ def add_modifiers(self, op: Node, stack: List[Node], index: int):
     op_fw_pos = stack.pop()    # First word position
     op_lc_pos = stack.pop()    # Last char position
     op_fc_pos = stack.pop()    # First char position
-    
-    op = add_str_operation(op, op_fc_pos, op_lc_pos, \
-                           StringOperationNames.CHAR, index)
-    op = add_str_operation(op, op_fw_pos, op_lw_pos, \
-                           StringOperationNames.WORD, index)
+
+    op = add_str_operation(op, op_fl_pos, op_ll_pos, \
+                           StringOperationNames.LINE, index)    
     op = add_str_operation(op, op_fi_pos, op_li_pos, \
                            StringOperationNames.ITEM, index)
-    op = add_str_operation(op, op_fl_pos, op_ll_pos, \
-                           StringOperationNames.LINE, index)
+    op = add_str_operation(op, op_fw_pos, op_lw_pos, \
+                           StringOperationNames.WORD, index)
+    op = add_str_operation(op, op_fc_pos, op_lc_pos, \
+                           StringOperationNames.CHAR, index)
+
 
     return op
 

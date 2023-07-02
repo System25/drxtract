@@ -26,6 +26,9 @@ class Statement(Node):
 
     def generate_js(self, indentation: int) -> str:
         js_code:str = self.code.generate_js(indentation);
+        if 'getPropRef' in js_code:
+            li = js_code.rsplit('getPropRef', 1)
+            js_code = 'getProp'.join(li)
         if js_code.endswith('}'):
             return code_indentation(indentation) + js_code + '\n'
         else:       

@@ -39,7 +39,7 @@ from .property_op import SpecialPropertiesOpcode, \
 	CastPropertiesOpcode, AssignCastPropertiesOpcode, \
 	VideoPropertiesOpcode, AssignVideoPropertiesOpcode, \
 	PropertyAccesorOpcode, AssignPropertyAccesorOpcode, \
-	KeyPropertyAccesorOpcode
+	KeyPropertyAccesorOpcode, FieldPropertiesOpcode
 
 from .stack_op import CopySymbolOpcode, DiscardSymbolsOpcode
 
@@ -54,6 +54,8 @@ from .variable_op import VariableOpcode, GlobalVariableOpcode, \
 
 from .constant_op import ZeroOpcode, Int1bOpcode, Int2bOpcode, LiteralOpcode, \
 	Literal2Opcode, SymbolOpcode, PropertyOpcode
+
+from .string_op import StringOperationOpcode, HiliteOpcode, DeleteSliceOpcode
 
 TRI_OPCODES_LIST : List[TriOpcode] = [
 ]
@@ -77,7 +79,8 @@ BI_OPCODES_LIST : List[BiOpcode] = [
 	CastPropertiesOpcode(),
 	AssignCastPropertiesOpcode(),
 	VideoPropertiesOpcode(),
-	AssignVideoPropertiesOpcode()
+	AssignVideoPropertiesOpcode(),
+	FieldPropertiesOpcode()
 ]	
 
 OPCODES_LIST: List[Opcode] = [
@@ -145,6 +148,7 @@ OPCODES_LIST: List[Opcode] = [
 	PropertyAccesorOpcode(),
 	AssignPropertyAccesorOpcode(),
 	KeyPropertyAccesorOpcode(),
+	FieldPropertiesOpcode(),
 	
 	CopySymbolOpcode(),
 	DiscardSymbolsOpcode(),
@@ -173,7 +177,11 @@ OPCODES_LIST: List[Opcode] = [
 	LiteralOpcode(),
 	Literal2Opcode(), 
 	SymbolOpcode(), 
-	PropertyOpcode()
+	PropertyOpcode(),
+	
+	StringOperationOpcode(),
+	HiliteOpcode(),
+	DeleteSliceOpcode()
 ]
 
 OPCODES: Dict[int, Opcode] = {op.opcode:op for op in OPCODES_LIST}

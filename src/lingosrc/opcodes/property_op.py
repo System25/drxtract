@@ -8,7 +8,7 @@ from ..ast import Function, Sprite, StringOperationNames, \
     UnaryOperationNames, BinaryOperation, BinaryOperationNames, \
     MenuitemAccessorOperation, Menu, MenuItem, PropertyAccessorOperation, \
     Cast, Node, ConstantValue, KeyPropertyAccessorOperation, \
-    LoadListOperation, Statement
+    LoadListOperation, Statement, UnaryOperation, UnaryOperationNames
 from ..model import Context
 from typing import List, cast, Optional
 
@@ -18,7 +18,8 @@ SPECIAL_PROPERTIES = ['floatPrecision', 'mouseDownScript', 'mouseUpScript',
 DATE_TIME_FUNCTIONS = ['short time', 'abbreviated time', 'long time',
                        'short date', 'abbreviated date', 'long date']
 
-OPERATION_TYPES: List[StringOperationNames] = [StringOperationNames.CHAR,
+OPERATION_TYPES: List[StringOperationNames] = [StringOperationNames.UNKNOWN,
+                                               StringOperationNames.CHAR,
                                                StringOperationNames.WORD,
                                                StringOperationNames.ITEM,
                                                StringOperationNames.LINE]
@@ -282,7 +283,7 @@ class CastPropertiesOpcode(BiOpcode):
         prop = CAST_PROPERTIES[property_index]
         op = PropertyAccessorOperation(cast_member, prop, index)
         stack.append(op)
-    
+
 #
 # Assign Cast properties Opcode.
 #
@@ -306,8 +307,23 @@ class AssignCastPropertiesOpcode(BiOpcode):
         op.left = accessor
         op.right = value
         function.statements.append(Statement(op, index)) 
-   
 
+#
+# Field properties Opcode.
+#
+class FieldPropertiesOpcode(BiOpcode):
+    def __init__(self):
+        BiOpcode.__init__(self, 0x5C, 0x0b)
+    
+    def process(self, context: Context, stack: List[Node], \
+                function: Function, index: int):
+        p_index: ConstantValue = cast(ConstantValue, stack.pop())
+        property_index = int(p_index.name)
+        field = UnaryOperation(UnaryOperationNames.FIELD, index)
+        field.operand = stack.pop()
+        prop = CAST_PROPERTIES[property_index]
+        op = PropertyAccessorOperation(field, prop, index)
+        stack.append(op)
 
 #
 # Video cast properties Opcode.
