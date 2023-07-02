@@ -2,8 +2,8 @@ on exitFrame
     global myGlobalVar
     global myOtherGlobal
 
-    put 2 into myOtherGlobal
-    put 1 into myGlobalVar
+    set myOtherGlobal = 2
+    set myGlobalVar = 1
     put "Begin: ", myGlobalVar
     func1
     put "After func1: ", myGlobalVar
@@ -14,11 +14,11 @@ end
 on func1
     global myGlobalVar
 
-    put (myGlobalVar + 1) into myGlobalVar
+    set myGlobalVar = (myGlobalVar + 1)
 end
 
 on func2
     global myGlobalVar
 
-    put (myGlobalVar + 1) into myGlobalVar
+    set myGlobalVar = (myGlobalVar + 1)
 end

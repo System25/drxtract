@@ -1,8 +1,8 @@
 on exitFrame
-    put "John" into myName
+    set myName = "John"
     put " Doe" after myName
     put myName
-    put "Doe" into myName
+    set myName = "Doe"
     put "Janet " before myName
     put myName
 end

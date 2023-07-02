@@ -1,5 +1,5 @@
 on exitFrame
-    put [:] into myPropList
+    set myPropList = [:]
     put "Empty prop list: ", myPropList
     addProp myPropList, #name, "Jhon"
     addProp myPropList, #surname, "Doe"

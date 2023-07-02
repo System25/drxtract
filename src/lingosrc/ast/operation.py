@@ -178,10 +178,10 @@ class BinaryOperation(Node):
         if self.name == 'assign':
             left: str = l.generate_lingo(indentation)
             right: str = r.generate_lingo(indentation)
-            if left.startswith("the "):
-                return "set %s = %s"%(left, right)
+            if left.startswith('field(') and left.endswith(')'):
+                return "put %s into %s"%(right, left)       
             else:
-                return "put %s into %s"%(right, left)            
+                return "set %s = %s"%(left, right)
         
         op:str = LINGO_BIN_OP[self.name]
         if op.startswith('sprite... '):

@@ -1,6 +1,6 @@
 property legCount
 on birth me, legs
-    put legs into legCount
+    set legCount = legs
     return me
 end
 
