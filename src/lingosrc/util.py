@@ -65,15 +65,6 @@ def escape_string(strval: str) -> str:
     str
         The escaped string.
         
-    """    
-    strval = strval.replace("\\", "\\\\")
-    strval = strval.replace("\"", "\\\"")
-    strval = strval.replace("\a", "\\a")
-    strval = strval.replace("\b", "\\b")
-    strval = strval.replace("\f", "\\f")
-    strval = strval.replace("\n", "\\n")
-    strval = strval.replace("\r", "\\r")
-    strval = strval.replace("\t", "\\t")
-    strval = strval.replace("\v", "\\v")
-    strval = strval.replace("\v", "\\v")
+    """
+
     return '"' + strval.encode("unicode_escape").decode('ascii') + '"'
