@@ -4,7 +4,7 @@
 
 from .opcode import Param1Opcode
 from ..ast import CallMethod, CallFunction, Statement, Node, \
-    ToListOperation, Function
+    ToListOperation, Function, Symbol, LoadListOperation, GlobalVariable
 from ..model import Context
 from typing import List, cast
 
@@ -51,15 +51,46 @@ class CallExternalOpcode(Param1Opcode):
 
 
 #
-# Call an object method Opcode.
+# Call a function with an external global var parameter.
 #
-class CallMethodOpcode(Param1Opcode):
+# For example:
+#   -- First cast element
+#   on startMovie
+#     global myList <-- DEFINE myList AS GLOBAL AS MOVIE LEVEL
+#     set myList = [#the_70s: 1970, #the_80s: 1980, #the_90: 1990]
+#   end
+#
+#   -- Second cast element
+#   on exitFrame
+#     put "90s: ", findPos(myList, 1990) <-- USE myList WITHOUT DEFINING IT
+#   end
+#
+class CallFuncWithExtGlobalOpcode(Param1Opcode):
     def __init__(self):
         Param1Opcode.__init__(self, 0x58)
     
     def process(self, context: Context, stack: List[Node], \
                 function: Function, index: int):
-        raise Exception("CallMethodOpcode not implemented!")
+        op1 = self.param1
+        ext_global_name = context.name_list[op1]
+        
+        fname = cast(Node, stack.pop()).generate_lingo(0)
+        
+        params: LoadListOperation = cast(LoadListOperation, stack.pop())
+        op = CallFunction(fname, index)
+        op.parameters = params
+        operands = params.operands
+        op.parameters.operands = []
+        
+        for p in operands:
+            if isinstance(p, Symbol) and p.name == ext_global_name:
+                p = GlobalVariable(p.name, p.position)
+            op.parameters.operands.append(p)
+        
+        if op.parameters.name.startswith('<'):
+            stack.append(op)
+        else:
+            function.statements.append(Statement(op, index))
 
 #
 # Call an object method Opcode.

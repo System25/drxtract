@@ -47,6 +47,7 @@ class TestScript(unittest.TestCase):
         ['string_sp_op.Lnam', 'string_sp_op.Lscr', 'string_sp_op.js'],
         ['video_props.Lnam', 'video_props.Lscr', 'video_props.js'],
         ['delete.Lnam', 'delete.Lscr', 'delete.js'],
+        ['call_fn_ext_glb.Lnam', 'call_fn_ext_glb.Lscr', 'call_fn_ext_glb.js'],
     ])
     def test_script(self, lnam_file: str, lsrc_file: str, lingo_file: str):
         

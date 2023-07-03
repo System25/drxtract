@@ -1,0 +1,3 @@
+on exitFrame
+    put "90s: ", findPos(myList, 1990)
+end

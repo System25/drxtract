@@ -50,6 +50,8 @@ class TestScript(unittest.TestCase):
         ['string_sp_op.Lnam', 'string_sp_op.Lscr', 'string_sp_op.lingo'],
         ['video_props.Lnam', 'video_props.Lscr', 'video_props.lingo'],
         ['delete.Lnam', 'delete.Lscr', 'delete.lingo'],
+        ['call_fn_ext_glb.Lnam', 'call_fn_ext_glb.Lscr',
+         'call_fn_ext_glb.lingo'],
         
     ])
     def test_script(self, lnam_file: str, lsrc_file: str, lingo_file: str):

@@ -116,3 +116,10 @@ class CallMethod(Node):
         Node.__init__(self, name, position)
         self.object: Optional[Node] = None
         self.parameters: Optional[Node] = None
+        self.use_parenthesis: bool = True
+
+    def generate_lingo(self, indentation: int) -> str:
+        raise Exception("CallMethod not implemented!")
+
+    def generate_js(self, indentation: int) -> str:
+        raise Exception("CallMethod not implemented!")

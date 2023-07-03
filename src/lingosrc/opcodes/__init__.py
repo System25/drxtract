@@ -28,7 +28,7 @@ from .jump_op import JumpOpcode, FowardJumpOpcode, ConditionalJumpOpcode
 
 from .tell_op import WindowTellStartOpcode, WindowTellEndOpcode
 
-from .call_op import CallLocalOpcode, CallExternalOpcode, CallMethodOpcode, \
+from .call_op import CallLocalOpcode, CallExternalOpcode, CallFuncWithExtGlobalOpcode, \
 	CallExternalMethodOpcode
 
 from .property_op import SpecialPropertiesOpcode, \
@@ -130,7 +130,7 @@ OPCODES_LIST: List[Opcode] = [
 	
 	CallLocalOpcode(),
 	CallExternalOpcode(),
-	CallMethodOpcode(),
+	CallFuncWithExtGlobalOpcode(),
 	CallExternalMethodOpcode(),
 	
 	SpecialPropertiesOpcode(),
