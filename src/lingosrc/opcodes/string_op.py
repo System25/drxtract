@@ -86,7 +86,7 @@ class DeleteSliceOpcode(BiOpcode):
     def process(self, context: Context, stack: List[Node], \
                 function: Function, index: int):
         field = UnaryOperation(UnaryOperationNames.FIELD, index)
-        field.operand = stack.pop()  # The field to hilite     
+        field.operand = stack.pop()  # The field to delete     
         field = add_modifiers(self, field, stack, index)
         
         op = UnaryOperation(UnaryOperationNames.DELETE, index)

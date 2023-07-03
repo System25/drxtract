@@ -26,7 +26,7 @@ class Statement(Node):
 
     def generate_js(self, indentation: int) -> str:
         js_code:str = self.code.generate_js(indentation);
-        if 'getPropRef' in js_code:
+        if 'getPropRef' in js_code and not js_code.startswith('delete('):
             li = js_code.rsplit('getPropRef', 1)
             js_code = 'getProp'.join(li)
         if js_code.endswith('}'):

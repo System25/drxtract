@@ -80,7 +80,8 @@ BI_OPCODES_LIST : List[BiOpcode] = [
 	AssignCastPropertiesOpcode(),
 	VideoPropertiesOpcode(),
 	AssignVideoPropertiesOpcode(),
-	FieldPropertiesOpcode()
+	FieldPropertiesOpcode(),
+	DeleteSliceOpcode()
 ]	
 
 OPCODES_LIST: List[Opcode] = [

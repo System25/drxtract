@@ -1,0 +1,7 @@
+on exitFrame
+    put "Hello world!" into field 2
+    put word 2 of field 2 into field 3
+    delete word 2 of field 2
+    put "Field 2: ", field 2
+    put "Field 3: ", the text of cast 3
+end
