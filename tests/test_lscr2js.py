@@ -45,6 +45,7 @@ class TestScript(unittest.TestCase):
         ['intersects.Lnam', 'intersects.Lscr', 'intersects.js'],
         ['prop_list.Lnam', 'prop_list.Lscr', 'prop_list.js'],
         ['string_sp_op.Lnam', 'string_sp_op.Lscr', 'string_sp_op.js'],
+        ['video_props.Lnam', 'video_props.Lscr', 'video_props.js'],
     ])
     def test_script(self, lnam_file: str, lsrc_file: str, lingo_file: str):
         

@@ -39,7 +39,7 @@ CAST_PROPERTIES = ['UNKNOWN0', 'name', 'text', 'UNKNOWN2', 'UNKNOWN3', 'UNKNOWN4
                    'size', 'UNKNOWN8', 'UNKNOWN9', 'UNKNOWNA', 'UNKNOWNB',
                    'UNKNOWNC', 'foreColor', 'backColor']
 
-VIDEO_PROPERTIES = ['UNKNOWN1', 'UNKNOWN2', 'UNKNOWN3', 'UNKNOWN4',
+VIDEO_PROPERTIES = ['UNKNOWN0', 'UNKNOWN1', 'UNKNOWN2', 'UNKNOWN3', 'UNKNOWN4',
                     'UNKNOWN5', 'UNKNOWN6', 'UNKNOWN7', 'UNKNOWN8',
                     'UNKNOWN9', 'UNKNOWNA', 'UNKNOWNB', 'loop',
                     'duration', 'controller', 'directToStage', 'sound']
@@ -336,15 +336,15 @@ class VideoPropertiesOpcode(BiOpcode):
                 function: Function, index: int):
         property_index = int(cast(ConstantValue, stack.pop()).name)
         cast_id = cast(ConstantValue, stack.pop()).name
-        cast = Cast(cast_id, index)
+        cast_node = Cast(cast_id, index)
         prop = VIDEO_PROPERTIES[property_index]
-        op = PropertyAccessorOperation(cast, prop, index)
+        op = PropertyAccessorOperation(cast_node, prop, index)
         stack.append(op)
 
 #
 # Assign Video cast properties Opcode.
 #
-class AssignVideoPropertiesOpcode(VideoPropertiesOpcode):
+class AssignVideoPropertiesOpcode(BiOpcode):
     def __init__(self):
         BiOpcode.__init__(self, 0x5D, 0x0d)
     
@@ -354,9 +354,9 @@ class AssignVideoPropertiesOpcode(VideoPropertiesOpcode):
         property_index = int(cast(ConstantValue, stack.pop()).name)
         value = stack.pop()
         cast_id = cast(ConstantValue, stack.pop()).name
-        cast = Cast(cast_id, index)
+        cast_node = Cast(cast_id, index)
         prop = VIDEO_PROPERTIES[property_index]
-        accessor = PropertyAccessorOperation(cast, prop, index)
+        accessor = PropertyAccessorOperation(cast_node, prop, index)
         
         op = BinaryOperation(BinaryOperationNames.ASSIGN, index)
         op.left = accessor
