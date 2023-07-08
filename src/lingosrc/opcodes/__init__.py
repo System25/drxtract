@@ -69,6 +69,7 @@ BI_OPCODES_LIST : List[BiOpcode] = [
 	AssignBeforeFieldOpcode(),
 	
 	SpecialPropertiesOpcode(),
+	AssignSpecialPropertiesOpcode(),
 	NumberOfElementsOpcode(),
 	MenuitemPropertiesOpcode(),
 	AssignMenuitemPropertiesOpcode(),

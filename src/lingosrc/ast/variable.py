@@ -12,6 +12,12 @@ KNOWN_SYMBOLS: List[str] = [
 KNOWN_PROPERTIES = {
     'actorList': '_movie',
     'ancestor': 'me',
+    'floatPrecision': '_system',
+    'mouseDownScript': '_system',
+    'mouseUpScript': '_system',
+    'keyDownScript': '_system',
+    'keyUpScript': '_system',
+    'timeoutScript': '_system'
 }
 
 #

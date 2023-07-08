@@ -122,7 +122,7 @@ class AssignSpecialPropertiesOpcode(SpecialPropertiesOpcode):
         op = BinaryOperation(BinaryOperationNames.ASSIGN, index)
         op.left = stack.pop()
         op.right = stack.pop()
-        stack.append(op)
+        function.statements.append(Statement(op, index))
     
 #
 # Number of ... Opcode.
