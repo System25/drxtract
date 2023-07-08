@@ -1,0 +1,5 @@
+on exitFrame
+    put "puppet=", the puppet of sprite 1
+    put "rect=", the rect of sprite 1
+    set the rect of sprite 1 = rect(0, 0, 120, 100)
+end

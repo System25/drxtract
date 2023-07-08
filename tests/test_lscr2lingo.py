@@ -54,6 +54,7 @@ class TestScript(unittest.TestCase):
          'call_fn_ext_glb.lingo'],
         ['hilite.Lnam', 'hilite.Lscr', 'hilite.lingo'],
         ['assign_sp_prop.Lnam', 'assign_sp_prop.Lscr', 'assign_sp_prop.lingo'],
+        ['sprite_rect.Lnam', 'sprite_rect.Lscr', 'sprite_rect.lingo'],
         
     ])
     def test_script(self, lnam_file: str, lsrc_file: str, lingo_file: str):

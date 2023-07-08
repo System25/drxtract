@@ -50,6 +50,7 @@ class TestScript(unittest.TestCase):
         ['call_fn_ext_glb.Lnam', 'call_fn_ext_glb.Lscr', 'call_fn_ext_glb.js'],
         ['hilite.Lnam', 'hilite.Lscr', 'hilite.js'],
         ['assign_sp_prop.Lnam', 'assign_sp_prop.Lscr', 'assign_sp_prop.js'],
+        ['sprite_rect.Lnam', 'sprite_rect.Lscr', 'sprite_rect.js'],
     ])
     def test_script(self, lnam_file: str, lsrc_file: str, lingo_file: str):
         

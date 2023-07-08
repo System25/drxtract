@@ -32,7 +32,8 @@ SPRITE_PROPERTIES = ['UNKNOWN0', 'type', 'backColor', 'bottom', 'castNum',
                      'movieTime', 'UNKNOWN2', 'puppet', 'right',
                      'startTime', 'stopTime', 'stretch', 'top', 'trails',
                      'visible', 'volume', 'width', 'blend', 'scriptNum',
-                     'moveableSprite', 'UNKNOWN3', 'scoreColor']
+                     'moveableSprite', 'UNKNOWN3', 'scoreColor', 'UNKNOWN4',
+                     'rect']
 
 CAST_PROPERTIES = ['UNKNOWN0', 'name', 'text', 'UNKNOWN2', 'UNKNOWN3', 'UNKNOWN4',
                    'UNKNOWN5', 'UNKNOWN6', 'picture', 'hilite', 'number',
