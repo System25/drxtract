@@ -52,6 +52,7 @@ class TestScript(unittest.TestCase):
         ['delete.Lnam', 'delete.Lscr', 'delete.lingo'],
         ['call_fn_ext_glb.Lnam', 'call_fn_ext_glb.Lscr',
          'call_fn_ext_glb.lingo'],
+        ['hilite.Lnam', 'hilite.Lscr', 'hilite.lingo'],
         
     ])
     def test_script(self, lnam_file: str, lsrc_file: str, lingo_file: str):

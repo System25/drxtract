@@ -1,0 +1,5 @@
+on mouseUp
+    set value = the hilite of cast 4
+    put "hilite is: ", value
+    set the hilite of cast 4 = not value
+end
