@@ -460,9 +460,9 @@ def parse_lctx_file(lctx_file):
         
         indx = scr_idx
         for i in range(0, nscripts):
-            unk = struct.unpack(">i", fdata[(indx):(indx+4)])[0]
+            key = struct.unpack(">I", fdata[(indx):(indx+4)])[0]
             indx = indx + 4
-            logging.debug("Unknown: %08x"%(unk))
+            logging.debug("Key: %08x"%(key))
             
             scrfile = struct.unpack(">i", fdata[(indx):(indx+4)])[0]
             indx = indx + 4
@@ -489,6 +489,8 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
         cast_bit_order = '>'
         data_type = struct.unpack(cast_bit_order+"i", fdata[idx:idx+4])[0]
         idx += 4
+        
+        scridx = 0
         
         header_size = 0
         additional_size = 0
@@ -557,9 +559,9 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
             # Content found!
             castData['content']['basic'] = []
             
-            basic_data00 =  struct.unpack(cast_bit_order+"i", basic_data[idx:idx+4])[0]
+            script_key =  struct.unpack(">I", basic_data[idx:idx+4])[0]
             idx += 4
-            logging.debug("basic_data00 = %08x"%(basic_data00))
+            logging.debug("basic_data00 = %08x"%(script_key))
 
             basic_data01 =  struct.unpack(cast_bit_order+"i", basic_data[idx:idx+4])[0]
             idx += 4
@@ -569,14 +571,16 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
             idx += 4
             logging.debug("basic_data02 = %08x"%(basic_data02))
 
-            basic_data03 =  struct.unpack(cast_bit_order+"i", basic_data[idx:idx+4])[0]
+            script_index =  struct.unpack(cast_bit_order+"i", basic_data[idx:idx+4])[0]
             idx += 4
-            logging.debug("basic_data03: %08x"%(basic_data03))
+            logging.debug("script_index: %08x"%(script_index))
             
-            castData['content']['basic'].append('0x%08x'%(basic_data00 & 0xFFFFFFFF))
+            castData['content']['basic'].append('0x%08x'%(script_key & 0xFFFFFFFF))
             castData['content']['basic'].append('0x%08x'%(basic_data01 & 0xFFFFFFFF))
             castData['content']['basic'].append('0x%08x'%(basic_data02 & 0xFFFFFFFF))
-            castData['content']['basic'].append('0x%08x'%(basic_data03 & 0xFFFFFFFF))
+            castData['content']['basic'].append('0x%08x'%(script_index & 0xFFFFFFFF))
+            
+            scridx = script_index
 
             nstruct =  struct.unpack(cast_bit_order+"h", basic_data[idx:idx+2])[0]
             idx += 2
@@ -770,40 +774,6 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
             logging.info("%s: is a script reference file"%(cast_file))
             castData['type'] = 'script'
             
-            scridx = basic_data03
-            logging.debug("Script index: %d"%(scridx))
-            if scridx <= 0 or lctx_elements[scridx - 1] < 0:
-                logging.debug("Empty script file!")
-            else:
-                script_file = "%s.Lscr"%(lctx_elements[scridx - 1])
-                logging.debug("Script file: %s"%(script_file))
-
-                src = os.path.join(os.path.dirname(cast_file), script_file)
-                dst = os.path.join(dest_dir, script_file)
-                if os.path.isfile(src):
-                    copyfile(src, dst)
-                else:
-                    logging.warn("There is no %s file (maybe empty file)"%(src))
-
-                if lnam_file is not None:
-                    cmd = '%slscr2lingo_r.py %s %s %s %s'%(
-                        basepath, # Scripts path
-                        sys.argv[1], # pc or mac
-                        dest_dir, # work directory
-                        script_file, # script file name
-                        lnam_file
-                    )
-                    logging.debug("======================================================")
-                    logging.debug("Decompiling lingo script by using the command:")        
-                    logging.debug(cmd)
-                    logging.debug("------------------------------------------------------")
-                    os.system(cmd)
-                    
-                    codefile = os.path.join(dest_dir, replace_ext(script_file, 'lingo'))
-                    if os.path.isfile(codefile):
-                        logging.debug("Decompiled code file: %s"%(codefile))
-                        with open(codefile, mode='rb') as cfile:
-                            castData['code'] = base64.b64encode(cfile.read()).decode()
         
         elif data_type == DIR_PUSH_BUTTON_TYPE:
             logging.info("%s: is a push button"%(cast_file))
@@ -1228,6 +1198,43 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
         else:
             logging.warn("%s: data_type unknown (%s)!"%(cast_file, data_type))
             castData['type'] = 'unknown'
+        
+        # Decompile script (if any)
+        if scridx > 0:
+            logging.debug("Script index: %d"%(scridx))
+            if scridx <= 0 or lctx_elements[scridx - 1] < 0:
+                logging.debug("Empty script file!")
+            else:
+                script_file = "%s.Lscr"%(lctx_elements[scridx - 1])
+                logging.debug("Script file: %s"%(script_file))
+
+                src = os.path.join(os.path.dirname(cast_file), script_file)
+                dst = os.path.join(dest_dir, script_file)
+                if os.path.isfile(src):
+                    copyfile(src, dst)
+                else:
+                    logging.warn("There is no %s file (maybe empty file)"%(src))
+
+                if lnam_file is not None:
+                    cmd = '%slscr2lingo_r.py %s %s %s %s'%(
+                        basepath, # Scripts path
+                        sys.argv[1], # pc or mac
+                        dest_dir, # work directory
+                        script_file, # script file name
+                        lnam_file
+                    )
+                    logging.debug("======================================================")
+                    logging.debug("Decompiling lingo script by using the command:")        
+                    logging.debug(cmd)
+                    logging.debug("------------------------------------------------------")
+                    os.system(cmd)
+                    
+                    codefile = os.path.join(dest_dir, replace_ext(script_file, 'lingo'))
+                    if os.path.isfile(codefile):
+                        logging.debug("Decompiled code file: %s"%(codefile))
+                        with open(codefile, mode='rb') as cfile:
+                            castData['code'] = base64.b64encode(cfile.read()).decode()
+        
         
         # Write CAST data to JSON file
         with open(os.path.join(dest_dir, 'data.json'), 'wb') as jsfile:
