@@ -104,6 +104,12 @@ class Menu(Node):
     def __init__(self, name: str, position: int):
         Node.__init__(self, name, position)
     
+    def generate_lingo(self, indentation: int) -> str: 
+        return "menu %s"%(self.name)
+
+    def generate_js(self, indentation: int) -> str: 
+        return "_menuBar.menu[%s]"%(self.name)
+    
 #
 # Menuitem class.
 # 
@@ -113,6 +119,11 @@ class MenuItem(Node):
     def __init__(self, name: str, position: int):
         Node.__init__(self, name, position)
 
+    def generate_lingo(self, indentation: int) -> str: 
+        return "menuItem %s"%(self.name)
+
+    def generate_js(self, indentation: int) -> str: 
+        return "item[%s]"%(self.name)    
     
 #
 # Sprite class.

@@ -18,6 +18,7 @@ JS_UNA_OP: Dict[str,str] = {
     'delete': 'delete',
     'last': 'last',
     'number': 'length',
+    'name': 'name'
 }
 
 #
@@ -123,6 +124,7 @@ class UnaryOperationNames(Enum):
     DELETE = 'delete'
     LAST = 'last'
     NUMBER = 'number'
+    NAME = 'name'
   
 
 #
@@ -305,6 +307,9 @@ class UnaryStringOperation(Node):
                                op_type,
                                operation)
         
+        if operand.name == 'menus':
+            operand.name = '_menuBar.menu'
+        
         return "%s.%s"%(operand.generate_js(indentation), operation)
 #
 # Property accessor operation class.
@@ -359,4 +364,28 @@ class MenuitemAccessorOperation(Node):
         Node.__init__(self, 'menu_item', position)
         self.menu: Menu = menu
         self.item: MenuItem = item
+        
+    def generate_lingo(self, indentation: int) -> str:
+        return "%s of %s"%(self.item.generate_lingo(0),
+                           self.menu.generate_lingo(0))
+
+    def generate_js(self, indentation: int) -> str: 
+        return "%s.%s"%(self.menu.generate_js(0),
+                        self.item.generate_js(0))
+    
+#
+# Menuitems accessor operation class.
+# 
+class MenuitemsAccessorOperation(Node):
+    """This class represents a menu items access in the AST"""
+    
+    def __init__(self, menu: Menu, position: int):
+        Node.__init__(self, 'menu_items', position)
+        self.menu: Menu = menu
+
+    def generate_lingo(self, indentation: int) -> str:
+        return "menuItems of %s"%(self.menu.generate_lingo(0))
+
+    def generate_js(self, indentation: int) -> str: 
+        return "%s.item"%(self.menu.generate_js(0))
     

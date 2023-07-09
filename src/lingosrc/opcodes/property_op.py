@@ -8,7 +8,8 @@ from ..ast import Function, Sprite, StringOperationNames, \
     BinaryOperation, BinaryOperationNames, \
     MenuitemAccessorOperation, Menu, MenuItem, PropertyAccessorOperation, \
     Cast, Node, ConstantValue, KeyPropertyAccessorOperation, \
-    LoadListOperation, Statement, UnaryOperation, UnaryOperationNames
+    LoadListOperation, Statement, UnaryOperation, UnaryOperationNames, \
+    MenuitemsAccessorOperation
 from ..model import Context
 from typing import List, cast, Optional
 
@@ -24,7 +25,9 @@ OPERATION_TYPES: List[StringOperationNames] = [StringOperationNames.UNKNOWN,
                                                StringOperationNames.ITEM,
                                                StringOperationNames.LINE]
 
-MENUITEM_PROPERTIES = ['name', 'checkMark', 'enabled', 'script']
+MENUITEM_PROPERTIES = ['UNKNOWN0', 'name', 'checkMark', 'enabled', 'script']
+
+NUM_OF_TYPES = ['UNKNOWN0', 'perFrameHook', 'castMembers', 'menus']
 
 SPRITE_PROPERTIES = ['UNKNOWN0', 'type', 'backColor', 'bottom', 'castNum',
                      'constraint', 'cursor', 'foreColor', 'height', 'UNKNOWN1',
@@ -141,6 +144,33 @@ class NumberOfElementsOpcode(BiOpcode):
         op.of = stack.pop()
         stack.append(op)
 
+
+#
+# Name of elements ... Opcode.
+#
+class NameOfCastElementsOpcode(BiOpcode):
+    def __init__(self):
+        BiOpcode.__init__(self, 0x5C, 0x02)
+    
+    def process(self, context: Context, stack: List[Node], \
+                function: Function, index: int):
+        param1: ConstantValue = cast(ConstantValue, stack.pop())
+        optype = int(param1.name)
+        
+        param2: ConstantValue = cast(ConstantValue, stack.pop())
+        
+        if optype == 1:
+            op = UnaryStringOperation(UnaryOperationNames.NAME, index)
+            op.of = Menu(param2.name, index)
+        
+        elif optype == 2:
+            op = UnaryStringOperation(UnaryOperationNames.NUMBER, index)
+            op.of = MenuitemsAccessorOperation(Menu(param2.name, index), index) 
+        
+        else:
+            raise Exception("Unknown op type: %s"%(optype))           
+        
+        stack.append(op)
 
 #
 # Menuitem properties Opcode.
@@ -269,7 +299,22 @@ class AssignSystemPropertiesOpcode(SystemPropertiesOpcode):
         op.left = stack.pop()
         op.right = stack.pop()
         function.statements.append(Statement(op, index))  
+
+#
+# Number of elements ... Opcode.
+#
+class NumberOfCastElementsOpcode(BiOpcode):
+    def __init__(self):
+        BiOpcode.__init__(self, 0x5C, 0x08)
     
+    def process(self, context: Context, stack: List[Node], \
+                function: Function, index: int):
+        param: ConstantValue = cast(ConstantValue, stack.pop())
+        optype = int(param.name)
+
+        op = UnaryStringOperation(UnaryOperationNames.NUMBER, index)
+        op.of = LocalVariable(NUM_OF_TYPES[optype], index)
+        stack.append(op)
     
 #
 # Cast properties Opcode.

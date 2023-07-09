@@ -1,0 +1,19 @@
+on startMovie
+    installMenu 1
+    put "---------"
+    put "Number of menus: ", the number of menus
+    put "Menu: ", the name of menu 1
+    put "Number of menuitems: ", the number of menuItems of menu 1
+    put "First menuitem: ", the name of menuItem 1 of menu 1
+    put "Enabled: ", the enabled of menuItem 1 of menu 1
+    put "Checkmark: ", the checkMark of menuItem 1 of menu 1
+    put "Script: ", the script of menuItem 1 of menu 1
+    set the name of menuItem 1 of menu 1 = "hello"
+    set the enabled of menuItem 1 of menu 1 = 0
+    set the checkMark of menuItem 1 of menu 1 = 1
+    set the script of menuItem 2 of menu 1 = "myscript"
+end
+
+on myscript
+    put "My script is executed"
+end

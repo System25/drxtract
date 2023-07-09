@@ -39,7 +39,8 @@ from .property_op import SpecialPropertiesOpcode, \
 	CastPropertiesOpcode, AssignCastPropertiesOpcode, \
 	VideoPropertiesOpcode, AssignVideoPropertiesOpcode, \
 	PropertyAccesorOpcode, AssignPropertyAccesorOpcode, \
-	KeyPropertyAccesorOpcode, FieldPropertiesOpcode
+	KeyPropertyAccesorOpcode, FieldPropertiesOpcode, \
+	NumberOfCastElementsOpcode, NameOfCastElementsOpcode
 
 from .stack_op import CopySymbolOpcode, DiscardSymbolsOpcode
 
@@ -82,7 +83,9 @@ BI_OPCODES_LIST : List[BiOpcode] = [
 	VideoPropertiesOpcode(),
 	AssignVideoPropertiesOpcode(),
 	FieldPropertiesOpcode(),
-	DeleteSliceOpcode()
+	DeleteSliceOpcode(),
+	NumberOfCastElementsOpcode(),
+	NameOfCastElementsOpcode()
 ]	
 
 OPCODES_LIST: List[Opcode] = [
@@ -151,6 +154,8 @@ OPCODES_LIST: List[Opcode] = [
 	AssignPropertyAccesorOpcode(),
 	KeyPropertyAccesorOpcode(),
 	FieldPropertiesOpcode(),
+	NumberOfCastElementsOpcode(),
+	NameOfCastElementsOpcode(),
 	
 	CopySymbolOpcode(),
 	DiscardSymbolsOpcode(),

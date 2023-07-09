@@ -57,6 +57,7 @@ class TestScript(unittest.TestCase):
         ['sprite_rect.Lnam', 'sprite_rect.Lscr', 'sprite_rect.lingo'],
         ['tell.Lnam', 'tell.Lscr', 'tell.lingo'],
         ['beepon.Lnam', 'beepon.Lscr', 'beepon.lingo'],
+        ['menuitem.Lnam', 'menuitem.Lscr', 'menuitem.lingo'],
         
     ])
     def test_script(self, lnam_file: str, lsrc_file: str, lingo_file: str):
