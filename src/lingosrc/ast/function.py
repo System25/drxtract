@@ -58,6 +58,7 @@ class CallFunction(Node):
         Node.__init__(self, name, position)
         self.parameters: Optional[Node] = None
         self.use_parenthesis: bool = True
+        self.in_tell_operation: bool = False
 
     def generate_lingo(self, indentation: int) -> str: 
         if (self.parameters is not None
@@ -88,12 +89,15 @@ class CallFunction(Node):
                 nm = '_movie.newScript'
             
         if nm == 'go':
+            nm = ''
+            if not self.in_tell_operation:
+                nm = '_movie.'
             if params_str.startswith('symbol(\''):
                 p = params_str[len('symbol(\''):-2]
-                nm = '_movie.go' + p.capitalize()
+                nm = nm + 'go' + p.capitalize()
                 params_str = ''
             else:
-                nm = '_movie.go'
+                nm = nm + 'go'
             
         return self.generate_js_code(nm, params_str)
 
@@ -116,10 +120,17 @@ class CallMethod(Node):
         Node.__init__(self, name, position)
         self.object: Optional[Node] = None
         self.parameters: Optional[Node] = None
-        self.use_parenthesis: bool = True
 
     def generate_lingo(self, indentation: int) -> str:
-        raise Exception("CallMethod not implemented!")
+        obj: Node = cast(Node, self.object)
+        params: Node = cast(Node, self.parameters)
+        return "tell %s to %s(%s)"%(obj.generate_lingo(indentation),
+                            self.name,
+                            params.generate_lingo(indentation))
 
     def generate_js(self, indentation: int) -> str:
-        raise Exception("CallMethod not implemented!")
+        obj: Node = cast(Node, self.object)
+        params: Node = cast(Node, self.parameters)
+        return "%s.%s(%s)"%(obj.generate_js(indentation),
+                            self.name,
+                            params.generate_js(indentation))

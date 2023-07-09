@@ -245,8 +245,11 @@ class SystemPropertiesOpcode(BiOpcode):
         property_name = list(SYSTEM_PROPERTIES.keys())[property_index]
         
     
-        obj = GlobalVariable(SYSTEM_PROPERTIES[property_name], index)
-        op = PropertyAccessorOperation(obj, property_name, index)
+        obj: Node = GlobalVariable(SYSTEM_PROPERTIES[property_name], index)
+        if context.tell_object is not None:
+            obj = GlobalVariable('tell_obj', index)
+        op: Node = PropertyAccessorOperation(obj, property_name, index)
+        
         stack.append(op)
     
 #

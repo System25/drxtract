@@ -321,11 +321,17 @@ class PropertyAccessorOperation(Node):
         obj_str = self.obj.generate_lingo(indentation)
         if obj_str == 'me':
             return '%s'%(self.prop)
+        elif obj_str == 'tell_obj':
+            return 'the %s'%(self.prop)
         else:
             return "the %s of %s"%(self.prop, obj_str)
 
-    def generate_js(self, indentation: int) -> str: 
-        return "%s.%s"%(self.obj.generate_js(indentation), self.prop)
+    def generate_js(self, indentation: int) -> str:
+        obj_str = self.obj.generate_js(indentation)
+        if obj_str == '_global.tell_obj':
+            return '%s'%(self.prop)
+        else:
+            return "%s.%s"%(self.obj.generate_js(indentation), self.prop)
 
 #
 # Key property accessor operation class.

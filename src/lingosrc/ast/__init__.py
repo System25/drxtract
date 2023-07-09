@@ -21,4 +21,4 @@ from .conversion import LoadListOperation, ToListOperation, \
 from .function import Statement, Function, CallFunction, CallMethod
 from .structures import RepeatOperation, IfThenOperation, JumpOperation, \
     JzOperation, ExitRepeat
-from .win_tell import WindowTellStartOperation, WindowTellEndOperation
+from .win_tell import WindowTellOperation

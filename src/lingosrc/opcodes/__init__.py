@@ -50,7 +50,7 @@ from .unary_op import MinusOpcode, NotOpcode, FieldOpcode
 
 from .variable_op import VariableOpcode, GlobalVariableOpcode, \
 	GlobalVarOpcode, PropertyNameOpcode, ParameterNameOpcode, \
-	LocalVariableOpcode
+	LocalVariableOpcode, TellPropertyOpcode
 
 from .constant_op import ZeroOpcode, Int1bOpcode, Int2bOpcode, LiteralOpcode, \
 	Literal2Opcode, SymbolOpcode, PropertyOpcode
@@ -172,6 +172,7 @@ OPCODES_LIST: List[Opcode] = [
 	PropertyNameOpcode(),
 	ParameterNameOpcode(),
 	LocalVariableOpcode(),
+	TellPropertyOpcode(),
 	
 	ZeroOpcode(), 
 	Int1bOpcode(), 

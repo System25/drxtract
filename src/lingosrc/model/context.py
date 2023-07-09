@@ -2,7 +2,8 @@
 # E-mail: system252001@yahoo.es
 # License: GNU GPL v2 (see LICENSE file for details).
 
-from typing import List
+from ..ast import Node
+from typing import List, Optional
 
 #
 # Lingo script decompiler context.
@@ -16,3 +17,4 @@ class Context:
         self.name_list: List[str] = []
         self.local_func_names: List[str] = []
         self.properties: List[str] = []
+        self.tell_object: Optional[Node]

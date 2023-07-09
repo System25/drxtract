@@ -3,10 +3,10 @@
 # License: GNU GPL v2 (see LICENSE file for details).
 
 from .opcode import Opcode
-from ..ast import WindowTellStartOperation, WindowTellEndOperation, \
-    Function, Node
+from ..ast import WindowTellOperation, \
+    Function, Node, Statement
 from ..model import Context
-from typing import List
+from typing import List, cast
 
 #
 # Tell window operation start Opcode.
@@ -17,9 +17,10 @@ class WindowTellStartOpcode(Opcode):
     
     def process(self, context: Context, stack: List[Node], \
                 function: Function, index: int):
-        op = WindowTellStartOperation('win_tell_start', index)
+        op = WindowTellOperation('tell', index)
         op.operand = stack.pop()
-        stack.append(op)
+        function.statements.append(Statement(op, index))
+        context.tell_object = op.operand
 
 #
 # Tell window operation end Opcode.
@@ -30,11 +31,22 @@ class WindowTellEndOpcode(Opcode):
     
     def process(self, context: Context, stack: List[Node], \
                 function: Function, index: int):
-        op = WindowTellEndOperation('win_tell_end', index)
-        p = stack.pop()
-        while p is not None:
-            op.operands.append(p)
-            p = stack.pop()
+        statements: List[Statement] = []
+        fn_statements: List[Statement] = []
+        fn_statements.extend(function.statements)
+        fn_statements.reverse()
         
-        function.statements.append(op)
-
+        for st in fn_statements:
+            if not isinstance(st.code, WindowTellOperation):
+                statements.append(st)
+            else:
+                op: WindowTellOperation = cast(WindowTellOperation, st.code)
+                statements.reverse()
+                op.statements.extend(statements)
+                statements = op.statements
+                break
+                
+        for st in statements:
+            function.statements.remove(st)
+        
+        context.tell_object = None

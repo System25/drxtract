@@ -4,7 +4,7 @@
 
 from .opcode import Param1Opcode
 from ..ast import LocalVariable, GlobalVariable, DefinedPropertyName, \
-    Function, ParameterName, Node
+    Function, ParameterName, Node, CallFunction, Statement
 from ..model import Context
 from typing import List
 
@@ -90,4 +90,20 @@ class LocalVariableOpcode(Param1Opcode):
         value = function.local_vars[int(op1 / context.bytes_per_constant)]
         
         stack.append(value)
+
+#
+# Property to tell commands.
+#
+class TellPropertyOpcode(Param1Opcode):
+    def __init__(self):
+        Param1Opcode.__init__(self, 0x63)
+    
+    def process(self, context: Context, stack: List[Node], \
+                function: Function, index: int):
+        op1 = self.param1
+
+        op = CallFunction(context.name_list[op1], index)
+        op.parameters = stack.pop()
+        op.in_tell_operation = True
+        function.statements.append(Statement(op, index)) 
 
