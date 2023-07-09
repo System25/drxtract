@@ -17,4 +17,4 @@ class Context:
         self.name_list: List[str] = []
         self.local_func_names: List[str] = []
         self.properties: List[str] = []
-        self.tell_object: Optional[Node]
+        self.tell_object: Optional[Node] = None
