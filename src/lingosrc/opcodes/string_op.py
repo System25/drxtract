@@ -4,7 +4,8 @@
 
 from .opcode import Opcode, BiOpcode
 from ..ast import Node, StringOperation, UnaryOperation,\
-    Statement, UnaryOperationNames, StringOperationNames, Function
+    Statement, UnaryOperationNames, StringOperationNames, Function, \
+    SpAssignOperation, BinaryOperationNames, LocalVariable
 from ..model import Context
 from typing import List
 
@@ -77,9 +78,266 @@ class HiliteOpcode(Opcode):
         stack.append(op)
 
 #
-# Delete slice Opcode.
+# Put into field Opcode.
 #
-class DeleteSliceOpcode(BiOpcode):
+class PutIntoFieldOpcode(BiOpcode):
+    def __init__(self):
+        BiOpcode.__init__(self, 0x5A, 0x06)
+
+    def process(self, context: Context, stack: List[Node], \
+                function: Function, index: int):
+        
+        field = UnaryOperation(UnaryOperationNames.FIELD, index)
+        field.operand = stack.pop()  # The field to put     
+        field = add_modifiers(self, field, stack, index)
+        
+        op = SpAssignOperation(BinaryOperationNames.ASSIGN, index)
+        op.left = field
+        op.right = stack.pop()
+        op.mode = 'into'
+        stack.append(op)
+        
+        function.statements.append(Statement(op, index))
+
+
+#
+# Put into field Opcode.
+#
+class PutIntoFieldSpOpcode(BiOpcode):
+    def __init__(self):
+        BiOpcode.__init__(self, 0x5A, 0x16)
+
+    def process(self, context: Context, stack: List[Node], \
+                function: Function, index: int):
+        
+        field = UnaryOperation(UnaryOperationNames.FIELD, index)
+        field.operand = stack.pop()  # The field to put     
+        field = add_modifiers(self, field, stack, index)
+        
+        op = SpAssignOperation(BinaryOperationNames.ASSIGN, index)
+        op.left = field
+        op.right = stack.pop()
+        op.mode = 'into'
+        stack.append(op)
+        
+        function.statements.append(Statement(op, index))
+
+#
+# Put into list Opcode.
+#
+class PutIntoListOpcode(BiOpcode):
+    def __init__(self):
+        BiOpcode.__init__(self, 0x5A, 0x12)
+
+    def process(self, context: Context, stack: List[Node], \
+                function: Function, index: int):
+        
+        var = stack.pop()
+        var = add_modifiers(self, var, stack, index)
+        
+        op = SpAssignOperation(BinaryOperationNames.ASSIGN, index)
+        op.left = var
+        op.right = stack.pop()
+        op.mode = 'into'
+        stack.append(op)
+        
+        function.statements.append(Statement(op, index))
+
+#
+# Put into string Opcode.
+#
+class PutIntoStringOpcode(BiOpcode):
+    def __init__(self):
+        BiOpcode.__init__(self, 0x5A, 0x15)
+
+    def process(self, context: Context, stack: List[Node], \
+                function: Function, index: int):
+        
+        op1 = int(stack.pop().name)
+        var = function.local_vars[op1]
+        var = add_modifiers(self, var, stack, index)
+        
+        op = SpAssignOperation(BinaryOperationNames.ASSIGN, index)
+        op.left = var
+        op.right = stack.pop()
+        op.mode = 'into'
+        stack.append(op)
+        
+        function.statements.append(Statement(op, index))
+
+#
+# Put after list Opcode.
+#
+class PutAfterListOpcode(BiOpcode):
+    def __init__(self):
+        BiOpcode.__init__(self, 0x5A, 0x22)
+
+    def process(self, context: Context, stack: List[Node], \
+                function: Function, index: int):
+        
+        var = stack.pop()
+        var = add_modifiers(self, var, stack, index)
+        
+        op = SpAssignOperation(BinaryOperationNames.ASSIGN, index)
+        op.left = var
+        op.right = stack.pop()
+        op.mode = 'after'
+        stack.append(op)
+        
+        function.statements.append(Statement(op, index))
+
+#
+# Put after string Opcode.
+#
+class PutAfterStringOpcode(BiOpcode):
+    def __init__(self):
+        BiOpcode.__init__(self, 0x5A, 0x25)
+
+    def process(self, context: Context, stack: List[Node], \
+                function: Function, index: int):
+        
+        op1 = int(stack.pop().name)
+        var = function.local_vars[op1]
+        var = add_modifiers(self, var, stack, index)
+        
+        op = SpAssignOperation(BinaryOperationNames.ASSIGN, index)
+        op.left = var
+        op.right = stack.pop()
+        op.mode = 'after'
+        stack.append(op)
+        
+        function.statements.append(Statement(op, index))
+
+#
+# Put after field Opcode.
+#
+class PutAfterFieldOpcode(BiOpcode):
+    def __init__(self):
+        BiOpcode.__init__(self, 0x5A, 0x26)
+
+    def process(self, context: Context, stack: List[Node], \
+                function: Function, index: int):
+        
+        field = UnaryOperation(UnaryOperationNames.FIELD, index)
+        field.operand = stack.pop()  # The field to put     
+        field = add_modifiers(self, field, stack, index)
+        
+        op = SpAssignOperation(BinaryOperationNames.ASSIGN, index)
+        op.left = field
+        op.right = stack.pop()
+        op.mode = 'after'
+        stack.append(op)
+        
+        function.statements.append(Statement(op, index))
+
+#
+# Put before list Opcode.
+#
+class PutBeforeListOpcode(BiOpcode):
+    def __init__(self):
+        BiOpcode.__init__(self, 0x5A, 0x32)
+
+    def process(self, context: Context, stack: List[Node], \
+                function: Function, index: int):
+        
+        var = stack.pop()
+        var = add_modifiers(self, var, stack, index)
+        
+        op = SpAssignOperation(BinaryOperationNames.ASSIGN, index)
+        op.left = var
+        op.right = stack.pop()
+        op.mode = 'before'
+        stack.append(op)
+        
+        function.statements.append(Statement(op, index))
+        
+#
+# Put before String Opcode.
+#
+class PutBeforeStringOpcode(BiOpcode):
+    def __init__(self):
+        BiOpcode.__init__(self, 0x5A, 0x35)
+
+    def process(self, context: Context, stack: List[Node], \
+                function: Function, index: int):
+        
+        op1 = int(stack.pop().name)
+        var = function.local_vars[op1]
+        var = add_modifiers(self, var, stack, index)
+        
+        op = SpAssignOperation(BinaryOperationNames.ASSIGN, index)
+        op.left = var
+        op.right = stack.pop()
+        op.mode = 'before'
+        stack.append(op)
+        
+        function.statements.append(Statement(op, index))
+
+#
+# Put before field Opcode.
+#
+class PutBeforeFieldOpcode(BiOpcode):
+    def __init__(self):
+        BiOpcode.__init__(self, 0x5A, 0x36)
+
+    def process(self, context: Context, stack: List[Node], \
+                function: Function, index: int):
+        
+        field = UnaryOperation(UnaryOperationNames.FIELD, index)
+        field.operand = stack.pop()  # The field to put     
+        field = add_modifiers(self, field, stack, index)
+        
+        op = SpAssignOperation(BinaryOperationNames.ASSIGN, index)
+        op.left = field
+        op.right = stack.pop()
+        op.mode = 'before'
+        stack.append(op)
+        
+        function.statements.append(Statement(op, index))
+
+#
+# Delete from list Opcode.
+#
+class DeleteFromListOpcode(BiOpcode):
+    def __init__(self):
+        BiOpcode.__init__(self, 0x5B, 0x02)
+
+    def process(self, context: Context, stack: List[Node], \
+                function: Function, index: int):
+        
+        var = stack.pop()  # The list to delete from     
+        var = add_modifiers(self, var, stack, index)
+        
+        op = UnaryOperation(UnaryOperationNames.DELETE, index)
+        op.operand = var
+        stack.append(op)
+        
+        function.statements.append(Statement(op, index))
+        
+#
+# Delete from string Opcode.
+#
+class DeleteFromStringOpcode(BiOpcode):
+    def __init__(self):
+        BiOpcode.__init__(self, 0x5B, 0x05)
+
+    def process(self, context: Context, stack: List[Node], \
+                function: Function, index: int):
+        
+        op1 = int(stack.pop().name)
+        var = function.local_vars[op1]
+        var = add_modifiers(self, var, stack, index)
+        
+        op = UnaryOperation(UnaryOperationNames.DELETE, index)
+        op.operand = var
+        stack.append(op)
+        
+        function.statements.append(Statement(op, index))
+
+#
+# Delete from field Opcode.
+#
+class DeleteFromFieldOpcode(BiOpcode):
     def __init__(self):
         BiOpcode.__init__(self, 0x5B, 0x06)
 

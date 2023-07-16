@@ -19,7 +19,11 @@ class VariableOpcode(Param1Opcode):
     def process(self, context: Context, stack: List[Node], \
                 function: Function, index: int):
         op1 = self.param1
-        stack.append(LocalVariable(context.name_list[op1], index))
+        gv = GlobalVariable(context.name_list[op1], index)
+        if not gv in function.global_vars:
+            stack.append(LocalVariable(context.name_list[op1], index))
+        else:
+            stack.append(gv)
 
 #
 # Use global variable Opcode.

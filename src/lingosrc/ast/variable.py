@@ -17,7 +17,8 @@ KNOWN_PROPERTIES = {
     'mouseUpScript': '_system',
     'keyDownScript': '_system',
     'keyUpScript': '_system',
-    'timeoutScript': '_system'
+    'timeoutScript': '_system',
+    'itemDelimiter': '_player'
 }
 
 #

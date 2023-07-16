@@ -56,7 +56,12 @@ from .variable_op import VariableOpcode, GlobalVariableOpcode, \
 from .constant_op import ZeroOpcode, Int1bOpcode, Int2bOpcode, LiteralOpcode, \
 	Literal2Opcode, SymbolOpcode, PropertyOpcode
 
-from .string_op import StringOperationOpcode, HiliteOpcode, DeleteSliceOpcode
+from .string_op import StringOperationOpcode, HiliteOpcode, \
+		DeleteFromFieldOpcode, PutIntoFieldOpcode, \
+		PutAfterListOpcode, PutBeforeListOpcode, PutIntoListOpcode, \
+		DeleteFromListOpcode, PutBeforeStringOpcode, \
+		PutAfterStringOpcode, PutIntoStringOpcode, DeleteFromStringOpcode, \
+		PutAfterFieldOpcode, PutBeforeFieldOpcode, PutIntoFieldSpOpcode
 
 TRI_OPCODES_LIST : List[TriOpcode] = [
 ]
@@ -83,9 +88,21 @@ BI_OPCODES_LIST : List[BiOpcode] = [
 	VideoPropertiesOpcode(),
 	AssignVideoPropertiesOpcode(),
 	FieldPropertiesOpcode(),
-	DeleteSliceOpcode(),
+	DeleteFromFieldOpcode(),
 	NumberOfCastElementsOpcode(),
-	NameOfCastElementsOpcode()
+	NameOfCastElementsOpcode(),
+	PutIntoFieldOpcode(),
+	PutAfterListOpcode(),
+	PutBeforeListOpcode(),
+	PutIntoListOpcode(),
+	DeleteFromListOpcode(),
+	PutBeforeStringOpcode(),
+	PutAfterStringOpcode(),
+	PutIntoStringOpcode(),
+	DeleteFromStringOpcode(),
+	PutAfterFieldOpcode(),
+	PutBeforeFieldOpcode(),
+	PutIntoFieldSpOpcode()
 ]	
 
 OPCODES_LIST: List[Opcode] = [
@@ -189,7 +206,19 @@ OPCODES_LIST: List[Opcode] = [
 	
 	StringOperationOpcode(),
 	HiliteOpcode(),
-	DeleteSliceOpcode()
+	DeleteFromFieldOpcode(),
+	PutIntoFieldOpcode(),
+	PutAfterListOpcode(),
+	PutBeforeListOpcode(),
+	PutIntoListOpcode(),
+	DeleteFromListOpcode(),
+	PutBeforeStringOpcode(),
+	PutAfterStringOpcode(),
+	PutIntoStringOpcode(),
+	DeleteFromStringOpcode(),
+	PutAfterFieldOpcode(),
+	PutBeforeFieldOpcode(),
+	PutIntoFieldSpOpcode()
 ]
 
 OPCODES: Dict[int, Opcode] = {op.opcode:op for op in OPCODES_LIST}

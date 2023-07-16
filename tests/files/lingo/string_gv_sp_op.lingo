@@ -1,0 +1,18 @@
+global myStr
+
+on exitFrame
+    put "base item delimiter", the itemDelimiter
+    set the itemDelimiter = ":"
+    set myStr = "a:b:c"
+    put "num of items:", the number of items of myStr
+    set the itemDelimiter = ","
+    put "again:", the number of items of myStr
+    put "hey" before item 1 of myStr
+    put myStr
+    put "you" after item 1 of myStr
+    put myStr
+    put "me" into item 2 of myStr
+    put myStr
+    delete item 1 of myStr
+    put myStr
+end

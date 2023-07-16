@@ -6,6 +6,7 @@ from .node import Node
 from .variable import Menu, MenuItem
 from enum import Enum
 from typing import Optional, cast, Dict
+import re
 
 #
 # Unary Operation names in Javascript.
@@ -235,7 +236,7 @@ class SpAssignOperation(Node):
         r = cast(Node, self.right)
         left: str = l.generate_js(indentation);
         if left.startswith('field(') and left.endswith(')'):
-            left += '.text'
+            left = re.sub('(field\\([^\\)]+\\))', '\\1.text', left)
         
         if self.mode == 'after':
             return "%s = %s + %s"%(left, left, r.generate_js(indentation))
