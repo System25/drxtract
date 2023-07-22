@@ -496,21 +496,23 @@ class PropertyAccesorOpcode(Param1Opcode):
 #
 # Assign Property accessor Opcode.
 #
-class AssignPropertyAccesorOpcode(PropertyAccesorOpcode):
+class AssignPropertyAccesorOpcode(Param1Opcode):
     def __init__(self):
-        PropertyAccesorOpcode.__init__(self)
-        self.opcode = 0x62
+        Param1Opcode.__init__(self, 0x62)
     
     
     def process(self, context: Context, stack: List[Node], \
                 function: Function, index: int):
-        PropertyAccesorOpcode.process(self, context, stack, function, \
-                                      index)
+        op1 = self.param1
         value = stack.pop()
+        node = stack.pop()
+        prop = context.name_list[op1]
+        accessor = PropertyAccessorOperation(node, prop, index)
+        
         op = BinaryOperation(BinaryOperationNames.ASSIGN, index)
-        op.left = stack.pop()
+        op.left = accessor
         op.right = value
-        stack.append(op) 
+        function.statements.append(Statement(op, index))
 
 #
 # Key Property accesor Opcode.

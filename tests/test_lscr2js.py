@@ -61,6 +61,7 @@ class TestScript(unittest.TestCase):
         ['string_fi_sp_op.Lnam', 'string_fi_sp_op.Lscr', 'string_fi_sp_op.js'],
         ['field_props.Lnam', 'field_props.Lscr', 'field_props.js'],
         ['sound_props.Lnam', 'sound_props.Lscr', 'sound_props.js'],
+        ['cast_props.Lnam', 'cast_props.Lscr', 'cast_props.js'],
     ])
     def test_script(self, lnam_file: str, lsrc_file: str, lingo_file: str):
         

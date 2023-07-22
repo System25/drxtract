@@ -9,12 +9,14 @@ function mouseUp() {
 
     member("Fish.mov").directToStage = 1;
     member("Fish.mov").controller = 1;
+    member("Fish.mov").center = 0;
+    member("Fish.mov").crop = 0;
     MyDuration = member("Fish.mov").duration;
-    MyFrameRate = cast("Fish.mov").frameRate;
+    MyFrameRate = member("Fish.mov").frameRate;
     MyLoop = member("Fish.mov").loop;
-    MyPausedAtStart = cast("Fish.mov").pausedAtStart;
-    MyPreload = cast("Fish.mov").preLoad;
-    MyVideo = cast("Fish.mov").video;
+    MyPausedAtStart = member("Fish.mov").pausedAtStart;
+    MyPreload = member("Fish.mov").preLoad;
+    MyVideo = member("Fish.mov").video;
     MySound = member("Fish.mov").sound;
     put("MyDuration=", MyDuration);
 }

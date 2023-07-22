@@ -99,7 +99,10 @@ class CallFunction(Node):
                 params_str = ''
             else:
                 nm = nm + 'go'
-            
+        
+        if nm == 'cast':
+            nm = 'member'
+        
         return self.generate_js_code(nm, params_str)
 
     

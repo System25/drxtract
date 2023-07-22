@@ -1,0 +1,21 @@
+on exitFrame
+    put "backColor: ", the backColor of cast 1
+    put "center: ", the center of cast(1)
+    put "crop: ", the crop of cast(1)
+    set the center of cast(1) = 1
+    set the crop of cast(1) = 1
+    put "castType: ", the castType of cast(1)
+    put "depth: ", the depth of cast(1)
+    put "fileName: ", the fileName of cast(1)
+    put "foreColor:", the foreColor of cast 1
+    put "hilite: ", the hilite of cast 1
+    put "loaded: ", the loaded of cast(1)
+    put "modified: ", the modified of cast(1)
+    put "name:", the name of cast 1
+    put "number:", the number of cast 1
+    put "picture: ", the picture of cast 1
+    put "preLoad: ", the preLoad of cast(1)
+    put "rect: ", the rect of cast(1)
+    put "scriptText: ", the scriptText of cast(1)
+    put "size: ", the size of cast 1
+end
