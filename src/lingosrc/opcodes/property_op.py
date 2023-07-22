@@ -9,7 +9,7 @@ from ..ast import Function, Sprite, StringOperationNames, \
     MenuitemAccessorOperation, Menu, MenuItem, PropertyAccessorOperation, \
     Cast, Node, ConstantValue, KeyPropertyAccessorOperation, \
     LoadListOperation, Statement, UnaryOperation, UnaryOperationNames, \
-    MenuitemsAccessorOperation
+    MenuitemsAccessorOperation, SoundChannel
 from ..model import Context
 from typing import List, cast, Optional
 
@@ -43,6 +43,8 @@ CAST_PROPERTIES = ['UNKNOWN0', 'name', 'text', 'textStyle', 'textFont',
                    'hilite', 'number', 'size', 'UNKNOWN8', 'UNKNOWN9',
                    'UNKNOWNA', 'UNKNOWNB',
                    'UNKNOWNC', 'foreColor', 'backColor']
+
+SOUND_PROPERTIES = ['UNKNOWN0', 'volume']
 
 VIDEO_PROPERTIES = ['UNKNOWN0', 'UNKNOWN1', 'UNKNOWN2', 'UNKNOWN3', 'UNKNOWN4',
                     'UNKNOWN5', 'UNKNOWN6', 'UNKNOWN7', 'UNKNOWN8',
@@ -222,6 +224,47 @@ class AssignMenuitemPropertiesOpcode(BiOpcode):
         op.left = pac
         op.right = value
         function.statements.append(Statement(op, index))
+
+
+#
+# Sound properties Opcode.
+#
+class SoundPropertiesOpcode(BiOpcode):
+    def __init__(self):
+        BiOpcode.__init__(self, 0x5C, 0x04)
+    
+    def process(self, context: Context, stack: List[Node], \
+                function: Function, index: int):
+        property_index = int(cast(ConstantValue, stack.pop()).name)
+        channel_id = cast(ConstantValue, stack.pop()).name
+        sound_channel = SoundChannel(channel_id, index)
+        prop = SOUND_PROPERTIES[property_index]
+        op = PropertyAccessorOperation(sound_channel, prop, index)
+        stack.append(op)
+
+#
+# Assign Sound properties Opcode.
+#
+class AssignSoundPropertiesOpcode(BiOpcode):
+    def __init__(self):
+        BiOpcode.__init__(self, 0x5D, 0x04)
+
+
+    def process(self, context: Context, stack: List[Node], \
+                function: Function, index: int):
+        property_index = int(cast(ConstantValue, stack.pop()).name)
+        value = stack.pop()
+        channel_id = cast(ConstantValue, stack.pop()).name
+        
+        sound_channel = SoundChannel(channel_id, index)
+        prop = SOUND_PROPERTIES[property_index]
+        accessor = PropertyAccessorOperation(sound_channel, prop, index)
+
+        op = BinaryOperation(BinaryOperationNames.ASSIGN, index)
+        op.left = accessor
+        op.right = value
+        function.statements.append(Statement(op, index))  
+
 
 #
 # Sprite properties Opcode.

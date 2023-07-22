@@ -10,7 +10,7 @@ from .node import Node
 from .script import Script
 from .variable import LocalVariable, GlobalVariable, PropertyName,\
     ParameterName, DateTimeFunction, Menu, MenuItem, Sprite, SystemObject, \
-    Cast, DefinedPropertyName
+    Cast, DefinedPropertyName, SoundChannel
 from .operation import UnaryOperation, BinaryOperation, StringOperation,\
     SpAssignOperation, UnaryStringOperation, PropertyAccessorOperation, \
     MenuitemAccessorOperation, BinaryOperationNames, UnaryOperationNames, \

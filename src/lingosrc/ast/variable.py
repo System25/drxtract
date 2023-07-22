@@ -125,7 +125,22 @@ class MenuItem(Node):
 
     def generate_js(self, indentation: int) -> str: 
         return "item[%s]"%(self.name)    
+
+#
+# SoundChannel class.
+# 
+class SoundChannel(Node):
+    """This class represents a sound channel in the AST"""
     
+    def __init__(self, name: str, position: int):
+        Node.__init__(self, name, position)
+
+    def generate_lingo(self, indentation: int) -> str: 
+        return "sound %s"%(self.name)
+
+    def generate_js(self, indentation: int) -> str: 
+        return "sound(%s)"%(self.name)
+
 #
 # Sprite class.
 # 

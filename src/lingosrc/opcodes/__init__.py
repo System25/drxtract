@@ -41,7 +41,8 @@ from .property_op import SpecialPropertiesOpcode, \
 	PropertyAccesorOpcode, AssignPropertyAccesorOpcode, \
 	KeyPropertyAccesorOpcode, FieldPropertiesOpcode, \
 	NumberOfCastElementsOpcode, NameOfCastElementsOpcode, \
-	AssignFieldPropertiesOpcode
+	AssignFieldPropertiesOpcode, SoundPropertiesOpcode, \
+	AssignSoundPropertiesOpcode
 
 from .stack_op import CopySymbolOpcode, DiscardSymbolsOpcode
 
@@ -93,6 +94,8 @@ BI_OPCODES_LIST : List[BiOpcode] = [
 	NumberOfCastElementsOpcode(),
 	NameOfCastElementsOpcode(),
 	AssignFieldPropertiesOpcode(),
+	SoundPropertiesOpcode(),
+	AssignSoundPropertiesOpcode(),
 	
 	PutIntoFieldOpcode(),
 	PutAfterListOpcode(),
@@ -177,6 +180,8 @@ OPCODES_LIST: List[Opcode] = [
 	NumberOfCastElementsOpcode(),
 	NameOfCastElementsOpcode(),
 	AssignFieldPropertiesOpcode(),
+	SoundPropertiesOpcode(),
+	AssignSoundPropertiesOpcode(),
 	
 	CopySymbolOpcode(),
 	DiscardSymbolsOpcode(),
