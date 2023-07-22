@@ -38,9 +38,10 @@ SPRITE_PROPERTIES = ['UNKNOWN0', 'type', 'backColor', 'bottom', 'castNum',
                      'moveableSprite', 'UNKNOWN3', 'scoreColor', 'UNKNOWN4',
                      'rect']
 
-CAST_PROPERTIES = ['UNKNOWN0', 'name', 'text', 'UNKNOWN2', 'UNKNOWN3', 'UNKNOWN4',
-                   'UNKNOWN5', 'UNKNOWN6', 'picture', 'hilite', 'number',
-                   'size', 'UNKNOWN8', 'UNKNOWN9', 'UNKNOWNA', 'UNKNOWNB',
+CAST_PROPERTIES = ['UNKNOWN0', 'name', 'text', 'textStyle', 'textFont',
+                   'textHeight', 'textAlign', 'textSize', 'picture',
+                   'hilite', 'number', 'size', 'UNKNOWN8', 'UNKNOWN9',
+                   'UNKNOWNA', 'UNKNOWNB',
                    'UNKNOWNC', 'foreColor', 'backColor']
 
 VIDEO_PROPERTIES = ['UNKNOWN0', 'UNKNOWN1', 'UNKNOWN2', 'UNKNOWN3', 'UNKNOWN4',
@@ -373,6 +374,29 @@ class FieldPropertiesOpcode(BiOpcode):
         prop = CAST_PROPERTIES[property_index]
         op = PropertyAccessorOperation(field, prop, index)
         stack.append(op)
+
+
+#
+# Assign Field properties Opcode.
+#
+class AssignFieldPropertiesOpcode(BiOpcode):
+    def __init__(self):
+        BiOpcode.__init__(self, 0x5D, 0x0b)
+    
+    
+    def process(self, context: Context, stack: List[Node], \
+                function: Function, index: int):
+        property_index = int(cast(ConstantValue, stack.pop()).name)
+        value = stack.pop()
+        cast_id = cast(ConstantValue, stack.pop()).name
+        cast_node = Cast(cast_id, index)
+        prop = CAST_PROPERTIES[property_index]
+        accessor = PropertyAccessorOperation(cast_node, prop, index)
+        
+        op = BinaryOperation(BinaryOperationNames.ASSIGN, index)
+        op.left = accessor
+        op.right = value
+        function.statements.append(Statement(op, index)) 
 
 #
 # Video cast properties Opcode.

@@ -66,6 +66,7 @@ class TestScript(unittest.TestCase):
          'string_gv_sp_op.lingo'],
         ['string_fi_sp_op.Lnam', 'string_fi_sp_op.Lscr', \
          'string_fi_sp_op.lingo'],
+        ['field_props.Lnam', 'field_props.Lscr', 'field_props.lingo'],
         
     ])
     def test_script(self, lnam_file: str, lsrc_file: str, lingo_file: str):
