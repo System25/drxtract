@@ -5,7 +5,7 @@
 from .opcode import Opcode, BiOpcode
 from ..ast import Node, StringOperation, UnaryOperation,\
     Statement, UnaryOperationNames, StringOperationNames, Function, \
-    SpAssignOperation, BinaryOperationNames, LocalVariable
+    SpAssignOperation, BinaryOperationNames
 from ..model import Context
 from typing import List
 
@@ -75,7 +75,8 @@ class HiliteOpcode(Opcode):
         
         op = UnaryOperation(UnaryOperationNames.HILITE, index)
         op.operand = field
-        stack.append(op)
+
+        function.statements.append(Statement(op, index))
 
 #
 # Put into field Opcode.
@@ -95,7 +96,6 @@ class PutIntoFieldOpcode(BiOpcode):
         op.left = field
         op.right = stack.pop()
         op.mode = 'into'
-        stack.append(op)
         
         function.statements.append(Statement(op, index))
 
@@ -118,7 +118,6 @@ class PutIntoFieldSpOpcode(BiOpcode):
         op.left = field
         op.right = stack.pop()
         op.mode = 'into'
-        stack.append(op)
         
         function.statements.append(Statement(op, index))
 
@@ -139,7 +138,6 @@ class PutIntoListOpcode(BiOpcode):
         op.left = var
         op.right = stack.pop()
         op.mode = 'into'
-        stack.append(op)
         
         function.statements.append(Statement(op, index))
 
@@ -161,7 +159,6 @@ class PutIntoStringOpcode(BiOpcode):
         op.left = var
         op.right = stack.pop()
         op.mode = 'into'
-        stack.append(op)
         
         function.statements.append(Statement(op, index))
 
@@ -182,7 +179,6 @@ class PutAfterListOpcode(BiOpcode):
         op.left = var
         op.right = stack.pop()
         op.mode = 'after'
-        stack.append(op)
         
         function.statements.append(Statement(op, index))
 
@@ -204,7 +200,6 @@ class PutAfterStringOpcode(BiOpcode):
         op.left = var
         op.right = stack.pop()
         op.mode = 'after'
-        stack.append(op)
         
         function.statements.append(Statement(op, index))
 
@@ -226,7 +221,6 @@ class PutAfterFieldOpcode(BiOpcode):
         op.left = field
         op.right = stack.pop()
         op.mode = 'after'
-        stack.append(op)
         
         function.statements.append(Statement(op, index))
 
@@ -247,7 +241,6 @@ class PutBeforeListOpcode(BiOpcode):
         op.left = var
         op.right = stack.pop()
         op.mode = 'before'
-        stack.append(op)
         
         function.statements.append(Statement(op, index))
         
@@ -269,7 +262,6 @@ class PutBeforeStringOpcode(BiOpcode):
         op.left = var
         op.right = stack.pop()
         op.mode = 'before'
-        stack.append(op)
         
         function.statements.append(Statement(op, index))
 
@@ -291,7 +283,6 @@ class PutBeforeFieldOpcode(BiOpcode):
         op.left = field
         op.right = stack.pop()
         op.mode = 'before'
-        stack.append(op)
         
         function.statements.append(Statement(op, index))
 
@@ -310,7 +301,6 @@ class DeleteFromListOpcode(BiOpcode):
         
         op = UnaryOperation(UnaryOperationNames.DELETE, index)
         op.operand = var
-        stack.append(op)
         
         function.statements.append(Statement(op, index))
         
@@ -330,7 +320,6 @@ class DeleteFromStringOpcode(BiOpcode):
         
         op = UnaryOperation(UnaryOperationNames.DELETE, index)
         op.operand = var
-        stack.append(op)
         
         function.statements.append(Statement(op, index))
 
@@ -349,6 +338,5 @@ class DeleteFromFieldOpcode(BiOpcode):
         
         op = UnaryOperation(UnaryOperationNames.DELETE, index)
         op.operand = field
-        stack.append(op)
         
         function.statements.append(Statement(op, index))
