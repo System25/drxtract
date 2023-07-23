@@ -81,7 +81,7 @@ SYSTEM_PROPERTIES = {
     'soundLevel': '_sound',
     'stageColor': '_movie',
     'UNKNOWN_SYSTEM_PROPERTY_1C': 'UNKNOWN',
-    'stillDown': '_movie',
+    'switchColorDepth': '_player',
     'timeoutKeyDown': '_system',
     'timeoutLength': '_system',
     'timeoutMouse': '_system',
@@ -318,7 +318,6 @@ class SystemPropertiesOpcode(BiOpcode):
         property_index = int(cast(ConstantValue, stack.pop()).name)
         property_name = list(SYSTEM_PROPERTIES.keys())[property_index]
         
-    
         obj: Node = LocalVariable(SYSTEM_PROPERTIES[property_name], index)
         if context.tell_object is not None:
             obj = LocalVariable('tell_obj', index)

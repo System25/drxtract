@@ -6,9 +6,14 @@ from .opcode import Param1Opcode, BiOpcode
 from ..ast import GlobalVariable, PropertyName, \
    BinaryOperation, BinaryOperationNames, SpAssignOperation, \
    UnaryOperation, UnaryOperationNames, Statement, Node, \
-   ConstantValue, Function, PropertyAccessorOperation
+   ConstantValue, Function, PropertyAccessorOperation, LocalVariable
 from ..model import Context
 from typing import List
+
+
+KNOWN_PROPERTIES = {
+    'updateMovieEnabled': '_movie'
+}
 
 #
 # Assign to global variable Opcode.
@@ -47,7 +52,12 @@ class LoadPropertyOpcode(Param1Opcode):
     def process(self, context: Context, stack: List[Node], \
                 function: Function, index: int):
         op1 = self.param1
-        op = PropertyName(context.name_list[op1], index)
+        property_name = context.name_list[op1]
+        op: Node = PropertyName(property_name, index)
+        if property_name in KNOWN_PROPERTIES.keys():
+            obj: Node = LocalVariable(KNOWN_PROPERTIES[property_name], index)
+            op = PropertyAccessorOperation(obj, property_name, index)
+        
         stack.append(op)
 
 #

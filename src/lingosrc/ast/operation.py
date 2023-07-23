@@ -327,7 +327,7 @@ class PropertyAccessorOperation(Node):
         obj_str = self.obj.generate_lingo(indentation)
         if obj_str == 'me':
             return '%s'%(self.prop)
-        elif obj_str == '_movie' or obj_str == 'tell_obj':
+        elif obj_str.startswith('_') or obj_str == 'tell_obj':
             return 'the %s'%(self.prop)
         else:
             return "the %s of %s"%(self.prop, obj_str)
