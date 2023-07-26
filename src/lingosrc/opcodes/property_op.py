@@ -16,8 +16,8 @@ from typing import List, cast, Optional
 SPECIAL_PROPERTIES = ['floatPrecision', 'mouseDownScript', 'mouseUpScript',
                       'keyDownScript', 'keyUpScript', 'timeoutScript']
 
-DATE_TIME_FUNCTIONS = ['short time', 'abbreviated time', 'long time',
-                       'short date', 'abbreviated date', 'long date']
+DATE_TIME_FUNCTIONS = ['short time', 'abbr time', 'long time',
+                       'short date', 'abbr date', 'long date']
 
 OPERATION_TYPES: List[StringOperationNames] = [StringOperationNames.UNKNOWN,
                                                StringOperationNames.CHAR,

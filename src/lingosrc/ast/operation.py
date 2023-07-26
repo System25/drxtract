@@ -352,7 +352,10 @@ class KeyPropertyAccessorOperation(Node):
     def generate_lingo(self, indentation: int) -> str:
         return "the %s"%(self.prop)
 
-    def generate_js(self, indentation: int) -> str: 
+    def generate_js(self, indentation: int) -> str:
+        if self.prop in ('date', 'time'):
+            return "_system.date('%s')"%(self.prop)
+        
         return "_key.%s"%(self.prop)
     
 #

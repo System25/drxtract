@@ -96,6 +96,12 @@ class DateTimeFunction(Node):
     def __init__(self, name: str, position: int):
         Node.__init__(self, name, position)
 
+    def generate_lingo(self, indentation: int) -> str: 
+        return "the %s"%(self.name)
+
+    def generate_js(self, indentation: int) -> str: 
+        return "_system.date('%s')"%(self.name)
+
 #
 # Menu class.
 # 

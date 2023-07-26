@@ -64,6 +64,7 @@ class TestScript(unittest.TestCase):
         ['cast_props.Lnam', 'cast_props.Lscr', 'cast_props.js'],
         ['hilite_op.Lnam', 'hilite_op.Lscr', 'hilite_op.js'],
         ['system_props.Lnam', 'system_props.Lscr', 'system_props.js'],
+        ['date_time.Lnam', 'date_time.Lscr', 'date_time.js'],
     ])
     def test_script(self, lnam_file: str, lsrc_file: str, lingo_file: str):
         
