@@ -66,6 +66,7 @@ class TestScript(unittest.TestCase):
         ['system_props.Lnam', 'system_props.Lscr', 'system_props.js'],
         ['date_time.Lnam', 'date_time.Lscr', 'date_time.js'],
         ['prop_list_init.Lnam', 'prop_list_init.Lscr', 'prop_list_init.js'],
+        ['exit_repeat.Lnam', 'exit_repeat.Lscr', 'exit_repeat.js'],
     ])
     def test_script(self, lnam_file: str, lsrc_file: str, lingo_file: str):
         

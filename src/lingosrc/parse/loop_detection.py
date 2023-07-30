@@ -133,7 +133,7 @@ def condition_detect_in_statements(statements: List[Statement],
                 if ro.end_position < end:
                     st = Statement(ExitRepeat(start), start)
                     ifop.if_statements_list.pop()
-                    ifop.else_statements_list.append(st)
+                    ifop.if_statements_list.append(st)
                     continue
             
             # Normal else part
