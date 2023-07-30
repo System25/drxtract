@@ -67,8 +67,8 @@ class ToDictionaryOperation(Node):
     def generate_lingo(self, indentation: int) -> str:
         oplist = []
         for i in range(0, len(self.operand.operands), 2):
-            sym = self.operand.operands[i].generate_lingo(indentation)
-            val = self.operand.operands[i+1].generate_lingo(indentation)
+            val = self.operand.operands[i].generate_lingo(indentation)
+            sym = self.operand.operands[i+1].generate_lingo(indentation)
                    
             oplist.append("%s: %s"%(sym, val))
 

@@ -1,0 +1,6 @@
+on exitFrame
+    set glist = [#name: "Jhon", #surname: "Doe"]
+    put "glist=", glist
+    put "name: ", getProp(glist, #name)
+    put "surname:", getProp(glist, #surname)
+end
