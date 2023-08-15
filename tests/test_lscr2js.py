@@ -69,6 +69,7 @@ class TestScript(unittest.TestCase):
         ['exit_repeat.Lnam', 'exit_repeat.Lscr', 'exit_repeat.js'],
         ['gv_as_sym.Lnam', 'gv_as_sym.Lscr', 'gv_as_sym.js'],
         ['last.Lnam', 'last.Lscr', 'last.js'],
+        ['sprite_loc.Lnam', 'sprite_loc.Lscr', 'sprite_loc.js'],
         
     ])
     def test_script(self, lnam_file: str, lsrc_file: str, lingo_file: str):
