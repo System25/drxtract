@@ -5,8 +5,11 @@
 from .node import Node
 from .variable import LocalVariable, GlobalVariable, ParameterName
 from .conversion import LoadListOperation
+from .constant_val import Symbol
 from typing import List, Optional, cast
 from ..util import code_indentation
+
+LIST_FUNCTIONS: List[str] = ['findPos', 'findPosNear']
 
 #
 # Statement class.
@@ -60,8 +63,23 @@ class CallFunction(Node):
         self.parameters: Optional[Node] = None
         self.use_parenthesis: bool = True
         self.in_tell_operation: bool = False
+        
+    def gv_as_sym(self):
+        # Sometimes Macromedia Director creates symbols instead of
+        # global variables. So we need to ensure that any parameter that
+        # is a symbol makes sense in that position
+        if self.parameters is not None:
+            params: LoadListOperation = cast(LoadListOperation, self.parameters)
+            if len(params.operands) > 0:
+                # The first parameter of a list function has to be a list
+                if (self.name in LIST_FUNCTIONS
+                    and isinstance(params.operands[-1], Symbol)):
+                    sym: Symbol = cast(Symbol, params.operands[-1])
+                    params.operands[-1] = GlobalVariable(sym.name, sym.position)
 
     def generate_lingo(self, indentation: int) -> str: 
+        self.gv_as_sym()
+        
         if (self.parameters is not None
             and len(cast(LoadListOperation, self.parameters).operands) > 0):
             
@@ -74,6 +92,8 @@ class CallFunction(Node):
             return self.name
 
     def generate_js(self, indentation: int) -> str:
+        self.gv_as_sym()
+
         nm = self.name
         if nm == 'birth':
             nm = '_movie.newScript'
