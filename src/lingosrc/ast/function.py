@@ -9,7 +9,8 @@ from .constant_val import Symbol
 from typing import List, Optional, cast
 from ..util import code_indentation
 
-LIST_FUNCTIONS: List[str] = ['findPos', 'findPosNear']
+LIST_FUNCTIONS: List[str] = ['findpos', 'findposnear', 'getaprop', 'getone',
+                             'getpos', 'getpropat', 'getprop']
 
 #
 # Statement class.
@@ -72,7 +73,7 @@ class CallFunction(Node):
             params: LoadListOperation = cast(LoadListOperation, self.parameters)
             if len(params.operands) > 0:
                 # The first parameter of a list function has to be a list
-                if (self.name in LIST_FUNCTIONS
+                if (self.name.lower() in LIST_FUNCTIONS
                     and isinstance(params.operands[-1], Symbol)):
                     sym: Symbol = cast(Symbol, params.operands[-1])
                     params.operands[-1] = GlobalVariable(sym.name, sym.position)
