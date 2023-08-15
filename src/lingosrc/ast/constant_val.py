@@ -6,7 +6,7 @@ from .node import Node
 from typing import List, Dict
 
 KNOWN_SYMBOLS: List[str] = [
-    "loop", "next", "previous"
+    "loop", "next", "previous", "playFile", "fadeIn", "fadeOut", "stop", "close"
 ]
 
 PREDEFINED_CONSTANTS: Dict[str, str] =  {

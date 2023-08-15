@@ -77,6 +77,7 @@ class TestScript(unittest.TestCase):
         ['gv_as_sym.Lnam', 'gv_as_sym.Lscr', 'gv_as_sym.lingo'],
         ['last.Lnam', 'last.Lscr', 'last.lingo'],
         ['sprite_loc.Lnam', 'sprite_loc.Lscr', 'sprite_loc.lingo'],
+        ['sound_fn.Lnam', 'sound_fn.Lscr', 'sound_fn.lingo'],
         
     ])
     def test_script(self, lnam_file: str, lsrc_file: str, lingo_file: str):
