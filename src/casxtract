@@ -1216,7 +1216,7 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
                     logging.warn("There is no %s file (maybe empty file)"%(src))
 
                 if lnam_file is not None:
-                    cmd = '%slscr2lingo_r.py %s %s %s %s'%(
+                    cmd = '%slscr2lingo %s %s %s %s'%(
                         basepath, # Scripts path
                         sys.argv[1], # pc or mac
                         dest_dir, # work directory
@@ -1234,6 +1234,26 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
                         logging.debug("Decompiled code file: %s"%(codefile))
                         with open(codefile, mode='rb') as cfile:
                             castData['code'] = base64.b64encode(cfile.read()).decode()
+
+                    cmd = '%slscr2js %s %s %s %s'%(
+                        basepath, # Scripts path
+                        sys.argv[1], # pc or mac
+                        dest_dir, # work directory
+                        script_file, # script file name
+                        lnam_file
+                    )
+                    logging.debug("======================================================")
+                    logging.debug("Transpiling lingo script by using the command:")        
+                    logging.debug(cmd)
+                    logging.debug("------------------------------------------------------")
+                    os.system(cmd)
+                    
+                    codefile = os.path.join(dest_dir, replace_ext(script_file, 'js'))
+                    if os.path.isfile(codefile):
+                        logging.debug("Decompiled code file: %s"%(codefile))
+                        with open(codefile, mode='rb') as cfile:
+                            castData['jscode'] = base64.b64encode(cfile.read()).decode()
+
         
         
         # Write CAST data to JSON file

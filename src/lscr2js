@@ -12,15 +12,10 @@
 
 import sys
 import os
-import struct
-import re
 import logging
-import base64
-import json
-from shutil import copyfile
 from lingosrc.parse import parse_lnam_file, parse_lrcr_file
 from lingosrc.ast import Script
-from lingosrc.codegen import generate_lingo_code
+from lingosrc.codegen import generate_js_code
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -32,7 +27,7 @@ bit_order = ">"
 # =============================================================================
 if __name__ == '__main__':
     if len(sys.argv) < 5:
-        print("USAGE: lscr2lingo [pc|mac] <work directory> <lscr file name>"
+        print("USAGE: lscr2js [pc|mac] <work directory> <lscr file name>"
             + " <lnam file path>")
 
     else:
@@ -72,16 +67,16 @@ if __name__ == '__main__':
             os.path.join(sys.argv[2], sys.argv[3]),
             name_list)
         
-        lingo: str = generate_lingo_code(script)
+        jscode: str = generate_js_code(script)
         
         print("========================\n")
-        print(lingo)
+        print(jscode)
 
         # Save file
-        file_ext = "lingo"
+        file_ext = "js"
         lscr_file = os.path.join(sys.argv[2], sys.argv[3])
         nfiles = lscr_file[0:lscr_file.rfind('.')]
         file_name = "%s.%s"%(nfiles, file_ext)
         with open(file_name, 'wb') as file:
-            file.write(lingo.encode('utf-8'))
+            file.write(jscode.encode('utf-8'))
         
