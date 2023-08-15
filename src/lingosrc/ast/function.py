@@ -79,12 +79,17 @@ class CallFunction(Node):
                     params.operands[-1] = GlobalVariable(sym.name, sym.position)
 
     def generate_lingo(self, indentation: int) -> str: 
-        self.gv_as_sym()
+        self.gv_as_sym()     
         
         if (self.parameters is not None
             and len(cast(LoadListOperation, self.parameters).operands) > 0):
             
-            params: Node = cast(Node, self.parameters)
+            params: LoadListOperation = cast(LoadListOperation, self.parameters)
+            if 'sound' == self.name:
+                sym: Node = params.operands.pop()
+                return "sound %s %s"%(sym.name,
+                                      params.generate_lingo(indentation))
+            
             if self.use_parenthesis:
                 return self.name + '('+params.generate_lingo(indentation)+')'
             else:    
