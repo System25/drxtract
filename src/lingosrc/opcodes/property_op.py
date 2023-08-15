@@ -109,7 +109,7 @@ class SpecialPropertiesOpcode(BiOpcode):
         
         else:
             op = UnaryStringOperation(UnaryOperationNames.LAST, index)
-            op.type = OPERATION_TYPES[property_index-12]
+            op.type = OPERATION_TYPES[property_index-11]
             op.of = stack.pop()
         
         stack.append(op)

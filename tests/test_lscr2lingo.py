@@ -75,6 +75,7 @@ class TestScript(unittest.TestCase):
         ['prop_list_init.Lnam', 'prop_list_init.Lscr', 'prop_list_init.lingo'],
         ['exit_repeat.Lnam', 'exit_repeat.Lscr', 'exit_repeat.lingo'],
         ['gv_as_sym.Lnam', 'gv_as_sym.Lscr', 'gv_as_sym.lingo'],
+        ['last.Lnam', 'last.Lscr', 'last.lingo'],
         
     ])
     def test_script(self, lnam_file: str, lsrc_file: str, lingo_file: str):

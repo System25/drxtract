@@ -293,8 +293,12 @@ class UnaryStringOperation(Node):
     def generate_lingo(self, indentation: int) -> str:
         operand = cast(Node, self.of)
         if self.type is not None:
-            op_type = cast(StringOperationNames, self.type).value   
-            return "the %s of %ss of %s"%(self.name, op_type,
+            op_type = cast(StringOperationNames, self.type).value
+            if self.name == UnaryOperationNames.LAST.value:
+                return "the %s %s of %s"%(self.name, op_type,
+                                         operand.generate_lingo(indentation))
+            else:
+                return "the %s of %ss of %s"%(self.name, op_type,
                                          operand.generate_lingo(indentation))
         
         return "the %s of %s"%(self.name, operand.generate_lingo(indentation))
@@ -304,7 +308,12 @@ class UnaryStringOperation(Node):
         operation = JS_UNA_OP[self.name]
         if self.type is not None:
             op_type = cast(StringOperationNames, self.type).value
-            return "%s.%s.%s"%(operand.generate_js(indentation),
+            if self.name == UnaryOperationNames.LAST.value:
+                return "%s.getProp(\"%s\", \"%s\")"%(
+                            operand.generate_js(indentation),
+                            op_type, operation)
+            else:
+                return "%s.%s.%s"%(operand.generate_js(indentation),
                                op_type,
                                operation)
         

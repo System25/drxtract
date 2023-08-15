@@ -1,0 +1,7 @@
+on exitFrame
+    set myText = "Macromedia director is cool"
+    put "last word: ", the last word of myText
+    put "last char:", the last char of myText
+    put "first word:", word 1 of myText
+    put "last of first:", the last char of word 1 of myText
+end
