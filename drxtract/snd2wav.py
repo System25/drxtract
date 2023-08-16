@@ -12,7 +12,6 @@
 import sys
 import os
 import struct
-import re
 import logging
 import wave
 import json
@@ -23,7 +22,7 @@ logging.basicConfig(level=logging.DEBUG)
 mac_bit_order = '>'
 
 
-# ====================================================================================================================================
+# ==============================================================================
 def processCommands(fdata, idx, wavef, num_channels):
     nsound_cmds =  int(struct.unpack(mac_bit_order+"h", fdata[idx:idx+2])[0])
     idx += 2
@@ -279,8 +278,8 @@ def snd2wav(snd_file):
     return
 
 
-# ====================================================================================================================================
-if __name__ == '__main__':
+# ==============================================================================
+def main():
     if len(sys.argv) < 3:
         print("USAGE: snd2wav <work directory> <snd_ file name>")
 

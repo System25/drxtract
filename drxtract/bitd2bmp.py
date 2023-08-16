@@ -11,20 +11,18 @@
 import sys
 import os
 import struct
-import re
 import logging
 import json
-from shutil import copyfile
-from palettes.grayscale import GRAYSCALE_256COLORS_PALETTE
-from palettes.metallic import METALLIC_256COLORS_PALETTE
-from palettes.ntsc import NTSC_256COLORS_PALETTE
-from palettes.pastels import PASTELS_256COLORS_PALETTE
-from palettes.rainbow import RAINBOW_256COLORS_PALETTE
-from palettes.systemMac import SYSTEM_MAC_256COLORS_PALETTE
-from palettes.systemWinDir4 import SYSTEM_WINDOWS_DIR4_256COLORS_PALETTE
-from palettes.systemWin import SYSTEM_WINDOWS_256COLORS_PALETTE
-from palettes.vivid import VIVID_256COLORS_PALETTE
-from palettes.web216 import WEB_256COLORS_PALETTE
+from .palettes.grayscale import GRAYSCALE_256COLORS_PALETTE
+from .palettes.metallic import METALLIC_256COLORS_PALETTE
+from .palettes.ntsc import NTSC_256COLORS_PALETTE
+from .palettes.pastels import PASTELS_256COLORS_PALETTE
+from .palettes.rainbow import RAINBOW_256COLORS_PALETTE
+from .palettes.systemMac import SYSTEM_MAC_256COLORS_PALETTE
+from .palettes.systemWinDir4 import SYSTEM_WINDOWS_DIR4_256COLORS_PALETTE
+from .palettes.systemWin import SYSTEM_WINDOWS_256COLORS_PALETTE
+from .palettes.vivid import VIVID_256COLORS_PALETTE
+from .palettes.web216 import WEB_256COLORS_PALETTE
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -38,7 +36,7 @@ DIR4_IMAGE_TYPE = 0x1C0000
 
 
 
-# ============================================ Default color palettes ================================================================
+# ============================================ Default color palettes =========
 BW_PALETTE = (
   255, 255, 255, 0, # white  
   0, 0, 0, 0        # black  
@@ -92,8 +90,8 @@ def save_2bit_bmp(bmp_width, bmp_height, file, fdata, bmp_padding_w, bmp_padding
     
     # Sometimes the padding is negative
     if bmp_padding_h < 0:
-      bmp_height = bmp_height - bmp_padding_h
-      bmp_padding_h = 0 
+        bmp_height = bmp_height - bmp_padding_h
+        bmp_padding_h = 0 
     
     values = (bmp_width*bmp_height+(ncolors*4)+40+14, # The size of the BMP file in bytes
               0, # Reserved
@@ -106,8 +104,8 @@ def save_2bit_bmp(bmp_width, bmp_height, file, fdata, bmp_padding_w, bmp_padding
     
     width = bmp_width
     if (width%4) > 0:
-      # The image width must be divisible by four
-      width = width + 4 - (width%4)
+        # The image width must be divisible by four
+        width = width + 4 - (width%4)
     
     # Write BITMAPINFOHEADER
     values = (40, # the size of this header (40 bytes)
@@ -160,7 +158,7 @@ def save_2bit_bmp(bmp_width, bmp_height, file, fdata, bmp_padding_w, bmp_padding
                     file.write(struct.pack('B', bitval))
                     x = x + 1
                     if x >= w:
-                      break
+                        break
                 idx = idx + 1
                 
             if width - bmp_width > 0:
@@ -169,7 +167,7 @@ def save_2bit_bmp(bmp_width, bmp_height, file, fdata, bmp_padding_w, bmp_padding
             y = y - 1
              
         for _ in range(0, bmp_padding_h):
-          file.write(bytearray(white * width, 'ascii'))
+            file.write(bytearray(white * width, 'ascii'))
           
         file.close()
         return    
@@ -198,7 +196,7 @@ def save_2bit_bmp(bmp_width, bmp_height, file, fdata, bmp_padding_w, bmp_padding
             if x + run_length > w:
                 logging.error("Run too long! (%s, %s)"%(run_length, w-x))
 
-            for i in range(0, run_length):
+            for _ in range(0, run_length):
                 for j in range(0, 8):
                     bitval = ((run_value >> (7-j)) & 1)
                     if x >= w:
@@ -222,7 +220,7 @@ def save_2bit_bmp(bmp_width, bmp_height, file, fdata, bmp_padding_w, bmp_padding
                 logging.error("Bad run length! (value=%s, available=%s)"%(run_length, len(fdata)-idx))
                 break
 
-            for i in range(0, run_length):
+            for _ in range(0, run_length):
                 for j in range(0, 8):
                     bitval = ((fdata[idx] >> (7-j)) & 1)
                     if x >= w:
@@ -271,8 +269,8 @@ def save_4bit_bmp(bmp_width, bmp_height, file, palette, previous_clut, fdata, bm
 
     width = bmp_width
     if (width%4) > 0:
-      # The image width must be divisible by four
-      width = width + 4 - (width%4)    
+        # The image width must be divisible by four
+        width = width + 4 - (width%4)    
     
     # Write BITMAPINFOHEADER
     values = (40, # the size of this header (40 bytes)
@@ -301,12 +299,12 @@ def save_4bit_bmp(bmp_width, bmp_height, file, palette, previous_clut, fdata, bm
         # Use a standar color palette
         s = struct.Struct('B'*(ncolors*4))
         if palette == 'systemMac':
-          packed_data = s.pack(*SYSTEM_MAC_16COLORS_PALETTE)
+            packed_data = s.pack(*SYSTEM_MAC_16COLORS_PALETTE)
         elif palette == 'systemWin':
-          packed_data = s.pack(*SYSTEM_WINDOWS_16COLORS_PALETTE)       
+            packed_data = s.pack(*SYSTEM_WINDOWS_16COLORS_PALETTE)       
         else:
-          logging.warn("Using default windows color palette!")
-          packed_data = s.pack(*SYSTEM_WINDOWS_16COLORS_PALETTE)               
+            logging.warn("Using default windows color palette!")
+            packed_data = s.pack(*SYSTEM_WINDOWS_16COLORS_PALETTE)               
             
         file.write(packed_data)
         
@@ -315,7 +313,7 @@ def save_4bit_bmp(bmp_width, bmp_height, file, palette, previous_clut, fdata, bm
     w = bmp_width + (bmp_width%2)
     print("w: %s"%(w))  
 
-    castData = [0 for x in range(w*bmp_height)]
+    castData = [0 for _ in range(w*bmp_height)]
     x = 0
     y = bmp_height - 1 - bmp_padding_h
     idx = 0
@@ -329,7 +327,7 @@ def save_4bit_bmp(bmp_width, bmp_height, file, palette, previous_clut, fdata, bm
             run_value = fdata[idx+1]
             print("RLE: run value: %s"%(run_value))            
             idx = idx + 2
-            for i in range(0, run_length):
+            for _ in range(0, run_length):
                 if x >= w:
                     logging.error("Painting out of image! (x=%s y=%s col=%s)"%(x-1, y, run_value))
                     break
@@ -347,7 +345,7 @@ def save_4bit_bmp(bmp_width, bmp_height, file, palette, previous_clut, fdata, bm
             run_length = (val + 1)
             print("NoRLE: run length: %s"%(run_length))            
             idx = idx + 1
-            for i in range(0, run_length):
+            for _ in range(0, run_length):
                 if x >= w:
                     logging.error("Painting out of image! (x=%s y=%s col=%s)"%(x-1, y, run_value))
                     break
@@ -373,9 +371,9 @@ def save_4bit_bmp(bmp_width, bmp_height, file, palette, previous_clut, fdata, bm
     ow = int(bmp_width/2) + (bmp_width%2)
     outData = [0 for x in range(ow*bmp_height)]
     for y in range(bmp_height):
-      for x in range(ow):
-        val = (castData[y*w + x*2] << 4)
-        outData = val
+        for x in range(ow):
+            val = (castData[y*w + x*2] << 4)
+            outData = val
         
     # Write the pixel information
     file.write(struct.pack("B"*(bmp_width*bmp_height), *outData))
@@ -397,8 +395,8 @@ def save_8bit_bmp(bmp_width, bmp_height, file, palette, previous_clut, fdata, bm
 
     width = bmp_width
     if (width%4) > 0:
-      # The image width must be divisible by four
-      width = width + 4 - (width%4)
+        # The image width must be divisible by four
+        width = width + 4 - (width%4)
     
     # Write BITMAPINFOHEADER
     values = (40, # the size of this header (40 bytes)
@@ -427,28 +425,28 @@ def save_8bit_bmp(bmp_width, bmp_height, file, palette, previous_clut, fdata, bm
         # Load a standar color palette from a file
         s = struct.Struct('B'*(256*4))
         if palette == 'grayscale':
-          packed_data = s.pack(*GRAYSCALE_256COLORS_PALETTE)
+            packed_data = s.pack(*GRAYSCALE_256COLORS_PALETTE)
         elif palette == 'metallic':
-          packed_data = s.pack(*METALLIC_256COLORS_PALETTE)
+            packed_data = s.pack(*METALLIC_256COLORS_PALETTE)
         elif palette == 'ntsc':
-          packed_data = s.pack(*NTSC_256COLORS_PALETTE)
+            packed_data = s.pack(*NTSC_256COLORS_PALETTE)
         elif palette == 'pastels':
-          packed_data = s.pack(*PASTELS_256COLORS_PALETTE)
+            packed_data = s.pack(*PASTELS_256COLORS_PALETTE)
         elif palette == 'rainbow':
-          packed_data = s.pack(*RAINBOW_256COLORS_PALETTE)
+            packed_data = s.pack(*RAINBOW_256COLORS_PALETTE)
         elif palette == 'systemMac':
-          packed_data = s.pack(*SYSTEM_MAC_256COLORS_PALETTE)
+            packed_data = s.pack(*SYSTEM_MAC_256COLORS_PALETTE)
         elif palette == 'systemWinDir4':
-          packed_data = s.pack(*SYSTEM_WINDOWS_DIR4_256COLORS_PALETTE)
+            packed_data = s.pack(*SYSTEM_WINDOWS_DIR4_256COLORS_PALETTE)
         elif palette == 'systemWin':
-          packed_data = s.pack(*SYSTEM_WINDOWS_256COLORS_PALETTE)
+            packed_data = s.pack(*SYSTEM_WINDOWS_256COLORS_PALETTE)
         elif palette == 'vivid':
-          packed_data = s.pack(*VIVID_256COLORS_PALETTE)          
+            packed_data = s.pack(*VIVID_256COLORS_PALETTE)          
         elif palette == 'web216':
-          packed_data = s.pack(*WEB_256COLORS_PALETTE)           
+            packed_data = s.pack(*WEB_256COLORS_PALETTE)           
         else:
-          logging.warn("Using default windows color palette!")
-          packed_data = s.pack(*SYSTEM_WINDOWS_256COLORS_PALETTE)   
+            logging.warn("Using default windows color palette!")
+            packed_data = s.pack(*SYSTEM_WINDOWS_256COLORS_PALETTE)   
         file.write(packed_data)
 
     # get the pixel information
@@ -472,13 +470,13 @@ def save_8bit_bmp(bmp_width, bmp_height, file, palette, previous_clut, fdata, bm
                 file.write(bytearray(white *(width - bmp_width - inc), 'ascii'))
             
         for _ in range(0, bmp_padding_h):
-          file.write(bytearray(white * width, 'ascii'))
+            file.write(bytearray(white * width, 'ascii'))
           
         file.close()
         return
 
 
-    castData = [0 for x in range(width*bmp_height)]
+    castData = [0 for _ in range(width*bmp_height)]
     x = 0
     y = bmp_height - 1 - bmp_padding_h
     idx = 0
@@ -497,7 +495,7 @@ def save_8bit_bmp(bmp_width, bmp_height, file, palette, previous_clut, fdata, bm
             if x + run_length > w:
                 logging.error("Run too long! (%s, %s)"%(run_length, w-x))
 
-            for i in range(0, run_length):
+            for _ in range(0, run_length):
                 if x >= w:
                     logging.error("Painting out of image! (x=%s y=%s col=%s)"%(x-1, y, run_value))
                     break
@@ -519,7 +517,7 @@ def save_8bit_bmp(bmp_width, bmp_height, file, palette, previous_clut, fdata, bm
                 logging.error("Bad run length! (value=%s, available=%s)"%(run_length, len(fdata)-idx))
                 break
 
-            for i in range(0, run_length):
+            for _ in range(0, run_length):
                 if x >= w:
                     logging.error("Painting out of image! (x=%s y=%s col=%s)"%(x-1, y, fdata[idx-1]))
                     break
@@ -596,7 +594,7 @@ def save_16bit_bmp(bmp_width, bmp_height, file, fdata):
     w = bmp_width*2
     h = bmp_height
 
-    castData = [0 for x in range(w*bmp_height)]
+    castData = [0 for _ in range(w*bmp_height)]
     x = 0
     y = bmp_height - 1
     idx = 0
@@ -617,7 +615,7 @@ def save_16bit_bmp(bmp_width, bmp_height, file, fdata):
                 x = 0
                 y -= 1
 
-            for i in range(0, run_length):
+            for _ in range(0, run_length):
                 castData[y*w + x] = run_value
                 x += 1
             
@@ -636,7 +634,7 @@ def save_16bit_bmp(bmp_width, bmp_height, file, fdata):
                 x = 0
                 y -= 1
 
-            for i in range(0, run_length):
+            for _ in range(0, run_length):
                 castData[y*w + x] = struct.unpack("B", fdata[idx])[0]
                 idx = idx + 1
                 x += 1
@@ -708,7 +706,7 @@ def save_24bit_bmp(bmp_width, bmp_height, file, fdata):
     w = bmp_width*4
     h = bmp_height
 
-    castData = [0 for x in range(w*bmp_height)]
+    castData = [0 for _ in range(w*bmp_height)]
     x = 0
     y = bmp_height - 1
     idx = 0
@@ -719,7 +717,7 @@ def save_24bit_bmp(bmp_width, bmp_height, file, fdata):
             run_length = 257 - val
             run_value = struct.unpack("B", fdata[idx+1])[0]
             idx = idx + 2
-            for i in range(0, run_length):
+            for _ in range(0, run_length):
                 castData[y*w + x] = run_value
                 x += 1
                 if x >= w:
@@ -731,7 +729,7 @@ def save_24bit_bmp(bmp_width, bmp_height, file, fdata):
             # Not RLE encoded
             run_length = val + 1
             idx = idx + 1
-            for i in range(0, run_length):
+            for _ in range(0, run_length):
                 castData[y*w + x] = struct.unpack("B", fdata[idx])[0]
                 idx = idx + 1
                 x += 1
@@ -806,8 +804,8 @@ def bitd2bmp(castData, bitd_file):
             # Check if the cast member exists
             base_dir = os.path.dirname(sys.argv[1])
             if not os.path.isdir(os.path.join(base_dir, bmp_palette)):
-              logging.error('Can\'t find cast member: %s'%(bmp_palette))
-              sys.exit(-1)
+                logging.error('Can\'t find cast member: %s'%(bmp_palette))
+                sys.exit(-1)
             
             # Check if there is any CLUT file in the directory
             clut_dir = os.path.join(base_dir, bmp_palette)
@@ -818,15 +816,15 @@ def bitd2bmp(castData, bitd_file):
                     break
             
             if not clut_file:
-              logging.error('Can\'t find any CLUT file in cast member: %s'%(bmp_palette))
-              sys.exit(-1)            
+                logging.error('Can\'t find any CLUT file in cast member: %s'%(bmp_palette))
+                sys.exit(-1)            
             
             with open(os.path.join(clut_dir, clut_file), mode='rb') as cfile:
                 cData = cfile.read()
                 clutData = [0] * (256*4)
                 indx = 0
                 cindx = 0
-                for i in range(0, 256):
+                for _ in range(0, 256):
                     # The same color in RGB - BRG form
                     r0 = cData[indx]
                     indx += 1
@@ -892,8 +890,8 @@ def bitd2bmp(castData, bitd_file):
                 sys.exit(-1)
 
 
-# ====================================================================================================================================
-if __name__ == '__main__':
+# ==============================================================================
+def main():
     if len(sys.argv) < 3:
         print("USAGE: bitd2bmp <work directory> <bitd file name>")
 
@@ -956,4 +954,3 @@ if __name__ == '__main__':
             command, # command
             out_name #output file
         ))
-        

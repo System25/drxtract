@@ -5,6 +5,11 @@ Macromedia Director 5 DRI and DRX files data extractor.
 * ImageMagic to transform BMP images into PNG.
 * FFmpeg to transform WAV files into MP3.
 
+# Installation
+```
+python3 -m pip install drxtract
+```
+
 # Mac "snd " file format:
 * https://developer.apple.com/library/archive/documentation/mac/Sound/Sound-60.html#MARKER-9-400
 

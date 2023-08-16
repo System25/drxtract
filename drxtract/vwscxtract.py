@@ -12,11 +12,9 @@
 import sys
 import os
 import struct
-import re
 import logging
 import json
 import math
-from shutil import copyfile
 
 BINDIR = 'bin'
 
@@ -26,7 +24,7 @@ DEBUG_SPRITE_INFO = True
 
 #logging.basicConfig(level=logging.DEBUG)
 
-# ====================================================================================================================================
+# ==============================================================================
 # Translate operation to string representation (Director 5)
 def get_operation_dir5(operation):
     operation = ((operation >> 4) & 0xF)
@@ -1059,8 +1057,8 @@ def parse_vwsc_file(vwsc_file):
     return vwsc_data
 
 
-# ====================================================================================================================================
-if __name__ == '__main__':
+# ==============================================================================
+def main():
     if len(sys.argv) < 2:
         print("USAGE: vwscxtract <work directory>")
 

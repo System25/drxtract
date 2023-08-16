@@ -13,9 +13,9 @@
 import sys
 import os
 import logging
-from lingosrc.parse import parse_lnam_file, parse_lrcr_file
-from lingosrc.ast import Script
-from lingosrc.codegen import generate_js_code
+from .lingosrc.parse import parse_lnam_file, parse_lrcr_file
+from .lingosrc.ast import Script
+from .lingosrc.codegen import generate_js_code
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -25,7 +25,7 @@ bit_order = ">"
 
 
 # =============================================================================
-if __name__ == '__main__':
+def main():
     if len(sys.argv) < 5:
         print("USAGE: lscr2js [pc|mac] <work directory> <lscr file name>"
             + " <lnam file path>")
@@ -69,8 +69,8 @@ if __name__ == '__main__':
         
         jscode: str = generate_js_code(script)
         
-        print("========================\n")
-        print(jscode)
+        #print("========================\n")
+        #print(jscode)
 
         # Save file
         file_ext = "js"

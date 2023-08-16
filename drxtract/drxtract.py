@@ -9,12 +9,8 @@
 # Also can extract contents from "updated" Macromedia Director DRI files.
 # 
 
-
-
 import sys
 import os
-import struct
-import re
 import logging
 
 logging.basicConfig(level=logging.DEBUG)
@@ -24,7 +20,7 @@ bit_order_type = 'mac'
 bit_order = ">"
 
 
-if __name__ == '__main__':
+def main():
     if len(sys.argv) < 4:
         print("USAGE: drxtract [pc|mac] <file.drx> <directory>")
 
@@ -107,4 +103,3 @@ if __name__ == '__main__':
         logging.debug(cmd)
         logging.debug("------------------------------------------------------")
         os.system(cmd)
-

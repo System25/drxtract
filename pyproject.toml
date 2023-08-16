@@ -1,7 +1,7 @@
 [project]
-name = "drxtract_system25"
-description = "titanic_ml example package"
-version = "0.1.0"
+name = "drxtract"
+description = "Macromedia/Adobe DIR and DRX extraction package"
+version = "0.1.2"
 authors = [
     { name = "Abraham Macias Paredes", email = "system252001@yahoo.es" }
 ]
@@ -30,3 +30,17 @@ tests = [
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[project.scripts]
+bitd2bmp = "drxtract.bitd2bmp:main"
+casxtract = "drxtract.casxtract:main"
+clut2json = "drxtract.clut2json:main"
+drxtract = "drxtract.drxtract:main"
+fmapxtract = "drxtract.fmapxtract:main"
+lscr2js = "drxtract.lscr2js:main"
+lscr2lingo = "drxtract.lscr2lingo:main"
+riffxtract = "drxtract.riffxtract:main"
+rte22bmp = "drxtract.rte22bmp:main"
+snd2wav = "drxtract.snd2wav:main"
+vwlbxtract = "drxtract.vwlbxtract:main"
+vwscxtract = "drxtract.vwscxtract:main"

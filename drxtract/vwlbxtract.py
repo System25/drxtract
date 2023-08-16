@@ -12,17 +12,15 @@
 import sys
 import os
 import struct
-import re
 import logging
 import json
-from shutil import copyfile
 
 BINDIR = 'bin'
 
 #logging.basicConfig(level=logging.DEBUG)
 
 
-# ====================================================================================================================================
+# ==============================================================================
 # Reads from VWLB file the markers channel of the score and its frame
 def parse_vwlb_file(vwlb_file):
     vwlb_data = []
@@ -37,7 +35,7 @@ def parse_vwlb_file(vwlb_file):
         
         mnidx = 2 + 4 * (nmarkers + 1)
         
-        for i in range(0, nmarkers):
+        for _ in range(0, nmarkers):
             marker = {}
             
             frame = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
@@ -60,8 +58,8 @@ def parse_vwlb_file(vwlb_file):
             
     return vwlb_data
 
-# ====================================================================================================================================
-if __name__ == '__main__':
+# ==============================================================================
+def main():
     if len(sys.argv) < 2:
         print("USAGE: vwlbxtract <work directory>")
 

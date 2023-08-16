@@ -11,10 +11,8 @@
 import sys
 import os
 import struct
-import re
 import logging
 import json
-from shutil import copyfile
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -24,7 +22,7 @@ bit_order_type = 'mac'
 bit_order = ">"
 
 
-# ====================================================================================================================================
+# ==============================================================================
 def stxt2json(castData, fontmap, stxt_file):
     txt_data = None
     logging.debug("bit_order_type = %s"%(bit_order_type))
@@ -152,8 +150,8 @@ def stxt2json(castData, fontmap, stxt_file):
 
 
 
-# ====================================================================================================================================
-if __name__ == '__main__':
+# ==============================================================================
+def main():
     if len(sys.argv) < 4:
         print("USAGE: stxt2json [pc|mac] <work directory> <stxt file name>")
 

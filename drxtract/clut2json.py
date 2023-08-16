@@ -10,16 +10,13 @@
 
 import sys
 import os
-import struct
-import re
 import logging
 import json
-from shutil import copyfile
 
 logging.basicConfig(level=logging.DEBUG)
 
 
-# ====================================================================================================================================
+# ==============================================================================
 def clut2json(clut_file):
     json = []
     
@@ -48,8 +45,8 @@ def clut2json(clut_file):
     return json
 
 
-# ====================================================================================================================================
-if __name__ == '__main__':
+# ==============================================================================
+def main():
     if len(sys.argv) < 3:
         print("USAGE: clut2json <work directory> <clut file name>")
 

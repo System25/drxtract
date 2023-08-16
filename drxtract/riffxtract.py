@@ -313,7 +313,7 @@ def parse_riff(fileContent, offset):
         index = index + 8 + block_size + padding
 
 
-if __name__ == '__main__':
+def main():
     if len(sys.argv) < 4:
         print("USAGE: riffxtract [pc|mac] <file.drx> <directory>")
 

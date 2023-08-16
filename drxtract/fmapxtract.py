@@ -12,10 +12,8 @@
 import sys
 import os
 import struct
-import re
 import logging
 import json
-from shutil import copyfile
 
 BINDIR = 'bin'
 
@@ -23,7 +21,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 bit_order = '>'
 
-# ====================================================================================================================================
+# ==============================================================================
 # Reads from Fmap file the fonts information
 def parse_fmap_file(fmap_file):
     fmap_data = []
@@ -148,8 +146,8 @@ def parse_fmap_file(fmap_file):
         
     return fmap_data
 
-# ====================================================================================================================================
-if __name__ == '__main__':
+# ==============================================================================
+def main():
     if len(sys.argv) < 2:
         print("USAGE: fmapxtract <work directory>")
 

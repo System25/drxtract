@@ -11,10 +11,7 @@
 import sys
 import os
 import struct
-import re
 import logging
-import json
-from shutil import copyfile
 
 
 logging.basicConfig(level=logging.DEBUG)
@@ -183,8 +180,8 @@ def rte22bmp(rte2_file):
 
 
 
-# ====================================================================================================================================
-if __name__ == '__main__':
+# ==============================================================================
+def main():
     if len(sys.argv) < 3:
         print("USAGE: rte22bmp <work directory> <rte2 file name>")
 

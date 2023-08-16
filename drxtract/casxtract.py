@@ -44,7 +44,7 @@ if len(os.path.dirname(sys.argv[0])) == 0:
 else:
     basepath = ('%s/'%(os.path.dirname(sys.argv[0])))
 
-# ====================================================================================================================================
+# ==============================================================================
 # Replace the extension in a filename
 def replace_ext(filename, new_extension):
     f = filename
@@ -54,7 +54,7 @@ def replace_ext(filename, new_extension):
         
     return f
     
-# ====================================================================================================================================
+# ==============================================================================
 # Translate shape type ID to string representation    
 def get_shape_type(shape_type_id):    
     if shape_type_id == 1:
@@ -69,11 +69,12 @@ def get_shape_type(shape_type_id):
     # Unknown id
     return shape_type_id    
     
-# ====================================================================================================================================
+# ==============================================================================
 # Translate palette number to string representation
 def get_palette(palette_id):
     
-    # I found this in a german book called "Macromedia Director: Multimediaprogrammierung mit Lingo"
+    # I found this in a german book called
+    # "Macromedia Director: Multimediaprogrammierung mit Lingo"
     # https://books.google.es/books?id=UxLuBQAAQBAJ&pg=PA282&lpg=PA282&dq=macromedia+director+ntsc+web+grayscale+rainbow&source=bl&ots=tlcNQFqWod&sig=ACfU3U2d0o3Kv3y7_9umDgOCPGBDqooIzQ&hl=es&sa=X&ved=2ahUKEwjXs-rnlNXiAhVDrxoKHdcACWIQ6AEwB3oECAUQAQ#v=onepage&q=macromedia%20director%20ntsc%20web%20grayscale%20rainbow&f=false
     
     if palette_id <= 0:
@@ -106,11 +107,12 @@ def get_palette(palette_id):
     return palette_id
 
 
-# ====================================================================================================================================
+# ==============================================================================
 # Translate a transition number to string representation
 def get_transtition(transition_id):
     
-    # I found this in: Director 8 Demystified (puppetTransition lingo script reference)
+    # I found this in: Director 8 Demystified
+    # (puppetTransition lingo script reference)
     
     if transition_id == 1:
         return 'wipe right'
@@ -221,9 +223,9 @@ def get_transtition(transition_id):
     return transition_id
 
 
-# ====================================================================================================================================
+# ==============================================================================
 def parse_key_file(key_file):
-    logging.debug("Parsing key file: %s ----------------------------------------"%(key_file))
+    logging.debug("Parsing key file: %s ---------------------------"%(key_file))
     key_data = {}
 
     with open(key_file, mode='rb') as file:
@@ -244,7 +246,7 @@ def parse_key_file(key_file):
         indx = indx + 4
         logging.debug("Number of elements: %08x"%(nelements))
 
-        for n in range(nelements-1):
+        for _ in range(nelements-1):
             nfile = struct.unpack(bit_order+"i", fdata[(indx+0):(indx+4)])[0]
             cas_index = struct.unpack(bit_order+"i", fdata[(indx+4):(indx+8)])[0]
 
@@ -282,9 +284,9 @@ def parse_key_file(key_file):
 
     return key_data
 
-# ====================================================================================================================================
+# ==============================================================================
 def parse_cas_file(cas_file):
-    logging.debug("Parsing cas file: %s ----------------------------------------"%(cas_file))
+    logging.debug("Parsing cas file: %s ---------------------------"%(cas_file))
     cas_data = []
 
     with open(cas_file, mode='rb') as file:
@@ -303,9 +305,9 @@ def parse_cas_file(cas_file):
     return cas_data
 
 
-# ====================================================================================================================================
+# ==============================================================================
 def parse_vwcf_file(vwcf_file):
-    logging.debug("Parsing vwcf file: %s ----------------------------------------"%(vwcf_file))
+    logging.debug("Parsing vwcf file: %s -------------------------"%(vwcf_file))
     config = {}
     with open(vwcf_file, mode='rb') as file:
         fdata = file.read()
@@ -429,9 +431,9 @@ def parse_vwcf_file(vwcf_file):
     
     return config
 
-# ====================================================================================================================================
+# ==============================================================================
 def parse_lctx_file(lctx_file):
-    logging.debug("Parsing lctx file: %s ----------------------------------------"%(lctx_file))
+    logging.debug("Parsing lctx file: %s -------------------------"%(lctx_file))
     lctx_data = []
 
     with open(lctx_file, mode='rb') as file:
@@ -476,9 +478,9 @@ def parse_lctx_file(lctx_file):
             
     return lctx_data
 
-# ====================================================================================================================================
+# ==============================================================================
 def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
-    logging.debug("Parsing cast file: %s ----------------------------------------"%(cast_file))
+    logging.debug("Parsing cast file: %s -------------------------"%(cast_file))
 
     with open(cast_file, mode='rb') as file:
         fdata = file.read()
@@ -1334,8 +1336,8 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
                     os.system(cmd)
 
 
-# ====================================================================================================================================
-if __name__ == '__main__':
+# ==============================================================================
+def main():
     if len(sys.argv) < 3:
         print("USAGE: casxtract [pc|mac] <base directory>")
 

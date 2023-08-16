@@ -13,9 +13,9 @@
 import sys
 import os
 import logging
-from lingosrc.parse import parse_lnam_file, parse_lrcr_file
-from lingosrc.ast import Script
-from lingosrc.codegen import generate_lingo_code
+from .lingosrc.parse import parse_lnam_file, parse_lrcr_file
+from .lingosrc.ast import Script
+from .lingosrc.codegen import generate_lingo_code
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -25,7 +25,7 @@ bit_order = ">"
 
 
 # =============================================================================
-if __name__ == '__main__':
+def main():
     if len(sys.argv) < 5:
         print("USAGE: lscr2lingo [pc|mac] <work directory> <lscr file name>"
             + " <lnam file path>")
@@ -69,8 +69,8 @@ if __name__ == '__main__':
         
         lingo: str = generate_lingo_code(script)
         
-        print("========================\n")
-        print(lingo)
+        #print("========================\n")
+        #print(lingo)
 
         # Save file
         file_ext = "lingo"
