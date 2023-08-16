@@ -1,0 +1,3 @@
+on exitFrame
+    hilite word 2 of field 1
+end

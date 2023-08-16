@@ -1,0 +1,9 @@
+global gList
+
+on exitFrame
+    put "num of items", the number of items of gList
+    set x = item 1 of gList
+    delete item 1 of gList
+    put x into item 2 of gList
+    put "list: ", gList
+end

@@ -1,0 +1,4 @@
+on exitFrame
+    set the floatPrecision = 2
+    put "floatPrecision  =  ", the floatPrecision
+end

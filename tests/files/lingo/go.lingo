@@ -1,0 +1,16 @@
+on exitFrame
+    go loop
+end
+
+on keyDown
+    put "In frame 1, key = ", the key
+    if (the key = "n") then
+        go next
+    end if
+    if (the key = "p") then
+        go previous
+    end if
+    if (the key = "1") then
+        go 1
+    end if
+end

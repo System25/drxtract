@@ -1,0 +1,8 @@
+on exitFrame
+    set val = random(10)
+    repeat while val <> 3
+        put "val = ", val
+        set val = random(10)
+    end repeat
+    put "end ;)"
+end

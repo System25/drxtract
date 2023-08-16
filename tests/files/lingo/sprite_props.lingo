@@ -1,0 +1,17 @@
+on exitFrame
+    put "locV: ", the locV of sprite 1
+    put "locH:", the locH of sprite 1
+    put "left: ", the left of sprite 1
+    put "top: ", the top of sprite 1
+    put "right: ", the right of sprite 1
+    put "bottom: ", the bottom of sprite 1
+    put "width: ", the width of sprite 1
+    put "height: ", the height of sprite 1
+    put "fore color: ", the foreColor of sprite 1
+    put "bg color: ", the backColor of sprite 1
+    put "cast fore color", the foreColor of cast 1
+    put "cast bg color", the backColor of cast 1
+    set the locV of sprite 1 = 10
+    set the locH of sprite 1 = 10
+    set the foreColor of cast 1 = 1
+end

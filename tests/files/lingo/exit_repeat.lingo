@@ -1,0 +1,11 @@
+on exitFrame
+    put "Start!"
+    repeat with i = 1 to 10
+        put "i=", i
+        if (i = 5) then
+            put "Exit repeat!"
+            exit repeat
+        end if
+    end repeat
+    put "End!"
+end

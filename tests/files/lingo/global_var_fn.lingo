@@ -1,0 +1,24 @@
+on exitFrame
+    global myGlobalVar
+    global myOtherGlobal
+
+    set myOtherGlobal = 2
+    set myGlobalVar = 1
+    put "Begin: ", myGlobalVar
+    func1
+    put "After func1: ", myGlobalVar
+    func2
+    put "After func2: ", myGlobalVar
+end
+
+on func1
+    global myGlobalVar
+
+    set myGlobalVar = (myGlobalVar + 1)
+end
+
+on func2
+    global myGlobalVar
+
+    set myGlobalVar = (myGlobalVar + 1)
+end

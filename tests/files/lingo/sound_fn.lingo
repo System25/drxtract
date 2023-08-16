@@ -1,0 +1,9 @@
+on startMovie
+    sound playFile 1, "Start"
+    sound fadeIn 1
+    put "soundBusy: ", soundBusy(1)
+    sound fadeOut 2
+    sound stop 1
+    sound close 1
+    put "soundBusy:", soundBusy(1)
+end

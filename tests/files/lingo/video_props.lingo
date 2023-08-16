@@ -1,0 +1,14 @@
+on mouseUp
+    set the directToStage of cast "Fish.mov" = 1
+    set the controller of cast "Fish.mov" = 1
+    set the center of cast("Fish.mov") = 0
+    set the crop of cast("Fish.mov") = 0
+    set MyDuration = the duration of cast "Fish.mov"
+    set MyFrameRate = the frameRate of cast("Fish.mov")
+    set MyLoop = the loop of cast "Fish.mov"
+    set MyPausedAtStart = the pausedAtStart of cast("Fish.mov")
+    set MyPreload = the preLoad of cast("Fish.mov")
+    set MyVideo = the video of cast("Fish.mov")
+    set MySound = the sound of cast "Fish.mov"
+    put "MyDuration=", MyDuration
+end

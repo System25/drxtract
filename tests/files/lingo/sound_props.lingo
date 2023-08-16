@@ -1,0 +1,4 @@
+on exitFrame
+    put "volume: ", the volume of sound 1
+    set the volume of sound 1 = 200
+end

@@ -1,0 +1,42 @@
+on exitFrame
+    put "------------"
+    singleIfTest
+    singleIfElseTest
+    anidatedIfTest
+    put "------------"
+end
+
+on singleIfTest
+    put "Single if test"
+    if ((random(10) mod 2) = 0) then
+        put "Even number!"
+    end if
+    put "Single if test END"
+end
+
+on singleIfElseTest
+    put "Single if-else test"
+    if ((random(10) mod 2) = 0) then
+        put "Even number!"
+    else
+        put "Odd number"
+    end if
+    put "Single if-else test END"
+end
+
+on anidatedIfTest
+    put "Anidated if test"
+    if ((random(10) mod 2) = 0) then
+        if ((random(10) mod 2) = 0) then
+            put "First even then even"
+        else
+            put "First even then odd"
+        end if
+    else
+        put "First odd"
+        if ((random(10) mod 2) = 0) then
+            put "Second even"
+        end if
+    end if
+    put "Anidated if test end"
+end

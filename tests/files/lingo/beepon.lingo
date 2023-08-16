@@ -1,0 +1,5 @@
+on exitFrame
+    set val = the beepOn
+    put "beepOn=", val
+    set the beepOn = not val
+end

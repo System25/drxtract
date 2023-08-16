@@ -1,0 +1,8 @@
+on exitFrame
+    put "hello" into field 2
+    put " world" after field 2
+    put field 2
+    put "bye" into field 2
+    put "hello and " before field 2
+    put field 2
+end

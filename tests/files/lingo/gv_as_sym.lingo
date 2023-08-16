@@ -1,0 +1,6 @@
+on exitFrame
+    put "Name pos:", findPos(myList, #name)
+    put "Surname pos:", findPos(myList, #surname)
+    put "Nothing pos:", findPos(myList, #nothing)
+    put "Nothing pos near:", findPosNear(myList, #nothing)
+end

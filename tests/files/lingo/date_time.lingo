@@ -1,0 +1,10 @@
+on exitFrame
+    put "long date:", the long date
+    put "short date:", the short date
+    put "date:", the date
+    put "abbr date:", the abbr date
+    put "long time:", the long time
+    put "short time:", the short time
+    put "time:", the time
+    put "abbr time:", the abbr time
+end

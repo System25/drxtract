@@ -1,0 +1,3 @@
+on exitFrame
+    put "loc: ", the loc of sprite 1
+end

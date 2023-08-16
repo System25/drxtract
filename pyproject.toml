@@ -1,0 +1,32 @@
+[project]
+name = "drxtract_system25"
+description = "titanic_ml example package"
+version = "0.1.0"
+authors = [
+    { name = "Abraham Macias Paredes", email = "system252001@yahoo.es" }
+]
+dependencies = [
+
+]
+readme = "README.md"
+requires-python = ">=3.10.6"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
+    "Operating System :: OS Independent",
+]
+
+
+[project.optional-dependencies]
+tests = [
+  'pytest >= 6.2.5',
+  'parameterized >= 0.8.1',
+]
+
+[project.urls]
+"Homepage" = "https://github.com/System25/drxtract"
+"Bug Tracker" = "https://github.com/System25/drxtract/issues"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

@@ -1,0 +1,8 @@
+on exitFrame
+    set myLocVar = 1
+    put myLocVar
+    set mySecondLocVar = 2
+    put mySecondLocVar
+    set myThirdLocVar = 3
+    put myThirdLocVar
+end

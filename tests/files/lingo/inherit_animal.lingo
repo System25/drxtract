@@ -1,0 +1,9 @@
+property legCount
+on birth me, legs
+    set legCount = legs
+    return me
+end
+
+on countLegs me
+    return legCount
+end

@@ -1,0 +1,11 @@
+on mouseUp
+    open window("tour")
+    tell window("tour")
+        puppetTempo 5
+    end tell
+    tell window("tour")
+        go 1
+        set the stageColor = 0
+        updateStage
+    end tell
+end

@@ -1,0 +1,9 @@
+on exitFrame
+    set myPropList = [:]
+    put "Empty prop list: ", myPropList
+    addProp myPropList, #name, "Jhon"
+    addProp myPropList, #surname, "Doe"
+    put "Full prop list: ", myPropList
+    deleteProp myPropList, #surname
+    put "Only name", myPropList
+end

@@ -1,0 +1,21 @@
+on exitFrame
+    put "beepOn: ", the beepOn
+    put "buttonStyle: ", the buttonStyle
+    put "centerStage: ", the centerStage
+    put "checkBoxAccess: ", the checkBoxAccess
+    put "checkBoxType: ", the checkBoxType
+    put "colorDepth: ", the colorDepth
+    put "exitLock:", the exitLock
+    put "fixStageSize: ", the fixStageSize
+    put "soundEnabled: ", the soundEnabled
+    put "soundLevel: ", the soundLevel
+    put "stageColor:", the stageColor
+    put "stillDown: ", the stillDown
+    put "timeoutKeyDown:", the timeoutKeyDown
+    put "timeoutLength:", the timeoutLength
+    put "timeoutMouse:", the timeoutMouse
+    put "timeoutPlay:", the timeoutPlay
+    put "timer: ", the timer
+    put "switchColorDepth:", the switchColorDepth
+    put "updateMovieEnabled: ", the updateMovieEnabled
+end

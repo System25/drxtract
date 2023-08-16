@@ -1,0 +1,8 @@
+on exitFrame
+    set myName = "John"
+    put " Doe" after myName
+    put myName
+    set myName = "Doe"
+    put "Janet " before myName
+    put myName
+end

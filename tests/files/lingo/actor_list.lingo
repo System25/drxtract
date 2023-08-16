@@ -1,0 +1,4 @@
+on exitFrame
+    set the actorList = []
+    put "The actor list:", the actorList
+end

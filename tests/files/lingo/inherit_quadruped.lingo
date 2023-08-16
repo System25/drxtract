@@ -1,0 +1,6 @@
+property hasTail, ancestor
+on birth me, tail
+    set ancestor = birth(script("Animal"), 4)
+    set hasTail = tail
+    return me
+end

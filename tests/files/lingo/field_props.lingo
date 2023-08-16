@@ -1,0 +1,17 @@
+on exitFrame
+    put "textAlign: ", the textAlign of field 1
+    set the textAlign of cast 1 = "right"
+    put "textAlign: ", the textAlign of field 1
+    put "textFont: ", the textFont of field 1
+    set the textFont of cast 1 = "Times"
+    put "textFont: ", the textFont of field 1
+    put "textHeight: ", the textHeight of field 1
+    set the textHeight of cast 1 = 14
+    put "textHeight: ", the textHeight of field 1
+    put "textSize:", the textSize of field 1
+    set the textSize of cast 1 = 10
+    put "textSize: ", the textSize of field 1
+    put "textStyle:", the textStyle of field 1
+    set the textStyle of cast 1 = "bold"
+    put "textStyle: ", the textStyle of field 1
+end

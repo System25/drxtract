@@ -1,0 +1,12 @@
+global gList
+
+on startMovie
+    set gList = []
+    set gList = "you"
+    put " man!" after item 1 of gList
+    put "hey " before item 1 of gList
+    put "hello world!" into item 2 of gList
+    put "======"
+    put "list:", gList
+    put "======"
+end

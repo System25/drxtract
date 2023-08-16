@@ -1,0 +1,6 @@
+property wingCount, ancestor
+on birth me, wings
+    set wingCount = wings
+    set ancestor = birth(script("Animal"), 6)
+    return me
+end
