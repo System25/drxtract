@@ -10,9 +10,9 @@ import unittest
 import os
 from parameterized import parameterized
 
-from src.lingosrc.ast import Script
-from src.lingosrc.parse import parse_lnam_file, parse_lrcr_file
-from src.lingosrc.codegen import generate_lingo_code
+from drxtract.lingosrc.ast import Script
+from drxtract.lingosrc.parse import parse_lnam_file, parse_lrcr_file
+from drxtract.lingosrc.codegen import generate_lingo_code
 
 
 
