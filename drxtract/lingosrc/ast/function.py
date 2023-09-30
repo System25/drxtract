@@ -71,12 +71,15 @@ class CallFunction(Node):
         # is a symbol makes sense in that position
         if self.parameters is not None:
             params: LoadListOperation = cast(LoadListOperation, self.parameters)
-            if len(params.operands) > 0:
+            operands = params.operands
+            l: int = len(operands)
+            if  l > 0:
                 # The first parameter of a list function has to be a list
+                idx = l - 1
                 if (self.name.lower() in LIST_FUNCTIONS
-                    and isinstance(params.operands[-1], Symbol)):
-                    sym: Symbol = cast(Symbol, params.operands[-1])
-                    params.operands[-1] = GlobalVariable(sym.name, sym.position)
+                    and isinstance(operands[idx], Symbol)):
+                    sym: Symbol = cast(Symbol, operands[idx])
+                    operands[idx] = GlobalVariable(sym.name, sym.position)
 
     def generate_lingo(self, indentation: int) -> str: 
         self.gv_as_sym()     

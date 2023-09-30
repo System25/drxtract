@@ -64,9 +64,10 @@ class PropertyName(Node):
 
     def generate_js(self, indentation: int) -> str: 
         obj_name: str = 'me'
+        propName = self.name
         if self.name in KNOWN_PROPERTIES.keys():
-            obj_name = KNOWN_PROPERTIES[self.name]
-        return "%s.%s"%(obj_name, self.name)
+            obj_name = KNOWN_PROPERTIES[propName]
+        return "%s.%s"%(obj_name, propName)
 
 #
 # Defined Property name class.

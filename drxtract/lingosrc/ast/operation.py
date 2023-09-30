@@ -161,7 +161,8 @@ class UnaryOperation(Node):
 
     def generate_js(self, indentation: int) -> str:
         operand = cast(Node, self.operand)
-        operation = JS_UNA_OP[self.name]
+        operation = self.name
+        operation = JS_UNA_OP[operation]
         return "%s(%s)"%(operation, operand.generate_js(indentation))
 
 #
@@ -179,7 +180,8 @@ class BinaryOperation(Node):
         l = cast(Node, self.left)
         r = cast(Node, self.right)
         
-        if self.name == 'assign':
+        operation = self.name
+        if operation == 'assign':
             left: str = l.generate_lingo(indentation)
             right: str = r.generate_lingo(indentation)
             if left.startswith('field(') and left.endswith(')'):
@@ -187,7 +189,7 @@ class BinaryOperation(Node):
             else:
                 return "set %s = %s"%(left, right)
         
-        op:str = LINGO_BIN_OP[self.name]
+        op:str = LINGO_BIN_OP[operation]
         if op.startswith('sprite... '):
             return "sprite %s %s %s"%(l.generate_lingo(indentation),
                                       op.removeprefix('sprite... '),
@@ -200,11 +202,12 @@ class BinaryOperation(Node):
         l = cast(Node, self.left)
         r = cast(Node, self.right)
         
-        if self.name == 'assign':
+        operation = self.name
+        if operation == 'assign':
             return "%s = %s"%(l.generate_js(indentation),
                               r.generate_js(indentation))            
         
-        op: str = JS_BIN_OP[self.name]
+        op: str = JS_BIN_OP[operation]
         if op.startswith('.'):
             return "sprite(%s)%s(sprite(%s))"%(l.generate_js(indentation), op,
                                r.generate_js(indentation))
@@ -305,7 +308,8 @@ class UnaryStringOperation(Node):
 
     def generate_js(self, indentation: int) -> str:
         operand = cast(Node, self.of)
-        operation = JS_UNA_OP[self.name]
+        operation = self.name
+        operation = JS_UNA_OP[operation]
         if self.type is not None:
             op_type = cast(StringOperationNames, self.type).value
             if self.name == UnaryOperationNames.LAST.value:
