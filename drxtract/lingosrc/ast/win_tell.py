@@ -3,7 +3,7 @@
 # License: GNU GPL v2 (see LICENSE file for details).
 
 from .node import Node
-from .function import Statement
+from .function_op import Statement
 from typing import List, Optional, cast
 from ..util import code_indentation
 

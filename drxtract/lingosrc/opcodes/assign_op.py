@@ -6,7 +6,7 @@ from .opcode import Param1Opcode, BiOpcode
 from ..ast import GlobalVariable, PropertyName, \
    BinaryOperation, BinaryOperationNames, SpAssignOperation, \
    UnaryOperation, UnaryOperationNames, Statement, Node, \
-   ConstantValue, Function, PropertyAccessorOperation, LocalVariable
+   ConstantValue, FunctionDef, PropertyAccessorOperation, LocalVariable
 from ..model import Context
 from typing import List
 
@@ -23,15 +23,15 @@ class AssignGlobalVariableOpcode(Param1Opcode):
         Param1Opcode.__init__(self, 0x4E)
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         op1 = self.param1
         op = BinaryOperation(BinaryOperationNames.ASSIGN, index)
         op.left = GlobalVariable(context.name_list[op1], index)
         op.right = stack.pop()
-        function.statements.append(Statement(op, index))
+        fn.statements.append(Statement(op, index))
         
-        if not op.left in function.global_vars:
-            function.global_vars.append(op.left)
+        if not op.left in fn.global_vars:
+            fn.global_vars.append(op.left)
 
     
 #
@@ -50,7 +50,7 @@ class LoadPropertyOpcode(Param1Opcode):
         Param1Opcode.__init__(self, 0x5F)
 
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         op1 = self.param1
         property_name = context.name_list[op1]
         op: Node = PropertyName(property_name, index)
@@ -68,7 +68,7 @@ class AssignPropertyOpcode(Param1Opcode):
         Param1Opcode.__init__(self, 0x50)
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         op1 = self.param1
         op = BinaryOperation(BinaryOperationNames.ASSIGN, index)
         if context.name_list[op1] in context.properties:
@@ -78,7 +78,7 @@ class AssignPropertyOpcode(Param1Opcode):
         else:    
             op.left = PropertyName(context.name_list[op1], index)
         op.right = stack.pop()
-        function.statements.append(Statement(op, index))
+        fn.statements.append(Statement(op, index))
 
 #
 # Assign to property Opcode.
@@ -97,16 +97,16 @@ class AssignParameterOpcode(Param1Opcode):
         Param1Opcode.__init__(self, 0x51)
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         op1 = self.param1
         if (op1 % context.bytes_per_constant) > 0:
             context.bytes_per_constant = (op1 % context.bytes_per_constant)
         
         op = BinaryOperation(BinaryOperationNames.ASSIGN, index)
-        op.left = function.parameters[int(op1 / context.bytes_per_constant)]
+        op.left = fn.parameters[int(op1 / context.bytes_per_constant)]
         op.right = stack.pop()
         
-        function.statements.append(Statement(op, index))
+        fn.statements.append(Statement(op, index))
 
 #
 # Assign to local variable Opcode.
@@ -116,16 +116,16 @@ class AssignLocalVariableOpcode(Param1Opcode):
         Param1Opcode.__init__(self, 0x52)
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         op1 = self.param1
         if (op1 % context.bytes_per_constant) > 0:
             context.bytes_per_constant = (op1 % context.bytes_per_constant)
         
         op = BinaryOperation(BinaryOperationNames.ASSIGN, index)
-        op.left = function.local_vars[int(op1 / context.bytes_per_constant)]
+        op.left = fn.local_vars[int(op1 / context.bytes_per_constant)]
         op.right = stack.pop()
         
-        function.statements.append(Statement(op, index))
+        fn.statements.append(Statement(op, index))
 
 
 #
@@ -137,7 +137,7 @@ class AssignModeLocalVarOpcode(BiOpcode):
         self.mode = mode
 
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         operand = stack.pop()
         if not isinstance(operand, ConstantValue):
             raise TypeError(
@@ -148,11 +148,11 @@ class AssignModeLocalVarOpcode(BiOpcode):
             context.bytes_per_constant = (op1 % context.bytes_per_constant)
         
         op = SpAssignOperation(BinaryOperationNames.ASSIGN, index)
-        op.left = function.local_vars[int(op1 / context.bytes_per_constant)]
+        op.left = fn.local_vars[int(op1 / context.bytes_per_constant)]
         op.right = stack.pop()
         op.mode = self.mode
         
-        function.statements.append(Statement(op, index))
+        fn.statements.append(Statement(op, index))
 
 #
 # Assing <mode> field Opcode.
@@ -163,14 +163,14 @@ class AssignModeFieldOpcode(BiOpcode):
         self.mode = mode
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int): 
+                fn: FunctionDef, index: int): 
         op = SpAssignOperation(BinaryOperationNames.ASSIGN, index)
         op.left = UnaryOperation(UnaryOperationNames.FIELD, index)
         op.left.operand = stack.pop()
         op.right = stack.pop()
         op.mode = self.mode
         
-        function.statements.append(Statement(op, index))
+        fn.statements.append(Statement(op, index))
 
 #
 # Assign into local var Opcode.

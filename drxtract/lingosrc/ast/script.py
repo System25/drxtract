@@ -2,7 +2,7 @@
 # E-mail: system252001@yahoo.es
 # License: GNU GPL v2 (see LICENSE file for details).
 
-from .function import Function
+from .function_op import FunctionDef
 from typing import List
 
 #
@@ -15,4 +15,4 @@ class Script:
     def __init__(self):
         self.properties: List[str] = []
         self.global_vars: List[str] = []
-        self.functions: List[Function] = []
+        self.functions: List[FunctionDef] = []

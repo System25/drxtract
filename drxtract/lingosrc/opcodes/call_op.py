@@ -4,7 +4,7 @@
 
 from .opcode import Param1Opcode
 from ..ast import CallMethod, CallFunction, Statement, Node, \
-    ToListOperation, Function, Symbol, LoadListOperation, GlobalVariable
+    ToListOperation, FunctionDef, Symbol, LoadListOperation, GlobalVariable
 from ..model import Context
 from typing import List, cast
 
@@ -17,7 +17,7 @@ class CallLocalOpcode(Param1Opcode):
         Param1Opcode.__init__(self, 0x56)
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         op1 = self.param1
         fname = context.local_func_names[op1]
         
@@ -27,7 +27,7 @@ class CallLocalOpcode(Param1Opcode):
         if op.parameters is not None and op.parameters.name.startswith('<'):
             stack.append(op)
         else:
-            function.statements.append(Statement(op, index))
+            fn.statements.append(Statement(op, index))
 
 #
 # Call an external function Opcode.
@@ -37,7 +37,7 @@ class CallExternalOpcode(Param1Opcode):
         Param1Opcode.__init__(self, 0x57)
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         op1 = self.param1
         fname = context.name_list[op1]
         
@@ -47,7 +47,7 @@ class CallExternalOpcode(Param1Opcode):
         if op.parameters is not None and op.parameters.name.startswith('<'):
             stack.append(op)
         else:
-            function.statements.append(Statement(op, index))
+            fn.statements.append(Statement(op, index))
 
 
 #
@@ -70,7 +70,7 @@ class CallFuncWithExtGlobalOpcode(Param1Opcode):
         Param1Opcode.__init__(self, 0x58)
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         op1 = self.param1
         ext_global_name = context.name_list[op1]
         
@@ -90,7 +90,7 @@ class CallFuncWithExtGlobalOpcode(Param1Opcode):
         if op.parameters.name.startswith('<'):
             stack.append(op)
         else:
-            function.statements.append(Statement(op, index))
+            fn.statements.append(Statement(op, index))
 
 #
 # Call an object method Opcode.
@@ -100,7 +100,7 @@ class CallExternalMethodOpcode(Param1Opcode):
         Param1Opcode.__init__(self, 0x67)
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         op1 = self.param1
         fname = context.name_list[op1]
         
@@ -115,4 +115,4 @@ class CallExternalMethodOpcode(Param1Opcode):
         if op.parameters is not None and op.parameters.name.startswith('<'):
             stack.append(op)
         else:
-            function.statements.append(Statement(op, index))
+            fn.statements.append(Statement(op, index))

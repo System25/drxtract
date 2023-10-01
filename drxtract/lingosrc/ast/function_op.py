@@ -41,9 +41,9 @@ class Statement(Node):
 
         
 #
-# Function class.
+# Function definition class.
 # 
-class Function(Node):
+class FunctionDef(Node):
     """This class represents a function in the AST"""
     
     def __init__(self, name: str, position: int):

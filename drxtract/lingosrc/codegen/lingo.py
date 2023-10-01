@@ -8,6 +8,7 @@
 
 from ..ast import Script
 from ..util import code_indentation
+from typing import List
 
 # =============================================================================
 def generate_lingo_code(script: Script) -> str:
@@ -41,7 +42,11 @@ def generate_lingo_code(script: Script) -> str:
         
         code = code + "on %s"%(f.name)
         if len(f.parameters) > 0:
-            code = code + " %s"%(', '.join(n.name for n in f.parameters))
+            params: List[str] = []
+            for n in f.parameters:
+                params.append(n.name)
+            
+            code = code + " %s"%(', '.join(params))
         code += "\n"
         
         f.global_vars.sort(key = lambda x: x.name)
@@ -54,8 +59,9 @@ def generate_lingo_code(script: Script) -> str:
         if gv_count > 0:
             code = code + "\n"
         
-        if f.statements[-1].code.name == 'exit':
-            del f.statements[-1]
+        last = len(f.statements)-1
+        if f.statements[last].code.name == 'exit':
+            del f.statements[last]
         
         for st in f.statements:
             code = code + st.generate_lingo(1)

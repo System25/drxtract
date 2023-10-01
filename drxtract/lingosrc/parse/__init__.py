@@ -5,5 +5,6 @@
 #
 # Binary files parsing functions.
 #
-from .lnam import parse_lnam_file, parse_lnam_file_data
-from .lscr import parse_lrcr_file, parse_lrcr_file_data
+from .lnam import parse_lnam_file_data
+from .lscr import parse_lrcr_file_data
+from .file_operations import parse_lnam_file, parse_lrcr_file

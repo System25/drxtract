@@ -4,7 +4,7 @@
 
 from .opcode import Opcode
 from ..ast import WindowTellOperation, \
-    Function, Node, Statement
+    FunctionDef, Node, Statement
 from ..model import Context
 from typing import List, cast
 
@@ -16,10 +16,10 @@ class WindowTellStartOpcode(Opcode):
         Opcode.__init__(self, 0x1C)
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         op = WindowTellOperation('tell', index)
         op.operand = stack.pop()
-        function.statements.append(Statement(op, index))
+        fn.statements.append(Statement(op, index))
         context.tell_object = op.operand
 
 #
@@ -30,10 +30,10 @@ class WindowTellEndOpcode(Opcode):
         Opcode.__init__(self, 0x1D)
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         statements: List[Statement] = []
         fn_statements: List[Statement] = []
-        fn_statements.extend(function.statements)
+        fn_statements.extend(fn.statements)
         fn_statements.reverse()
         
         for st in fn_statements:
@@ -47,6 +47,6 @@ class WindowTellEndOpcode(Opcode):
                 break
                 
         for st in statements:
-            function.statements.remove(st)
+            fn.statements.remove(st)
         
         context.tell_object = None

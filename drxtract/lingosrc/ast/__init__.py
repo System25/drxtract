@@ -19,7 +19,7 @@ from .operation import UnaryOperation, BinaryOperation, StringOperation,\
 from .constant_val import ConstantValue, Symbol
 from .conversion import LoadListOperation, ToListOperation, \
     ToDictionaryOperation
-from .function import Statement, Function, CallFunction, CallMethod
+from .function_op import Statement, FunctionDef, CallFunction, CallMethod
 from .structures import RepeatOperation, IfThenOperation, JumpOperation, \
     JzOperation, ExitRepeat
 from .win_tell import WindowTellOperation

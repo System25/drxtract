@@ -4,7 +4,7 @@
 
 from .opcode import Opcode, Param1Opcode, Param2Opcode
 from ..ast import ToListOperation, ToDictionaryOperation, \
-    LoadListOperation, Function, Node
+    LoadListOperation, FunctionDef, Node
 from ..model import Context
 from typing import List, cast
 
@@ -16,7 +16,7 @@ class ToListOpcode(Opcode):
         Opcode.__init__(self, 0x1E)
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         op = ToListOperation('to_list', index, \
                              cast(LoadListOperation, stack.pop()))
         stack.append(op)
@@ -29,7 +29,7 @@ class ToDictionaryOpcode(Opcode):
         Opcode.__init__(self, 0x1F)
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         op = ToDictionaryOperation('to_dict', index, \
                                    cast(LoadListOperation, stack.pop()))
         stack.append(op)
@@ -43,7 +43,7 @@ class LoadListOpcode(Param1Opcode):
         self.name = 'load_list'
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         op = LoadListOperation(self.name, index)
         for _ in range(0, self.param1):
             op.operands.append(stack.pop())
@@ -67,7 +67,7 @@ class LoadLongListOpcode(Param2Opcode):
         self.name = 'load_list'
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         n = self.param1 * 256 + self.param2
         op = LoadListOperation(self.name, index)
         for _ in range(0, n):

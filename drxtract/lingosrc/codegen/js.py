@@ -8,6 +8,7 @@
 
 from ..ast import Script
 from ..util import code_indentation
+from typing import List
 
 # =============================================================================
 def generate_js_code(script: Script) -> str:
@@ -37,7 +38,11 @@ def generate_js_code(script: Script) -> str:
         
         code = code + "function %s("%(f.name)
         if len(f.parameters) > 0:
-            code = code + "%s"%(', '.join(n.name for n in f.parameters))
+            params: List[str] = []
+            for n in f.parameters:
+                params.append(n.name)
+            
+            code = code + "%s"%(', '.join(params))
         code += ") {\n"
         
         for lv in f.local_vars:
@@ -46,8 +51,9 @@ def generate_js_code(script: Script) -> str:
         if len(f.local_vars) > 0:
             code = code + "\n"
         
-        if f.statements[-1].code.name == 'exit':
-            del f.statements[-1]
+        last = len(f.statements)-1
+        if f.statements[last].code.name == 'exit':
+            del f.statements[last]
         
         for st in f.statements:
             code = code + st.generate_js(1)

@@ -4,7 +4,7 @@
 
 from .opcode import Opcode, BiOpcode
 from ..ast import Node, StringOperation, UnaryOperation,\
-    Statement, UnaryOperationNames, StringOperationNames, Function, \
+    Statement, UnaryOperationNames, StringOperationNames, FunctionDef, \
     SpAssignOperation, BinaryOperationNames
 from ..model import Context
 from typing import List
@@ -55,7 +55,7 @@ class StringOperationOpcode(Opcode):
         Opcode.__init__(self, 0x17)
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         op = stack.pop()           # The string to slice
         op = add_modifiers(self, op, stack, index)
         stack.append(op)
@@ -68,7 +68,7 @@ class HiliteOpcode(Opcode):
         Opcode.__init__(self, 0x18)
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         field = UnaryOperation(UnaryOperationNames.FIELD, index)
         field.operand = stack.pop()  # The field to hilite     
         field = add_modifiers(self, field, stack, index)
@@ -76,7 +76,7 @@ class HiliteOpcode(Opcode):
         op = UnaryOperation(UnaryOperationNames.HILITE, index)
         op.operand = field
 
-        function.statements.append(Statement(op, index))
+        fn.statements.append(Statement(op, index))
 
 #
 # Put into field Opcode.
@@ -86,7 +86,7 @@ class PutIntoFieldOpcode(BiOpcode):
         BiOpcode.__init__(self, 0x5A, 0x06)
 
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         
         field = UnaryOperation(UnaryOperationNames.FIELD, index)
         field.operand = stack.pop()  # The field to put     
@@ -97,7 +97,7 @@ class PutIntoFieldOpcode(BiOpcode):
         op.right = stack.pop()
         op.mode = 'into'
         
-        function.statements.append(Statement(op, index))
+        fn.statements.append(Statement(op, index))
 
 
 #
@@ -108,7 +108,7 @@ class PutIntoFieldSpOpcode(BiOpcode):
         BiOpcode.__init__(self, 0x5A, 0x16)
 
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         
         field = UnaryOperation(UnaryOperationNames.FIELD, index)
         field.operand = stack.pop()  # The field to put     
@@ -119,7 +119,7 @@ class PutIntoFieldSpOpcode(BiOpcode):
         op.right = stack.pop()
         op.mode = 'into'
         
-        function.statements.append(Statement(op, index))
+        fn.statements.append(Statement(op, index))
 
 #
 # Put into list Opcode.
@@ -129,7 +129,7 @@ class PutIntoListOpcode(BiOpcode):
         BiOpcode.__init__(self, 0x5A, 0x12)
 
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         
         var = stack.pop()
         var = add_modifiers(self, var, stack, index)
@@ -139,7 +139,7 @@ class PutIntoListOpcode(BiOpcode):
         op.right = stack.pop()
         op.mode = 'into'
         
-        function.statements.append(Statement(op, index))
+        fn.statements.append(Statement(op, index))
 
 #
 # Put into string Opcode.
@@ -149,10 +149,10 @@ class PutIntoStringOpcode(BiOpcode):
         BiOpcode.__init__(self, 0x5A, 0x15)
 
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         
         op1 = int(stack.pop().name)
-        var = function.local_vars[op1]
+        var = fn.local_vars[op1]
         var = add_modifiers(self, var, stack, index)
         
         op = SpAssignOperation(BinaryOperationNames.ASSIGN, index)
@@ -160,7 +160,7 @@ class PutIntoStringOpcode(BiOpcode):
         op.right = stack.pop()
         op.mode = 'into'
         
-        function.statements.append(Statement(op, index))
+        fn.statements.append(Statement(op, index))
 
 #
 # Put after list Opcode.
@@ -170,7 +170,7 @@ class PutAfterListOpcode(BiOpcode):
         BiOpcode.__init__(self, 0x5A, 0x22)
 
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         
         var = stack.pop()
         var = add_modifiers(self, var, stack, index)
@@ -180,7 +180,7 @@ class PutAfterListOpcode(BiOpcode):
         op.right = stack.pop()
         op.mode = 'after'
         
-        function.statements.append(Statement(op, index))
+        fn.statements.append(Statement(op, index))
 
 #
 # Put after string Opcode.
@@ -190,10 +190,10 @@ class PutAfterStringOpcode(BiOpcode):
         BiOpcode.__init__(self, 0x5A, 0x25)
 
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         
         op1 = int(stack.pop().name)
-        var = function.local_vars[op1]
+        var = fn.local_vars[op1]
         var = add_modifiers(self, var, stack, index)
         
         op = SpAssignOperation(BinaryOperationNames.ASSIGN, index)
@@ -201,7 +201,7 @@ class PutAfterStringOpcode(BiOpcode):
         op.right = stack.pop()
         op.mode = 'after'
         
-        function.statements.append(Statement(op, index))
+        fn.statements.append(Statement(op, index))
 
 #
 # Put after field Opcode.
@@ -211,7 +211,7 @@ class PutAfterFieldOpcode(BiOpcode):
         BiOpcode.__init__(self, 0x5A, 0x26)
 
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         
         field = UnaryOperation(UnaryOperationNames.FIELD, index)
         field.operand = stack.pop()  # The field to put     
@@ -222,7 +222,7 @@ class PutAfterFieldOpcode(BiOpcode):
         op.right = stack.pop()
         op.mode = 'after'
         
-        function.statements.append(Statement(op, index))
+        fn.statements.append(Statement(op, index))
 
 #
 # Put before list Opcode.
@@ -232,7 +232,7 @@ class PutBeforeListOpcode(BiOpcode):
         BiOpcode.__init__(self, 0x5A, 0x32)
 
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         
         var = stack.pop()
         var = add_modifiers(self, var, stack, index)
@@ -242,7 +242,7 @@ class PutBeforeListOpcode(BiOpcode):
         op.right = stack.pop()
         op.mode = 'before'
         
-        function.statements.append(Statement(op, index))
+        fn.statements.append(Statement(op, index))
         
 #
 # Put before String Opcode.
@@ -252,10 +252,10 @@ class PutBeforeStringOpcode(BiOpcode):
         BiOpcode.__init__(self, 0x5A, 0x35)
 
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         
         op1 = int(stack.pop().name)
-        var = function.local_vars[op1]
+        var = fn.local_vars[op1]
         var = add_modifiers(self, var, stack, index)
         
         op = SpAssignOperation(BinaryOperationNames.ASSIGN, index)
@@ -263,7 +263,7 @@ class PutBeforeStringOpcode(BiOpcode):
         op.right = stack.pop()
         op.mode = 'before'
         
-        function.statements.append(Statement(op, index))
+        fn.statements.append(Statement(op, index))
 
 #
 # Put before field Opcode.
@@ -273,7 +273,7 @@ class PutBeforeFieldOpcode(BiOpcode):
         BiOpcode.__init__(self, 0x5A, 0x36)
 
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         
         field = UnaryOperation(UnaryOperationNames.FIELD, index)
         field.operand = stack.pop()  # The field to put     
@@ -284,7 +284,7 @@ class PutBeforeFieldOpcode(BiOpcode):
         op.right = stack.pop()
         op.mode = 'before'
         
-        function.statements.append(Statement(op, index))
+        fn.statements.append(Statement(op, index))
 
 #
 # Delete from list Opcode.
@@ -294,7 +294,7 @@ class DeleteFromListOpcode(BiOpcode):
         BiOpcode.__init__(self, 0x5B, 0x02)
 
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         
         var = stack.pop()  # The list to delete from     
         var = add_modifiers(self, var, stack, index)
@@ -302,7 +302,7 @@ class DeleteFromListOpcode(BiOpcode):
         op = UnaryOperation(UnaryOperationNames.DELETE, index)
         op.operand = var
         
-        function.statements.append(Statement(op, index))
+        fn.statements.append(Statement(op, index))
         
 #
 # Delete from string Opcode.
@@ -312,16 +312,16 @@ class DeleteFromStringOpcode(BiOpcode):
         BiOpcode.__init__(self, 0x5B, 0x05)
 
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         
         op1 = int(stack.pop().name)
-        var = function.local_vars[op1]
+        var = fn.local_vars[op1]
         var = add_modifiers(self, var, stack, index)
         
         op = UnaryOperation(UnaryOperationNames.DELETE, index)
         op.operand = var
         
-        function.statements.append(Statement(op, index))
+        fn.statements.append(Statement(op, index))
 
 #
 # Delete from field Opcode.
@@ -331,7 +331,7 @@ class DeleteFromFieldOpcode(BiOpcode):
         BiOpcode.__init__(self, 0x5B, 0x06)
 
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         field = UnaryOperation(UnaryOperationNames.FIELD, index)
         field.operand = stack.pop()  # The field to delete     
         field = add_modifiers(self, field, stack, index)
@@ -339,4 +339,4 @@ class DeleteFromFieldOpcode(BiOpcode):
         op = UnaryOperation(UnaryOperationNames.DELETE, index)
         op.operand = field
         
-        function.statements.append(Statement(op, index))
+        fn.statements.append(Statement(op, index))

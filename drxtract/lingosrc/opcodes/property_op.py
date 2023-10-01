@@ -3,7 +3,7 @@
 # License: GNU GPL v2 (see LICENSE file for details).
 
 from .opcode import BiOpcode, Param1Opcode
-from ..ast import Function, Sprite, StringOperationNames, \
+from ..ast import FunctionDef, Sprite, StringOperationNames, \
     LocalVariable, PropertyName, DateTimeFunction, UnaryStringOperation, \
     BinaryOperation, BinaryOperationNames, \
     MenuitemAccessorOperation, Menu, MenuItem, PropertyAccessorOperation, \
@@ -97,7 +97,7 @@ class SpecialPropertiesOpcode(BiOpcode):
         BiOpcode.__init__(self, 0x5C, 0x00)
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         param: ConstantValue = cast(ConstantValue, stack.pop())
         property_index = int(param.name)
         op: Optional[Node] = None
@@ -123,13 +123,13 @@ class AssignSpecialPropertiesOpcode(SpecialPropertiesOpcode):
         self.opcode = 0x5D
         
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
-        SpecialPropertiesOpcode.process(self, context, stack, function, \
+                fn: FunctionDef, index: int):
+        SpecialPropertiesOpcode.process(self, context, stack, fn, \
                                         index)
         op = BinaryOperation(BinaryOperationNames.ASSIGN, index)
         op.left = stack.pop()
         op.right = stack.pop()
-        function.statements.append(Statement(op, index))
+        fn.statements.append(Statement(op, index))
     
 #
 # Number of ... Opcode.
@@ -139,7 +139,7 @@ class NumberOfElementsOpcode(BiOpcode):
         BiOpcode.__init__(self, 0x5C, 0x01)
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         param: ConstantValue = cast(ConstantValue, stack.pop())
         optype = int(param.name)        
         op = UnaryStringOperation(UnaryOperationNames.NUMBER, index)
@@ -156,7 +156,7 @@ class NameOfCastElementsOpcode(BiOpcode):
         BiOpcode.__init__(self, 0x5C, 0x02)
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         param1: ConstantValue = cast(ConstantValue, stack.pop())
         optype = int(param1.name)
         
@@ -183,7 +183,7 @@ class MenuitemPropertiesOpcode(BiOpcode):
         BiOpcode.__init__(self, 0x5C, 0x03)
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         property_index = int(cast(ConstantValue, stack.pop()).name)
         menu_id = cast(ConstantValue, stack.pop()).name
         menu_item_id = cast(ConstantValue, stack.pop()).name
@@ -206,7 +206,7 @@ class AssignMenuitemPropertiesOpcode(BiOpcode):
     
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         
         property_index = int(cast(ConstantValue, stack.pop()).name)
         value = stack.pop()
@@ -223,7 +223,7 @@ class AssignMenuitemPropertiesOpcode(BiOpcode):
         op = BinaryOperation(BinaryOperationNames.ASSIGN, index)
         op.left = pac
         op.right = value
-        function.statements.append(Statement(op, index))
+        fn.statements.append(Statement(op, index))
 
 
 #
@@ -234,7 +234,7 @@ class SoundPropertiesOpcode(BiOpcode):
         BiOpcode.__init__(self, 0x5C, 0x04)
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         property_index = int(cast(ConstantValue, stack.pop()).name)
         channel_id = cast(ConstantValue, stack.pop()).name
         sound_channel = SoundChannel(channel_id, index)
@@ -251,7 +251,7 @@ class AssignSoundPropertiesOpcode(BiOpcode):
 
 
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         property_index = int(cast(ConstantValue, stack.pop()).name)
         value = stack.pop()
         channel_id = cast(ConstantValue, stack.pop()).name
@@ -263,7 +263,7 @@ class AssignSoundPropertiesOpcode(BiOpcode):
         op = BinaryOperation(BinaryOperationNames.ASSIGN, index)
         op.left = accessor
         op.right = value
-        function.statements.append(Statement(op, index))  
+        fn.statements.append(Statement(op, index))  
 
 
 #
@@ -274,7 +274,7 @@ class SpritePropertiesOpcode(BiOpcode):
         BiOpcode.__init__(self, 0x5C, 0x06)
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         property_index = int(cast(ConstantValue, stack.pop()).name)
         sprite_id = cast(ConstantValue, stack.pop()).name
         sprite = Sprite(sprite_id, index)
@@ -291,7 +291,7 @@ class AssignSpritePropertiesOpcode(BiOpcode):
 
 
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         property_index = int(cast(ConstantValue, stack.pop()).name)
         value = stack.pop()
         sprite_id = cast(ConstantValue, stack.pop()).name
@@ -303,7 +303,7 @@ class AssignSpritePropertiesOpcode(BiOpcode):
         op = BinaryOperation(BinaryOperationNames.ASSIGN, index)
         op.left = accessor
         op.right = value
-        function.statements.append(Statement(op, index))    
+        fn.statements.append(Statement(op, index))    
 
     
 #
@@ -314,7 +314,7 @@ class SystemPropertiesOpcode(BiOpcode):
         BiOpcode.__init__(self, 0x5C, 0x07)
 
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         property_index = int(cast(ConstantValue, stack.pop()).name)
         property_name = list(SYSTEM_PROPERTIES.keys())[property_index]
         
@@ -335,13 +335,13 @@ class AssignSystemPropertiesOpcode(SystemPropertiesOpcode):
     
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
-        SystemPropertiesOpcode.process(self, context, stack, function, \
+                fn: FunctionDef, index: int):
+        SystemPropertiesOpcode.process(self, context, stack, fn, \
                                        index)
         op = BinaryOperation(BinaryOperationNames.ASSIGN, index)
         op.left = stack.pop()
         op.right = stack.pop()
-        function.statements.append(Statement(op, index))  
+        fn.statements.append(Statement(op, index))  
 
 #
 # Number of elements ... Opcode.
@@ -351,7 +351,7 @@ class NumberOfCastElementsOpcode(BiOpcode):
         BiOpcode.__init__(self, 0x5C, 0x08)
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         param: ConstantValue = cast(ConstantValue, stack.pop())
         optype = int(param.name)
 
@@ -367,7 +367,7 @@ class CastPropertiesOpcode(BiOpcode):
         BiOpcode.__init__(self, 0x5C, 0x09)
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         p_index: ConstantValue = cast(ConstantValue, stack.pop())
         property_index = int(p_index.name)
         cast_id: ConstantValue = cast(ConstantValue, stack.pop())
@@ -385,7 +385,7 @@ class AssignCastPropertiesOpcode(BiOpcode):
     
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         p_index: ConstantValue = cast(ConstantValue, stack.pop())
         property_index = int(p_index.name)
         value = stack.pop()
@@ -398,7 +398,7 @@ class AssignCastPropertiesOpcode(BiOpcode):
         op = BinaryOperation(BinaryOperationNames.ASSIGN, index)
         op.left = accessor
         op.right = value
-        function.statements.append(Statement(op, index)) 
+        fn.statements.append(Statement(op, index)) 
 
 #
 # Field properties Opcode.
@@ -408,7 +408,7 @@ class FieldPropertiesOpcode(BiOpcode):
         BiOpcode.__init__(self, 0x5C, 0x0b)
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         p_index: ConstantValue = cast(ConstantValue, stack.pop())
         property_index = int(p_index.name)
         field = UnaryOperation(UnaryOperationNames.FIELD, index)
@@ -427,7 +427,7 @@ class AssignFieldPropertiesOpcode(BiOpcode):
     
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         property_index = int(cast(ConstantValue, stack.pop()).name)
         value = stack.pop()
         cast_id = cast(ConstantValue, stack.pop()).name
@@ -438,7 +438,7 @@ class AssignFieldPropertiesOpcode(BiOpcode):
         op = BinaryOperation(BinaryOperationNames.ASSIGN, index)
         op.left = accessor
         op.right = value
-        function.statements.append(Statement(op, index)) 
+        fn.statements.append(Statement(op, index)) 
 
 #
 # Video cast properties Opcode.
@@ -448,7 +448,7 @@ class VideoPropertiesOpcode(BiOpcode):
         BiOpcode.__init__(self, 0x5C, 0x0d)
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         property_index = int(cast(ConstantValue, stack.pop()).name)
         cast_id = cast(ConstantValue, stack.pop()).name
         cast_node = Cast(cast_id, index)
@@ -465,7 +465,7 @@ class AssignVideoPropertiesOpcode(BiOpcode):
     
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         property_index = int(cast(ConstantValue, stack.pop()).name)
         value = stack.pop()
         cast_id = cast(ConstantValue, stack.pop()).name
@@ -476,7 +476,7 @@ class AssignVideoPropertiesOpcode(BiOpcode):
         op = BinaryOperation(BinaryOperationNames.ASSIGN, index)
         op.left = accessor
         op.right = value
-        function.statements.append(Statement(op, index)) 
+        fn.statements.append(Statement(op, index)) 
     
 #
 # Property accesor Opcode.
@@ -486,7 +486,7 @@ class PropertyAccesorOpcode(Param1Opcode):
         Param1Opcode.__init__(self, 0x61)
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         op1 = self.param1
         prop = context.name_list[op1]
         op = PropertyAccessorOperation(stack.pop(), prop, index)
@@ -501,7 +501,7 @@ class AssignPropertyAccesorOpcode(Param1Opcode):
     
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         op1 = self.param1
         value = stack.pop()
         node = stack.pop()
@@ -511,7 +511,7 @@ class AssignPropertyAccesorOpcode(Param1Opcode):
         op = BinaryOperation(BinaryOperationNames.ASSIGN, index)
         op.left = accessor
         op.right = value
-        function.statements.append(Statement(op, index))
+        fn.statements.append(Statement(op, index))
 
 #
 # Key Property accesor Opcode.
@@ -521,7 +521,7 @@ class KeyPropertyAccesorOpcode(Param1Opcode):
         Param1Opcode.__init__(self, 0x66)
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         op1 = self.param1
         prop = context.name_list[op1]
         empty_val = stack.pop()

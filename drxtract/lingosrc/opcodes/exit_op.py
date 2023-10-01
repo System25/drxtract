@@ -3,7 +3,7 @@
 # License: GNU GPL v2 (see LICENSE file for details).
 
 from .opcode import Opcode
-from ..ast import Statement, Node, CallFunction, Function
+from ..ast import Statement, Node, CallFunction, FunctionDef
 from ..model import Context
 from typing import List
 
@@ -15,6 +15,6 @@ class ExitOpcode(Opcode):
         Opcode.__init__(self, 0x01)
 
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         op = CallFunction('exit', index)
-        function.statements.append(Statement(op, index))
+        fn.statements.append(Statement(op, index))

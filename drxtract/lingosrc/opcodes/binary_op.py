@@ -3,7 +3,7 @@
 # License: GNU GPL v2 (see LICENSE file for details).
 
 from .opcode import Opcode
-from ..ast import BinaryOperation, BinaryOperationNames, Function, \
+from ..ast import BinaryOperation, BinaryOperationNames, FunctionDef, \
     Node
 from ..model import Context
 from typing import List
@@ -19,7 +19,7 @@ class BinaryOperationOpcode(Opcode):
         self.opname: BinaryOperationNames = opname
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         op = BinaryOperation(self.opname, index)
         op.right = stack.pop()
         op.left = stack.pop()

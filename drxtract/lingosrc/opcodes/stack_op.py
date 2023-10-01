@@ -3,7 +3,7 @@
 # License: GNU GPL v2 (see LICENSE file for details).
 
 from .opcode import Param1Opcode
-from ..ast import Function, Node
+from ..ast import FunctionDef, Node
 from ..model import Context
 from typing import List
 
@@ -15,7 +15,7 @@ class CopySymbolOpcode(Param1Opcode):
         Param1Opcode.__init__(self, 0x64)
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         op1 = self.param1
         stack.append(stack[len(stack) - 1 - op1])    
 
@@ -27,7 +27,7 @@ class DiscardSymbolsOpcode(Param1Opcode):
         Param1Opcode.__init__(self, 0x65)
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         op1 = self.param1
         for _ in range(0, op1):
             stack.pop()

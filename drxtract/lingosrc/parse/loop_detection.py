@@ -3,7 +3,7 @@
 # License: GNU GPL v2 (see LICENSE file for details).
 
 from typing import List, cast, Optional
-from ..ast import Statement, Function, JzOperation, RepeatOperation, \
+from ..ast import Statement, FunctionDef, JzOperation, RepeatOperation, \
     JumpOperation, IfThenOperation, ExitRepeat, UnaryOperation, \
     UnaryOperationNames, BinaryOperation, BinaryOperationNames, Node, \
     ConstantValue, CallFunction, LoadListOperation
@@ -12,17 +12,17 @@ from ..ast import Statement, Function, JzOperation, RepeatOperation, \
 # Condition detection.
 # 
 # =============================================================================
-def condition_detect(function: Function):
+def condition_detect(fn: FunctionDef):
     """
     Checks the AST of the functions statements and search for conditions.
     
     Parameters
     ----------
-    function : Function
-        The function to check.
+    fn : FunctionDef
+        The function definition to check.
         
     """
-    condition_detect_in_statements(function.statements, None)
+    condition_detect_in_statements(fn.statements, None)
 
 #
 # Condition detection.
@@ -53,7 +53,7 @@ def condition_detect_in_statements(statements: List[Statement],
             ro = cast(RepeatOperation, st.code)
             condition_detect_in_statements(ro.statements_list, ro)
 
-        if address is not None and st.position < cast(int, address):
+        if address is not None and st.position < address:
             previous_st = st
             continue
 
@@ -98,14 +98,16 @@ def condition_detect_in_statements(statements: List[Statement],
                 nop.operand = op.condition
                 ifop.condition = nop
                 ifop.if_statements_list.append(st)
-                for index, st in enumerate(statements):
+                for index in range(0, len(statements)):
+                    st = statements[index]
                     if st.code == op:
                         statements[index].code = ifop
                         break
                 continue
         
         # Normal if part
-        for index, st in enumerate(statements):
+        for index in range(0, len(statements)):
+            st = statements[index]
             if st.code == op:
                 statements[index].code = ifop
                 continue
@@ -122,9 +124,10 @@ def condition_detect_in_statements(statements: List[Statement],
         break_detect_in_statements(ifop.if_statements_list, repeat_op)
         condition_detect_in_statements(ifop.if_statements_list, repeat_op)
             
-        # else part        
-        if isinstance(ifop.if_statements_list[-1].code, JumpOperation):
-            jop = cast(JumpOperation, ifop.if_statements_list[-1].code)
+        # else part
+        last_idx = len(ifop.if_statements_list) - 1
+        if isinstance(ifop.if_statements_list[last_idx].code, JumpOperation):
+            jop = cast(JumpOperation, ifop.if_statements_list[last_idx].code)
             start = jop.position
             end = cast(int, jop.address)
             # exit repeat in else part
@@ -137,7 +140,8 @@ def condition_detect_in_statements(statements: List[Statement],
                     continue
             
             # Normal else part
-            for index, st in enumerate(statements):
+            for index in range(0, len(statements)):
+                st = statements[index]
                 if st.position > start and st.position < end:
                     ifop.else_statements_list.append(st)
                     
@@ -176,7 +180,8 @@ def break_detect_in_statements(statements: List[Statement],
         return
     
     # Check the last statement before "else" jump
-    last_st: Statement = statements[-2]
+    idx_2 = len(statements) - 2
+    last_st: Statement = statements[idx_2]
     if isinstance(last_st.code, JumpOperation):
         jop = cast(JumpOperation, last_st.code)
         address: int = cast(int, jop.address)
@@ -193,18 +198,18 @@ def break_detect_in_statements(statements: List[Statement],
 # Loop detection.
 # 
 # =============================================================================
-def loop_detect(function: Function):
+def loop_detect(fn: FunctionDef):
     """
     Checks the AST of the functions statements and search for loops.
     
     Parameters
     ----------
-    function : Function
-        The function to check.
+    fn : FunctionDef
+        The function definition to check.
         
     """
 
-    loop_detect_in_statements(function.statements)
+    loop_detect_in_statements(fn.statements)
 
 #
 # Loop detection.
@@ -248,7 +253,8 @@ def loop_detect_in_statements(statements: List[Statement]):
                 cond: BinaryOperation = cast(BinaryOperation, ro.condition)
                 ro.end = cast(Node, cond.right)
                 
-                last_st: Statement = ro.statements_list[-1]
+                last_idx = len(ro.statements_list) - 1
+                last_st: Statement = ro.statements_list[last_idx]
                 last_op: BinaryOperation = cast(BinaryOperation, last_st.code)
                 inc_dec: BinaryOperation = cast(BinaryOperation, last_op.right)
                 
@@ -386,7 +392,8 @@ def is_repeat_with(ro: RepeatOperation, previous_st: Optional[Statement]):
         return False
 
     if len(ro.statements_list) > 0:
-        st: Statement = ro.statements_list[-1]
+        last_idx = len(ro.statements_list) - 1
+        st: Statement = ro.statements_list[last_idx]
         if (isinstance(st.code, BinaryOperation)
             and st.code.name == BinaryOperationNames.ASSIGN.value):
             last_op: BinaryOperation = cast(BinaryOperation, st.code)

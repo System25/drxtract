@@ -3,7 +3,7 @@
 # License: GNU GPL v2 (see LICENSE file for details).
 
 from abc import ABCMeta, abstractmethod
-from ..ast import Function, Node
+from ..ast import FunctionDef, Node
 from ..model.context import Context
 from typing import List
 
@@ -20,7 +20,7 @@ class Opcode:
 
     @abstractmethod
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         pass
 
 #

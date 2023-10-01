@@ -6,39 +6,6 @@ from typing import List
 import struct
 import logging
 
-
-#
-# Parse LNAM file
-# 
-# =============================================================================
-def parse_lnam_file(lnam_file: str) -> List[str]:
-    """
-    Parse a LNAM file and return the list of names inside it.
-    
-    Parameters
-    ----------
-    lnam_file : str
-        The path to the LNAM file to parse.
-        
-    Returns
-    -------
-    list
-        a list of strings that contains variable names and method names.
-        
-    Raises
-    ------
-    ValueError
-        If some field inside the file is not compliant with the expected
-        file structure.
-        
-    """
-
-    with open(lnam_file, mode='rb') as file:
-        fdata: bytes = file.read()
-
-        return parse_lnam_file_data(fdata)
-
-
 #
 # Parse LNAM file data
 # 

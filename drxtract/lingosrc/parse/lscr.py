@@ -3,7 +3,7 @@
 # License: GNU GPL v2 (see LICENSE file for details).
 
 from typing import List, cast
-from ..ast import Script, Function, Node, LocalVariable, ParameterName
+from ..ast import Script, FunctionDef, Node, LocalVariable, ParameterName
 from ..model import Context, Header
 from ..util import escape_string, unpack_float80
 from ..opcodes import OPCODES, Opcode, BiOpcode, TriOpcode, \
@@ -13,40 +13,6 @@ import struct
 import logging
 
 DEBUG_OPCODES: bool = True
-
-#
-# Parse LSCR file
-# 
-# =============================================================================
-def parse_lrcr_file(lscr_file: str, name_list: List[str]) -> Script:
-    """
-    Parse a LSCR file and return the AST of the code inside it.
-    
-    Parameters
-    ----------
-    lscr_file: str
-        The path to the LSCR file to parse.
-    name_list: List[str]
-        The list of variables names and function names.
-        
-    Returns
-    -------
-    script
-        a script object with the Abstract-Syntax-Tree.
-        
-    Raises
-    ------
-    ValueError
-        If some field inside the file is not compliant with the expected
-        file structure.
-        
-    """
-
-    with open(lscr_file, mode='rb') as file:
-        fdata: bytes = file.read()
-
-        return parse_lrcr_file_data(fdata, name_list)
-
 
 #
 # Parse LSCR file data
@@ -217,7 +183,7 @@ def parse_frb(fdata: bytes, header: Header, context: Context, script: Script):
         if namelist_index >= 0 and namelist_index < len(context.name_list):
             fname = context.name_list[namelist_index]
         
-        function = Function(fname, idx)
+        fn = FunctionDef(fname, idx)
         
         # Read the local variable names record block
         for nl in range(0, bc_nlocal):
@@ -225,7 +191,7 @@ def parse_frb(fdata: bytes, header: Header, context: Context, script: Script):
             n = struct.unpack(lsrc_bit_order+"h", fdata[idxl:idxl+2])[0]
             logging.debug("idxl = %x n=%s"%(idxl, n))
             logging.debug('localvs[%s] = "%s"'%(nl, context.name_list[n]))
-            function.local_vars.append(
+            fn.local_vars.append(
                 LocalVariable(context.name_list[n], idxl))
 
         # Read the parameter names record block
@@ -234,18 +200,18 @@ def parse_frb(fdata: bytes, header: Header, context: Context, script: Script):
             n = struct.unpack(lsrc_bit_order+"h", fdata[idxl:idxl+2])[0]
             logging.debug("idxl = %x n=%s"%(idxl, n))
             logging.debug('paramns[%s] = "%s"'%(nl, context.name_list[n]))
-            function.parameters.append(
+            fn.parameters.append(
                 ParameterName(context.name_list[n], idxl))
             
-        parse_opcodes(fdata, context, bc_off, bc_length, function)
-        script.functions.append(function)
+        parse_opcodes(fdata, context, bc_off, bc_length, fn)
+        script.functions.append(fn)
         
 #
 # Parse the code of a function.
 # 
 # =============================================================================
 def parse_opcodes(fdata: bytes, context: Context, bc_off: int,
-                  bc_length: int, function: Function):
+                  bc_length: int, fn: FunctionDef):
     """
     Parse the function operation codes and generates an AST.
     
@@ -259,8 +225,8 @@ def parse_opcodes(fdata: bytes, context: Context, bc_off: int,
         Offset to the begining of the function opcodes.
     bc_length: int
         Length of the function opcodes.
-    function: Function
-        The function wich opcodes we are parsing.
+    fn: FunctionDef
+        The function which opcodes we are parsing.
         
         
     Raises
@@ -311,7 +277,7 @@ def parse_opcodes(fdata: bytes, context: Context, bc_off: int,
             elif DEBUG_OPCODES:
                 logging.debug("[%s] op0: %s"%(index, hex(opcode)))
                     
-            parse_obj.process(context, stack, function, index)
+            parse_obj.process(context, stack, fn, index)
             index = idxc
             if DEBUG_OPCODES:
                 logging.debug("-> %s"%(parse_obj.__class__.__name__))
@@ -319,8 +285,8 @@ def parse_opcodes(fdata: bytes, context: Context, bc_off: int,
         else:
             raise Exception("opcode not implemented: %s"%(opcode))
 
-    condition_detect(function)
-    loop_detect(function)
+    condition_detect(fn)
+    loop_detect(fn)
     
 
 #

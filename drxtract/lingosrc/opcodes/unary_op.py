@@ -3,7 +3,7 @@
 # License: GNU GPL v2 (see LICENSE file for details).
 
 from .opcode import Opcode
-from ..ast import UnaryOperation, UnaryOperationNames, Function, Node
+from ..ast import UnaryOperation, UnaryOperationNames, FunctionDef, Node
 from ..model import Context
 from typing import List
 
@@ -16,7 +16,7 @@ class UnaryOperationOpcode(Opcode):
         self.opname = opname
     
     def process(self, context: Context, stack: List[Node], \
-                function: Function, index: int):
+                fn: FunctionDef, index: int):
         op = UnaryOperation(self.opname, index)
         op.operand = stack.pop()
         stack.append(op)
