@@ -3,7 +3,7 @@
 # License: GNU GPL v2 (see LICENSE file for details).
 
 #
-# Unit test for lscr2lingo
+# Unit test for lscr2js
 #
 
 import unittest

@@ -74,7 +74,8 @@ class ParameterNameOpcode(Param1Opcode):
         if (op1 % context.bytes_per_constant) > 0:
             context.bytes_per_constant = (op1 % context.bytes_per_constant)
         
-        value = fn.parameters[int(op1 / context.bytes_per_constant)]
+        idx: int = int(op1 / context.bytes_per_constant)
+        value = fn.parameters[idx]
         
         stack.append(ParameterName(value.name, index))
     
@@ -91,7 +92,8 @@ class LocalVariableOpcode(Param1Opcode):
         if (op1 % context.bytes_per_constant) > 0:
             context.bytes_per_constant = (op1 % context.bytes_per_constant)
         
-        value = fn.local_vars[int(op1 / context.bytes_per_constant)]
+        idx: int = int(op1 / context.bytes_per_constant)
+        value = fn.local_vars[idx]
         
         stack.append(value)
 

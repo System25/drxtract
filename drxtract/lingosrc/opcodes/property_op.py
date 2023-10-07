@@ -105,11 +105,13 @@ class SpecialPropertiesOpcode(BiOpcode):
             op = PropertyName(SPECIAL_PROPERTIES[property_index], index)
         
         elif property_index < 12:
-            op = DateTimeFunction(DATE_TIME_FUNCTIONS[property_index-6], index)
+            idx_6: int = property_index - 6
+            op = DateTimeFunction(DATE_TIME_FUNCTIONS[idx_6], index)
         
         else:
             op = UnaryStringOperation(UnaryOperationNames.LAST, index)
-            op.type = OPERATION_TYPES[property_index-11]
+            idx_11: int = property_index - 11
+            op.type = OPERATION_TYPES[idx_11]
             op.of = stack.pop()
         
         stack.append(op)
@@ -527,7 +529,7 @@ class KeyPropertyAccesorOpcode(Param1Opcode):
         empty_val = stack.pop()
         if (not isinstance(empty_val, LoadListOperation)
             or len(cast(LoadListOperation, empty_val).operands) > 0):
-            raise Exception("The KeyPropertyAccessorOperation parameter should" +
-                            " be an empty list")
+            raise Exception("The KeyPropertyAccessorOperation parameter should" 
+                            + " be an empty list")
         op = KeyPropertyAccessorOperation(prop, index)
         stack.append(op)

@@ -103,7 +103,8 @@ class AssignParameterOpcode(Param1Opcode):
             context.bytes_per_constant = (op1 % context.bytes_per_constant)
         
         op = BinaryOperation(BinaryOperationNames.ASSIGN, index)
-        op.left = fn.parameters[int(op1 / context.bytes_per_constant)]
+        idx: int = int(op1 / context.bytes_per_constant)
+        op.left = fn.parameters[idx]
         op.right = stack.pop()
         
         fn.statements.append(Statement(op, index))
@@ -122,7 +123,8 @@ class AssignLocalVariableOpcode(Param1Opcode):
             context.bytes_per_constant = (op1 % context.bytes_per_constant)
         
         op = BinaryOperation(BinaryOperationNames.ASSIGN, index)
-        op.left = fn.local_vars[int(op1 / context.bytes_per_constant)]
+        idx: int = int(op1 / context.bytes_per_constant)
+        op.left = fn.local_vars[idx]
         op.right = stack.pop()
         
         fn.statements.append(Statement(op, index))
@@ -148,7 +150,8 @@ class AssignModeLocalVarOpcode(BiOpcode):
             context.bytes_per_constant = (op1 % context.bytes_per_constant)
         
         op = SpAssignOperation(BinaryOperationNames.ASSIGN, index)
-        op.left = fn.local_vars[int(op1 / context.bytes_per_constant)]
+        idx: int = int(op1 / context.bytes_per_constant)
+        op.left = fn.local_vars[idx]
         op.right = stack.pop()
         op.mode = self.mode
         

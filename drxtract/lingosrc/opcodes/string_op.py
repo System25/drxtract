@@ -131,11 +131,11 @@ class PutIntoListOpcode(BiOpcode):
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
         
-        var = stack.pop()
-        var = add_modifiers(self, var, stack, index)
+        lval = stack.pop()
+        lval = add_modifiers(self, lval, stack, index)
         
         op = SpAssignOperation(BinaryOperationNames.ASSIGN, index)
-        op.left = var
+        op.left = lval
         op.right = stack.pop()
         op.mode = 'into'
         
@@ -152,11 +152,11 @@ class PutIntoStringOpcode(BiOpcode):
                 fn: FunctionDef, index: int):
         
         op1 = int(stack.pop().name)
-        var = fn.local_vars[op1]
-        var = add_modifiers(self, var, stack, index)
+        lval = fn.local_vars[op1]
+        lval = add_modifiers(self, lval, stack, index)
         
         op = SpAssignOperation(BinaryOperationNames.ASSIGN, index)
-        op.left = var
+        op.left = lval
         op.right = stack.pop()
         op.mode = 'into'
         
@@ -172,11 +172,11 @@ class PutAfterListOpcode(BiOpcode):
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
         
-        var = stack.pop()
-        var = add_modifiers(self, var, stack, index)
+        lval = stack.pop()
+        lval = add_modifiers(self, lval, stack, index)
         
         op = SpAssignOperation(BinaryOperationNames.ASSIGN, index)
-        op.left = var
+        op.left = lval
         op.right = stack.pop()
         op.mode = 'after'
         
@@ -193,11 +193,11 @@ class PutAfterStringOpcode(BiOpcode):
                 fn: FunctionDef, index: int):
         
         op1 = int(stack.pop().name)
-        var = fn.local_vars[op1]
-        var = add_modifiers(self, var, stack, index)
+        lval = fn.local_vars[op1]
+        lval = add_modifiers(self, lval, stack, index)
         
         op = SpAssignOperation(BinaryOperationNames.ASSIGN, index)
-        op.left = var
+        op.left = lval
         op.right = stack.pop()
         op.mode = 'after'
         
@@ -234,11 +234,11 @@ class PutBeforeListOpcode(BiOpcode):
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
         
-        var = stack.pop()
-        var = add_modifiers(self, var, stack, index)
+        lval = stack.pop()
+        lval = add_modifiers(self, lval, stack, index)
         
         op = SpAssignOperation(BinaryOperationNames.ASSIGN, index)
-        op.left = var
+        op.left = lval
         op.right = stack.pop()
         op.mode = 'before'
         
@@ -255,11 +255,11 @@ class PutBeforeStringOpcode(BiOpcode):
                 fn: FunctionDef, index: int):
         
         op1 = int(stack.pop().name)
-        var = fn.local_vars[op1]
-        var = add_modifiers(self, var, stack, index)
+        lval = fn.local_vars[op1]
+        lval = add_modifiers(self, lval, stack, index)
         
         op = SpAssignOperation(BinaryOperationNames.ASSIGN, index)
-        op.left = var
+        op.left = lval
         op.right = stack.pop()
         op.mode = 'before'
         
@@ -296,11 +296,11 @@ class DeleteFromListOpcode(BiOpcode):
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
         
-        var = stack.pop()  # The list to delete from     
-        var = add_modifiers(self, var, stack, index)
+        lval = stack.pop()  # The list to delete from     
+        lval = add_modifiers(self, lval, stack, index)
         
         op = UnaryOperation(UnaryOperationNames.DELETE, index)
-        op.operand = var
+        op.operand = lval
         
         fn.statements.append(Statement(op, index))
         
@@ -315,11 +315,11 @@ class DeleteFromStringOpcode(BiOpcode):
                 fn: FunctionDef, index: int):
         
         op1 = int(stack.pop().name)
-        var = fn.local_vars[op1]
-        var = add_modifiers(self, var, stack, index)
+        lval = fn.local_vars[op1]
+        lval = add_modifiers(self, lval, stack, index)
         
         op = UnaryOperation(UnaryOperationNames.DELETE, index)
-        op.operand = var
+        op.operand = lval
         
         fn.statements.append(Statement(op, index))
 

@@ -60,8 +60,8 @@ class LiteralOpcode(Param1Opcode):
         if (op1 % context.bytes_per_constant) > 0:
             context.bytes_per_constant = (op1 % context.bytes_per_constant)
     
-        constant_value = context.constants[
-            int(op1 / context.bytes_per_constant)]
+        idx: int = int(op1 / context.bytes_per_constant)
+        constant_value = context.constants[idx]
     
         stack.append(ConstantValue(constant_value, index))
 
@@ -78,8 +78,8 @@ class Literal2Opcode(Param2Opcode):
         if (op1 % context.bytes_per_constant) > 0:
             context.bytes_per_constant = (op1 % context.bytes_per_constant)
     
-        constant_value = context.constants[
-            int(op1 / context.bytes_per_constant)]
+        idx: int = int(op1 / context.bytes_per_constant)
+        constant_value = context.constants[idx]
     
         stack.append(ConstantValue(constant_value, index))
 

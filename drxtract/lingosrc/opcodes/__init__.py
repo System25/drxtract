@@ -28,8 +28,8 @@ from .jump_op import JumpOpcode, FowardJumpOpcode, ConditionalJumpOpcode
 
 from .tell_op import WindowTellStartOpcode, WindowTellEndOpcode
 
-from .call_op import CallLocalOpcode, CallExternalOpcode, CallFuncWithExtGlobalOpcode, \
-	CallExternalMethodOpcode
+from .call_op import CallLocalOpcode, CallExternalOpcode, \
+	CallFuncWithExtGlobalOpcode, CallExternalMethodOpcode
 
 from .property_op import SpecialPropertiesOpcode, \
 	AssignSpecialPropertiesOpcode, NumberOfElementsOpcode, \
@@ -230,13 +230,19 @@ OPCODES_LIST: List[Opcode] = [
 	PutIntoFieldSpOpcode()
 ]
 
-OPCODES: Dict[int, Opcode] = {op.opcode:op for op in OPCODES_LIST}
+OPCODES: Dict[int, Opcode] = {}
+for op in OPCODES_LIST:
+	idx: int = op.opcode
+	OPCODES[idx] = op
 
-BI_OPCODES: Dict[int, BiOpcode] = {
-	(op.opcode * 256 + op.opcode2) :op for op in BI_OPCODES_LIST
-}
 
-TRI_OPCODES: Dict[int, TriOpcode] = {
-	(op.opcode * 65536 + op.opcode2*256 + op.opcode3) :
-	op for op in TRI_OPCODES_LIST
-}
+BI_OPCODES: Dict[int, BiOpcode] = {}
+for op in BI_OPCODES_LIST:
+	idxb: int = op.opcode * 256 + op.opcode2
+	BI_OPCODES[idxb] = op
+
+TRI_OPCODES: Dict[int, TriOpcode] = {}
+for op in TRI_OPCODES_LIST:
+	idxt: int = op.opcode * 65536 + op.opcode2*256 + op.opcode3
+	TRI_OPCODES[idxt] = op
+

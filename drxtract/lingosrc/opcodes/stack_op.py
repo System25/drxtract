@@ -17,7 +17,8 @@ class CopySymbolOpcode(Param1Opcode):
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
         op1 = self.param1
-        stack.append(stack[len(stack) - 1 - op1])    
+        idx: int = len(stack) - 1 - op1
+        stack.append(stack[idx])    
 
 #
 # Discard values from the stack Opcode.
