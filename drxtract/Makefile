@@ -30,7 +30,11 @@ all: ../js/drxtract/index.js
 ../js/drxtract/index.js: $(jsclasses)
 	cp --parents $(jsclasses) ../js/drxtract
 	$(foreach pack,$(py_packages), \
-		$(PY2JS) $(pack)/__init__.py ; \
+		$(STRIP) -o $(pack)/__init__.pys $(pack)/__init__.py ; \
+		sed -i -E "s/^from typing import .*//" $(pack)/__init__.pys ; \
+		$(PY2JS) $(pack)/__init__.pys ; \
+		rm $(pack)/__init__.pys ; \
+		sed -i -E "s/^import \{([^}]+)\} from '([^']+)'/import {\1} from '\2.js'/"  $(pack)/__init__.js ; \
 		mv $(pack)/__init__.js ../js/drxtract/$(pack)/index.js ; \
 	)
 	touch ../js/drxtract/index.js
@@ -39,6 +43,12 @@ all: ../js/drxtract/index.js
 	$(STRIP) -o $@ $<
 	sed -i -E "s/cast\([ ]*([A-Za-z_0-9]+)[ ]*,[ ]*([A-Za-z_0-9\.]+)[ ]*\)/\2/" $@
 	sed -i -E "s/^from typing import .*//" $@
+	sed -i -E "s/^from enum import Enum//" $@
+	sed -i "s/(Enum)//" $@
+	sed -i -E "s/^from abc import .*//" $@
+	sed -i -E "s/__metaclass__ = .*//" $@
+	sed -i "s/@abstractmethod//" $@
+
 
 
 %.js: %.pys
