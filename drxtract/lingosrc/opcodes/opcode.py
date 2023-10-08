@@ -30,7 +30,7 @@ class BiOpcode(Opcode):
     """This class represents a Lingo script 2-bytes opcode"""
     
     def __init__(self, opcode1: int, opcode2: int):
-        Opcode.__init__(self, opcode1)
+        super().__init__(opcode1)
         self.opcode2: int = opcode2
         self.nbytes = 2
 
@@ -41,7 +41,7 @@ class TriOpcode(BiOpcode):
     """This class represents a Lingo script 3-bytes opcode"""
     
     def __init__(self, opcode1: int, opcode2: int, opcode3: int):
-        BiOpcode.__init__(self, opcode1, opcode2)
+        super().__init__(opcode1, opcode2)
         self.opcode3: int = opcode3
         self.nbytes = 3
 
@@ -52,7 +52,7 @@ class Param1Opcode(Opcode):
     """This class represents a Lingo script opcode with 1 byte param"""
     
     def __init__(self, opcode: int):
-        Opcode.__init__(self, opcode)
+        super().__init__(opcode)
         self.param1: int = 0
         self.nbytes = 2
     
@@ -63,7 +63,7 @@ class Param2Opcode(Opcode):
     """This class represents a Lingo script opcode with 2-bytes param"""
     
     def __init__(self, opcode: int):
-        Opcode.__init__(self, opcode)
+        super().__init__(opcode)
         self.param1: int = 0
         self.param2: int = 0
         self.nbytes = 3

@@ -14,7 +14,7 @@ class RepeatOperation(Node):
     """This class represents a repeat loop in the AST"""
     
     def __init__(self, name: str, position: int, end_position: int):
-        Node.__init__(self, name, position)
+        super().__init__(name, position)
         self.end_position: int = end_position
         self.condition: Optional[Node] = None
         self.statements_list: List[Statement] = []
@@ -78,7 +78,7 @@ class IfThenOperation(Node):
     """This class represents an if-then-else structure in the AST"""
     
     def __init__(self, name: str, position: int):
-        Node.__init__(self, name, position)
+        super().__init__(name, position)
         self.condition: Optional[Node] = None
         self.if_statements_list: List[Statement] = []
         self.else_statements_list: List[Statement] = []
@@ -123,7 +123,7 @@ class JumpOperation(Node):
     """This class represents an inconditional jump operation in the AST"""
     
     def __init__(self, name: str, position: int):
-        Node.__init__(self, name, position)
+        super().__init__(name, position)
         self.address: Optional[int] = None
 
 
@@ -134,7 +134,7 @@ class JzOperation(Node):
     """This class represents a conditional jump operation in the AST"""
     
     def __init__(self, name: str, position: int):
-        Node.__init__(self, name, position)
+        super().__init__(name, position)
         self.condition: Optional[Node] = None
         self.address: Optional[int] = None
 
@@ -145,7 +145,7 @@ class ExitRepeat(Node):
     """This class represents an exit repeat loop operation"""
     
     def __init__(self, position: int):
-        Node.__init__(self, 'exit repeat', position)
+        super().__init__('exit repeat', position)
 
     def generate_js(self, indentation: int) -> str: 
         return 'break'

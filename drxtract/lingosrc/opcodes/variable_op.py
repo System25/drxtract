@@ -14,7 +14,7 @@ from typing import List
 #
 class VariableOpcode(Param1Opcode):
     def __init__(self):
-        Param1Opcode.__init__(self, 0x46)
+        super().__init__(0x46)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -30,7 +30,7 @@ class VariableOpcode(Param1Opcode):
 #
 class GlobalVariableOpcode(Param1Opcode):
     def __init__(self):
-        Param1Opcode.__init__(self, 0x48)
+        super().__init__(0x48)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -54,7 +54,7 @@ class GlobalVarOpcode(GlobalVariableOpcode):
 #
 class PropertyNameOpcode(Param1Opcode):
     def __init__(self):
-        Param1Opcode.__init__(self, 0x4A)
+        super().__init__(0x4A)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -66,7 +66,7 @@ class PropertyNameOpcode(Param1Opcode):
 #
 class ParameterNameOpcode(Param1Opcode):
     def __init__(self):
-        Param1Opcode.__init__(self, 0x4B)
+        super().__init__(0x4B)
 
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -84,7 +84,7 @@ class ParameterNameOpcode(Param1Opcode):
 #
 class LocalVariableOpcode(Param1Opcode):
     def __init__(self):
-        Param1Opcode.__init__(self, 0x4C)
+        super().__init__(0x4C)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -102,7 +102,7 @@ class LocalVariableOpcode(Param1Opcode):
 #
 class TellPropertyOpcode(Param1Opcode):
     def __init__(self):
-        Param1Opcode.__init__(self, 0x63)
+        super().__init__(0x63)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):

@@ -13,7 +13,7 @@ from typing import List, cast
 #
 class ToListOpcode(Opcode):
     def __init__(self):
-        Opcode.__init__(self, 0x1E)
+        super().__init__(0x1E)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -26,7 +26,7 @@ class ToListOpcode(Opcode):
 #
 class ToDictionaryOpcode(Opcode):
     def __init__(self):
-        Opcode.__init__(self, 0x1F)
+        super().__init__(0x1F)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -39,7 +39,7 @@ class ToDictionaryOpcode(Opcode):
 #
 class LoadListOpcode(Param1Opcode):
     def __init__(self):
-        Param1Opcode.__init__(self, 0x42)
+        super().__init__(0x42)
         self.name = 'load_list'
     
     def process(self, context: Context, stack: List[Node], \
@@ -63,7 +63,7 @@ class LoadLListOpcode(LoadListOpcode):
 #
 class LoadLongListOpcode(Param2Opcode):
     def __init__(self):
-        Param2Opcode.__init__(self, 0x82)
+        super().__init__(0x82)
         self.name = 'load_list'
     
     def process(self, context: Context, stack: List[Node], \

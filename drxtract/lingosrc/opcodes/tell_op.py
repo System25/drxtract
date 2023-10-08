@@ -13,7 +13,7 @@ from typing import List, cast
 #
 class WindowTellStartOpcode(Opcode):
     def __init__(self):
-        Opcode.__init__(self, 0x1C)
+        super().__init__(0x1C)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -27,7 +27,7 @@ class WindowTellStartOpcode(Opcode):
 #
 class WindowTellEndOpcode(Opcode):
     def __init__(self):
-        Opcode.__init__(self, 0x1D)
+        super().__init__(0x1D)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):

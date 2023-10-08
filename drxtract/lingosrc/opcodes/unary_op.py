@@ -12,7 +12,7 @@ from typing import List
 #
 class UnaryOperationOpcode(Opcode):
     def __init__(self, opname, opcode):
-        Opcode.__init__(self, opcode)
+        super().__init__(opcode)
         self.opname = opname
     
     def process(self, context: Context, stack: List[Node], \
@@ -26,18 +26,18 @@ class UnaryOperationOpcode(Opcode):
 #
 class MinusOpcode(UnaryOperationOpcode):
     def __init__(self):
-        UnaryOperationOpcode.__init__(self, UnaryOperationNames.MINUS, 0x09)
+        super().__init__(UnaryOperationNames.MINUS, 0x09)
 
 #
 # Not Opcode.
 #
 class NotOpcode(UnaryOperationOpcode):
     def __init__(self):
-        UnaryOperationOpcode.__init__(self, UnaryOperationNames.NOT, 0x14)
+        super().__init__(UnaryOperationNames.NOT, 0x14)
 
 #
 # Field Opcode.
 #
 class FieldOpcode(UnaryOperationOpcode):
     def __init__(self):
-        UnaryOperationOpcode.__init__(self, UnaryOperationNames.FIELD, 0x1B)
+        super().__init__(UnaryOperationNames.FIELD, 0x1B)

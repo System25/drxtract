@@ -19,7 +19,7 @@ class Statement(Node):
     """This class represents a statement in the AST"""
     
     def __init__(self, code: Node, position: int):
-        Node.__init__(self, 'statement', position)
+        super().__init__('statement', position)
         self.code = code
 
     def generate_lingo(self, indentation: int) -> str: 
@@ -47,7 +47,7 @@ class FunctionDef(Node):
     """This class represents a function in the AST"""
     
     def __init__(self, name: str, position: int):
-        Node.__init__(self, name, position)
+        super().__init__(name, position)
         self.parameters: List[ParameterName] = []
         self.local_vars: List[LocalVariable] = []
         self.global_vars: List[GlobalVariable] = []
@@ -60,7 +60,7 @@ class CallFunction(Node):
     """This class represents a function call in the AST"""
     
     def __init__(self, name: str, position: int):
-        Node.__init__(self, name, position)
+        super().__init__(name, position)
         self.parameters: Optional[Node] = None
         self.use_parenthesis: bool = True
         self.in_tell_operation: bool = False
@@ -150,7 +150,7 @@ class CallMethod(Node):
     """This class represents a method call in the AST"""
     
     def __init__(self, name: str, position: int):
-        Node.__init__(self, name, position)
+        super().__init__(name, position)
         self.object: Optional[Node] = None
         self.parameters: Optional[Node] = None
 

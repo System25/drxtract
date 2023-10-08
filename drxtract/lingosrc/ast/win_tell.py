@@ -14,7 +14,7 @@ class WindowTellOperation(Node):
     """This class represents a Window block tell operation in the AST"""
     
     def __init__(self, name: str, position: int):
-        Node.__init__(self, name, position)
+        super().__init__(name, position)
         self.operand: Optional[Node] = None
         self.statements: List[Statement] = []
 

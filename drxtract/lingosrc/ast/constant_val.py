@@ -26,7 +26,7 @@ class ConstantValue(Node):
     """This class represents a constant value in the AST"""
     
     def __init__(self, name: str, position: int):
-        Node.__init__(self, name, position)
+        super().__init__(name, position)
 
     def generate_lingo(self, indentation: int) -> str:
         n: str = self.name
@@ -41,7 +41,7 @@ class ConstantValue(Node):
 class Symbol(Node):
     """This class represents a symbol in the AST"""
     def __init__(self, name:str, position: int):
-        Node.__init__(self, name, position)
+        super().__init__(name, position)
 
     def generate_lingo(self, indentation: int) -> str:
         if self.name in KNOWN_SYMBOLS:

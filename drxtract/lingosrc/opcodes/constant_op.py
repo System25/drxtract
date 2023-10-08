@@ -13,7 +13,7 @@ from typing import List
 #
 class ZeroOpcode(Opcode):
     def __init__(self):
-        Opcode.__init__(self, 0x03)
+        super().__init__(0x03)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -24,7 +24,7 @@ class ZeroOpcode(Opcode):
 #
 class Int1bOpcode(Param1Opcode):
     def __init__(self):
-        Param1Opcode.__init__(self, 0x41)
+        super().__init__(0x41)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -38,7 +38,7 @@ class Int1bOpcode(Param1Opcode):
 #
 class Int2bOpcode(Param2Opcode):
     def __init__(self):
-        Param2Opcode.__init__(self, 0x81)
+        super().__init__(0x81)
 
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -52,7 +52,7 @@ class Int2bOpcode(Param2Opcode):
 #
 class LiteralOpcode(Param1Opcode):
     def __init__(self):
-        Param1Opcode.__init__(self, 0x44)
+        super().__init__(0x44)
 
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -70,7 +70,7 @@ class LiteralOpcode(Param1Opcode):
 #
 class Literal2Opcode(Param2Opcode):
     def __init__(self):
-        Param2Opcode.__init__(self, 0x84)
+        super().__init__(0x84)
 
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -88,7 +88,7 @@ class Literal2Opcode(Param2Opcode):
 #
 class SymbolOpcode(Param1Opcode):
     def __init__(self):
-        Param1Opcode.__init__(self, 0x45)
+        super().__init__(0x45)
 
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -101,7 +101,7 @@ class SymbolOpcode(Param1Opcode):
 class PropertyOpcode(Param1Opcode):
     def __init__(self):
         # TODO! Find code!!!
-        Param1Opcode.__init__(self, 0x99)
+        super().__init__(0x99)
 
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):

@@ -147,7 +147,7 @@ class UnaryOperation(Node):
     """This class represents an unary operation in the AST"""
     
     def __init__(self, name: UnaryOperationNames, position: int):
-        Node.__init__(self, name.value, position)
+        super().__init__(name.value, position)
         self.operand: Optional[Node] = None
 
     def generate_lingo(self, indentation: int) -> str:
@@ -172,7 +172,7 @@ class BinaryOperation(Node):
     """This class represents a binary operation in the AST"""
     
     def __init__(self, name: BinaryOperationNames, position: int):
-        Node.__init__(self, name.value, position)
+        super().__init__(name.value, position)
         self.left: Optional[Node] = None
         self.right: Optional[Node] = None
 
@@ -222,7 +222,7 @@ class SpAssignOperation(Node):
     """This class represents a special assign operation in the AST"""
     
     def __init__(self, name: BinaryOperationNames, position: int):
-        Node.__init__(self, name.value, position)
+        super().__init__(name.value, position)
         self.left: Optional[Node] = None
         self.right: Optional[Node] = None
         self.mode: Optional[str] = None
@@ -254,7 +254,7 @@ class StringOperation(Node):
     """This class represents a string operation in the AST"""
     
     def __init__(self, name: StringOperationNames, position: int):
-        Node.__init__(self, name.value, position)
+        super().__init__(name.value, position)
         self.start: Optional[Node] = None
         self.end: Optional[Node] = None
         self.of: Optional[Node] = None
@@ -289,7 +289,7 @@ class UnaryStringOperation(Node):
     """This class represents an unary string operation in the AST"""
     
     def __init__(self, name: UnaryOperationNames, position: int):
-        Node.__init__(self, name.value, position)
+        super().__init__(name.value, position)
         self.type: Optional[StringOperationNames] = None
         self.of: Optional[Node] = None
 
@@ -332,7 +332,7 @@ class PropertyAccessorOperation(Node):
     """This class represents a property access in the AST"""
     
     def __init__(self, obj: Node, name: str, position: int):
-        Node.__init__(self, 'accessor', position)
+        super().__init__('accessor', position)
         self.obj: Node = obj
         self.prop: str = name
         
@@ -359,7 +359,7 @@ class KeyPropertyAccessorOperation(Node):
     """This class represents a _key property access in the AST"""
     
     def __init__(self, name: str, position: int):
-        Node.__init__(self, 'accessor', position)
+        super().__init__('accessor', position)
         self.prop: str = name
         
     def generate_lingo(self, indentation: int) -> str:
@@ -378,7 +378,7 @@ class MenuitemAccessorOperation(Node):
     """This class represents a menu item access in the AST"""
     
     def __init__(self, menu: Menu, item: MenuItem, position: int):
-        Node.__init__(self, 'menu_item', position)
+        super().__init__('menu_item', position)
         self.menu: Menu = menu
         self.item: MenuItem = item
         
@@ -397,7 +397,7 @@ class MenuitemsAccessorOperation(Node):
     """This class represents a menu items access in the AST"""
     
     def __init__(self, menu: Menu, position: int):
-        Node.__init__(self, 'menu_items', position)
+        super().__init__('menu_items', position)
         self.menu: Menu = menu
 
     def generate_lingo(self, indentation: int) -> str:

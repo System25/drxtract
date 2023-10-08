@@ -94,7 +94,7 @@ SYSTEM_PROPERTIES = {
 #
 class SpecialPropertiesOpcode(BiOpcode):
     def __init__(self):
-        BiOpcode.__init__(self, 0x5C, 0x00)
+        super().__init__(0x5C, 0x00)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -138,7 +138,7 @@ class AssignSpecialPropertiesOpcode(SpecialPropertiesOpcode):
 #
 class NumberOfElementsOpcode(BiOpcode):
     def __init__(self):
-        BiOpcode.__init__(self, 0x5C, 0x01)
+        super().__init__(0x5C, 0x01)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -155,7 +155,7 @@ class NumberOfElementsOpcode(BiOpcode):
 #
 class NameOfCastElementsOpcode(BiOpcode):
     def __init__(self):
-        BiOpcode.__init__(self, 0x5C, 0x02)
+        super().__init__(0x5C, 0x02)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -182,7 +182,7 @@ class NameOfCastElementsOpcode(BiOpcode):
 #
 class MenuitemPropertiesOpcode(BiOpcode):
     def __init__(self):
-        BiOpcode.__init__(self, 0x5C, 0x03)
+        super().__init__(0x5C, 0x03)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -204,7 +204,7 @@ class MenuitemPropertiesOpcode(BiOpcode):
 #
 class AssignMenuitemPropertiesOpcode(BiOpcode):
     def __init__(self):
-        BiOpcode.__init__(self, 0x5D, 0x03)
+        super().__init__(0x5D, 0x03)
     
     
     def process(self, context: Context, stack: List[Node], \
@@ -233,7 +233,7 @@ class AssignMenuitemPropertiesOpcode(BiOpcode):
 #
 class SoundPropertiesOpcode(BiOpcode):
     def __init__(self):
-        BiOpcode.__init__(self, 0x5C, 0x04)
+        super().__init__(0x5C, 0x04)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -249,7 +249,7 @@ class SoundPropertiesOpcode(BiOpcode):
 #
 class AssignSoundPropertiesOpcode(BiOpcode):
     def __init__(self):
-        BiOpcode.__init__(self, 0x5D, 0x04)
+        super().__init__(0x5D, 0x04)
 
 
     def process(self, context: Context, stack: List[Node], \
@@ -273,7 +273,7 @@ class AssignSoundPropertiesOpcode(BiOpcode):
 #
 class SpritePropertiesOpcode(BiOpcode):
     def __init__(self):
-        BiOpcode.__init__(self, 0x5C, 0x06)
+        super().__init__(0x5C, 0x06)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -289,7 +289,7 @@ class SpritePropertiesOpcode(BiOpcode):
 #
 class AssignSpritePropertiesOpcode(BiOpcode):
     def __init__(self):
-        BiOpcode.__init__(self, 0x5D, 0x06)
+        super().__init__(0x5D, 0x06)
 
 
     def process(self, context: Context, stack: List[Node], \
@@ -313,7 +313,7 @@ class AssignSpritePropertiesOpcode(BiOpcode):
 #
 class SystemPropertiesOpcode(BiOpcode):
     def __init__(self):
-        BiOpcode.__init__(self, 0x5C, 0x07)
+        super().__init__(0x5C, 0x07)
 
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -350,7 +350,7 @@ class AssignSystemPropertiesOpcode(SystemPropertiesOpcode):
 #
 class NumberOfCastElementsOpcode(BiOpcode):
     def __init__(self):
-        BiOpcode.__init__(self, 0x5C, 0x08)
+        super().__init__(0x5C, 0x08)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -366,7 +366,7 @@ class NumberOfCastElementsOpcode(BiOpcode):
 #
 class CastPropertiesOpcode(BiOpcode):
     def __init__(self):
-        BiOpcode.__init__(self, 0x5C, 0x09)
+        super().__init__(0x5C, 0x09)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -383,7 +383,7 @@ class CastPropertiesOpcode(BiOpcode):
 #
 class AssignCastPropertiesOpcode(BiOpcode):
     def __init__(self):
-        BiOpcode.__init__(self, 0x5D, 0x09)
+        super().__init__(0x5D, 0x09)
     
     
     def process(self, context: Context, stack: List[Node], \
@@ -407,7 +407,7 @@ class AssignCastPropertiesOpcode(BiOpcode):
 #
 class FieldPropertiesOpcode(BiOpcode):
     def __init__(self):
-        BiOpcode.__init__(self, 0x5C, 0x0b)
+        super().__init__(0x5C, 0x0b)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -425,7 +425,7 @@ class FieldPropertiesOpcode(BiOpcode):
 #
 class AssignFieldPropertiesOpcode(BiOpcode):
     def __init__(self):
-        BiOpcode.__init__(self, 0x5D, 0x0b)
+        super().__init__(0x5D, 0x0b)
     
     
     def process(self, context: Context, stack: List[Node], \
@@ -447,7 +447,7 @@ class AssignFieldPropertiesOpcode(BiOpcode):
 #
 class VideoPropertiesOpcode(BiOpcode):
     def __init__(self):
-        BiOpcode.__init__(self, 0x5C, 0x0d)
+        super().__init__(0x5C, 0x0d)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -463,7 +463,7 @@ class VideoPropertiesOpcode(BiOpcode):
 #
 class AssignVideoPropertiesOpcode(BiOpcode):
     def __init__(self):
-        BiOpcode.__init__(self, 0x5D, 0x0d)
+        super().__init__(0x5D, 0x0d)
     
     
     def process(self, context: Context, stack: List[Node], \
@@ -485,7 +485,7 @@ class AssignVideoPropertiesOpcode(BiOpcode):
 #
 class PropertyAccesorOpcode(Param1Opcode):
     def __init__(self):
-        Param1Opcode.__init__(self, 0x61)
+        super().__init__(0x61)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -499,7 +499,7 @@ class PropertyAccesorOpcode(Param1Opcode):
 #
 class AssignPropertyAccesorOpcode(Param1Opcode):
     def __init__(self):
-        Param1Opcode.__init__(self, 0x62)
+        super().__init__(0x62)
     
     
     def process(self, context: Context, stack: List[Node], \
@@ -520,7 +520,7 @@ class AssignPropertyAccesorOpcode(Param1Opcode):
 #
 class KeyPropertyAccesorOpcode(Param1Opcode):
     def __init__(self):
-        Param1Opcode.__init__(self, 0x66)
+        super().__init__(0x66)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):

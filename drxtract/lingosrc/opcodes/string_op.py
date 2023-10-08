@@ -52,7 +52,7 @@ def add_modifiers(self, op: Node, stack: List[Node], index: int):
 #
 class StringOperationOpcode(Opcode):
     def __init__(self):
-        Opcode.__init__(self, 0x17)
+        super().__init__(0x17)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -65,7 +65,7 @@ class StringOperationOpcode(Opcode):
 #
 class HiliteOpcode(Opcode):
     def __init__(self):
-        Opcode.__init__(self, 0x18)
+        super().__init__(0x18)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -83,7 +83,7 @@ class HiliteOpcode(Opcode):
 #
 class PutIntoFieldOpcode(BiOpcode):
     def __init__(self):
-        BiOpcode.__init__(self, 0x5A, 0x06)
+        super().__init__(0x5A, 0x06)
 
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -105,7 +105,7 @@ class PutIntoFieldOpcode(BiOpcode):
 #
 class PutIntoFieldSpOpcode(BiOpcode):
     def __init__(self):
-        BiOpcode.__init__(self, 0x5A, 0x16)
+        super().__init__(0x5A, 0x16)
 
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -126,7 +126,7 @@ class PutIntoFieldSpOpcode(BiOpcode):
 #
 class PutIntoListOpcode(BiOpcode):
     def __init__(self):
-        BiOpcode.__init__(self, 0x5A, 0x12)
+        super().__init__(0x5A, 0x12)
 
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -146,7 +146,7 @@ class PutIntoListOpcode(BiOpcode):
 #
 class PutIntoStringOpcode(BiOpcode):
     def __init__(self):
-        BiOpcode.__init__(self, 0x5A, 0x15)
+        super().__init__(0x5A, 0x15)
 
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -167,7 +167,7 @@ class PutIntoStringOpcode(BiOpcode):
 #
 class PutAfterListOpcode(BiOpcode):
     def __init__(self):
-        BiOpcode.__init__(self, 0x5A, 0x22)
+        super().__init__(0x5A, 0x22)
 
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -187,7 +187,7 @@ class PutAfterListOpcode(BiOpcode):
 #
 class PutAfterStringOpcode(BiOpcode):
     def __init__(self):
-        BiOpcode.__init__(self, 0x5A, 0x25)
+        super().__init__(0x5A, 0x25)
 
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -208,7 +208,7 @@ class PutAfterStringOpcode(BiOpcode):
 #
 class PutAfterFieldOpcode(BiOpcode):
     def __init__(self):
-        BiOpcode.__init__(self, 0x5A, 0x26)
+        super().__init__(0x5A, 0x26)
 
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -229,7 +229,7 @@ class PutAfterFieldOpcode(BiOpcode):
 #
 class PutBeforeListOpcode(BiOpcode):
     def __init__(self):
-        BiOpcode.__init__(self, 0x5A, 0x32)
+        super().__init__(0x5A, 0x32)
 
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -249,7 +249,7 @@ class PutBeforeListOpcode(BiOpcode):
 #
 class PutBeforeStringOpcode(BiOpcode):
     def __init__(self):
-        BiOpcode.__init__(self, 0x5A, 0x35)
+        super().__init__(0x5A, 0x35)
 
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -270,7 +270,7 @@ class PutBeforeStringOpcode(BiOpcode):
 #
 class PutBeforeFieldOpcode(BiOpcode):
     def __init__(self):
-        BiOpcode.__init__(self, 0x5A, 0x36)
+        super().__init__(0x5A, 0x36)
 
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -291,7 +291,7 @@ class PutBeforeFieldOpcode(BiOpcode):
 #
 class DeleteFromListOpcode(BiOpcode):
     def __init__(self):
-        BiOpcode.__init__(self, 0x5B, 0x02)
+        super().__init__(0x5B, 0x02)
 
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -309,7 +309,7 @@ class DeleteFromListOpcode(BiOpcode):
 #
 class DeleteFromStringOpcode(BiOpcode):
     def __init__(self):
-        BiOpcode.__init__(self, 0x5B, 0x05)
+        super().__init__(0x5B, 0x05)
 
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -328,7 +328,7 @@ class DeleteFromStringOpcode(BiOpcode):
 #
 class DeleteFromFieldOpcode(BiOpcode):
     def __init__(self):
-        BiOpcode.__init__(self, 0x5B, 0x06)
+        super().__init__(0x5B, 0x06)
 
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):

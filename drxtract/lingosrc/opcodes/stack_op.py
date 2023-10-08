@@ -12,7 +12,7 @@ from typing import List
 #
 class CopySymbolOpcode(Param1Opcode):
     def __init__(self):
-        Param1Opcode.__init__(self, 0x64)
+        super().__init__(0x64)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -25,7 +25,7 @@ class CopySymbolOpcode(Param1Opcode):
 #
 class DiscardSymbolsOpcode(Param1Opcode):
     def __init__(self):
-        Param1Opcode.__init__(self, 0x65)
+        super().__init__(0x65)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):

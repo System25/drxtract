@@ -28,7 +28,7 @@ class LocalVariable(Node):
     """This class represents a local variable in the AST"""
     
     def __init__(self, name: str, position: int):
-        Node.__init__(self, name, position)
+        super().__init__(name, position)
 
 #
 # Global variable class.
@@ -37,7 +37,7 @@ class GlobalVariable(Node):
     """This class represents a global variable in the AST"""
     
     def __init__(self, name: str, position: int):
-        Node.__init__(self, name, position)
+        super().__init__(name, position)
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -53,7 +53,7 @@ class PropertyName(Node):
     """This class represents a property name in the AST"""
     
     def __init__(self, name: str, position: int):
-        Node.__init__(self, name, position)
+        super().__init__(name, position)
  
 
     def generate_lingo(self, indentation: int) -> str: 
@@ -76,7 +76,7 @@ class DefinedPropertyName(PropertyName):
     """This class represents a property name in the AST"""
     
     def __init__(self, name: str, position: int):
-        PropertyName.__init__(self, name, position)
+        super().__init__(name, position)
 
 #
 # Parameter name class.
@@ -85,7 +85,7 @@ class ParameterName(Node):
     """This class represents a parameter name in the AST"""
     
     def __init__(self, name: str, position: int):
-        Node.__init__(self, name, position)
+        super().__init__(name, position)
 
 
 #
@@ -95,7 +95,7 @@ class DateTimeFunction(Node):
     """This class represents a date/time function in the AST"""
     
     def __init__(self, name: str, position: int):
-        Node.__init__(self, name, position)
+        super().__init__(name, position)
 
     def generate_lingo(self, indentation: int) -> str: 
         return "the %s"%(self.name)
@@ -110,7 +110,7 @@ class Menu(Node):
     """This class represents a menu in the AST"""
     
     def __init__(self, name: str, position: int):
-        Node.__init__(self, name, position)
+        super().__init__(name, position)
     
     def generate_lingo(self, indentation: int) -> str: 
         return "menu %s"%(self.name)
@@ -125,7 +125,7 @@ class MenuItem(Node):
     """This class represents a menu item in the AST"""
     
     def __init__(self, name: str, position: int):
-        Node.__init__(self, name, position)
+        super().__init__(name, position)
 
     def generate_lingo(self, indentation: int) -> str: 
         return "menuItem %s"%(self.name)
@@ -140,7 +140,7 @@ class SoundChannel(Node):
     """This class represents a sound channel in the AST"""
     
     def __init__(self, name: str, position: int):
-        Node.__init__(self, name, position)
+        super().__init__(name, position)
 
     def generate_lingo(self, indentation: int) -> str: 
         return "sound %s"%(self.name)
@@ -155,7 +155,7 @@ class Sprite(Node):
     """This class represents a sprite in the AST"""
     
     def __init__(self, name: str, position: int):
-        Node.__init__(self, name, position)
+        super().__init__(name, position)
 
     def generate_lingo(self, indentation: int) -> str: 
         return "sprite %s"%(self.name)
@@ -171,7 +171,7 @@ class SystemObject(Node):
     """This class represents a system object in the AST"""
     
     def __init__(self, name: str, position: int):
-        Node.__init__(self, name, position)
+        super().__init__(name, position)
 
 #
 # Cast element class.
@@ -180,7 +180,7 @@ class Cast(Node):
     """This class represents a cast element in the AST"""
     
     def __init__(self, name: str, position: int):
-        Node.__init__(self, name, position)
+        super().__init__(name, position)
 
     def generate_lingo(self, indentation: int) -> str: 
         return "cast %s"%(self.name)

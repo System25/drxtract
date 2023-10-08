@@ -12,7 +12,7 @@ class LoadListOperation(Node):
     """This class represents an operation to load a list as a node in the AST"""
      
     def __init__(self, name: str, position: int):
-        Node.__init__(self, name, position)
+        super().__init__(name, position)
         self.operands: List[Node] = []
 
     def generate_lingo(self, indentation: int) -> str:
@@ -39,7 +39,7 @@ class ToListOperation(Node):
      as a node in the AST"""
      
     def __init__(self, name: str, position: int, operand: LoadListOperation):
-        Node.__init__(self, name, position)
+        super().__init__(name, position)
         self.operand: LoadListOperation = operand
 
     def generate_lingo(self, indentation: int) -> str:       
@@ -65,7 +65,7 @@ class ToDictionaryOperation(Node):
      as a node in the AST"""
      
     def __init__(self, name: str, position: int, operand: LoadListOperation):
-        Node.__init__(self, name, position)
+        super().__init__(name, position)
         self.operand: LoadListOperation = operand
 
     def generate_lingo(self, indentation: int) -> str:

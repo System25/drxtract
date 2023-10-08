@@ -15,7 +15,7 @@ class BinaryOperationOpcode(Opcode):
     """This class process a binary operation opcode"""
     
     def __init__(self, opname: BinaryOperationNames, opcode: int):
-        Opcode.__init__(self, opcode)
+        super().__init__(opcode)
         self.opname: BinaryOperationNames = opname
     
     def process(self, context: Context, stack: List[Node], \
@@ -30,49 +30,49 @@ class BinaryOperationOpcode(Opcode):
 #
 class MultiplyOpcode(BinaryOperationOpcode):
     def __init__(self):
-        BinaryOperationOpcode.__init__(self, BinaryOperationNames.MUL, 0x04)
+        super().__init__(BinaryOperationNames.MUL, 0x04)
 
 #
 # Addition Opcode.
 #
 class AddOpcode(BinaryOperationOpcode):
     def __init__(self):
-        BinaryOperationOpcode.__init__(self, BinaryOperationNames.ADD, 0x05)
+        super().__init__(BinaryOperationNames.ADD, 0x05)
 
 #
 # Substraction Opcode.
 #
 class SubOpcode(BinaryOperationOpcode):
     def __init__(self):
-        BinaryOperationOpcode.__init__(self, BinaryOperationNames.SUB, 0x06)
+        super().__init__(BinaryOperationNames.SUB, 0x06)
 
 #
 # Division Opcode.
 #
 class DivOpcode(BinaryOperationOpcode):
     def __init__(self):
-        BinaryOperationOpcode.__init__(self, BinaryOperationNames.DIV, 0x07)
+        super().__init__(BinaryOperationNames.DIV, 0x07)
     
 #
 # Modulus Opcode.
 #
 class ModOpcode(BinaryOperationOpcode):
     def __init__(self):
-        BinaryOperationOpcode.__init__(self, BinaryOperationNames.MOD, 0x08)
+        super().__init__(BinaryOperationNames.MOD, 0x08)
 
 #
 # String concatenation Opcode.
 #
 class ConcatOpcode(BinaryOperationOpcode):
     def __init__(self):
-        BinaryOperationOpcode.__init__(self, BinaryOperationNames.CONCAT, 0x0A)
+        super().__init__(BinaryOperationNames.CONCAT, 0x0A)
 
 #
 # String concatenation with spaces Opcode.
 #
 class ConcatSpcOpcode(BinaryOperationOpcode):
     def __init__(self):
-        BinaryOperationOpcode.__init__(self, BinaryOperationNames.CONCAT_SPACES,
+        super().__init__(BinaryOperationNames.CONCAT_SPACES,
                                    0x0B)
 
 #
@@ -80,7 +80,7 @@ class ConcatSpcOpcode(BinaryOperationOpcode):
 #
 class ContainsOpcode(BinaryOperationOpcode):
     def __init__(self):
-        BinaryOperationOpcode.__init__(self, BinaryOperationNames.CONTAINS,
+        super().__init__(BinaryOperationNames.CONTAINS,
                                        0x15) 
 
 #
@@ -88,7 +88,7 @@ class ContainsOpcode(BinaryOperationOpcode):
 #
 class StartsWithOpcode(BinaryOperationOpcode):
     def __init__(self):
-        BinaryOperationOpcode.__init__(self, BinaryOperationNames.START,
+        super().__init__(BinaryOperationNames.START,
                                        0x16) 
     
 #
@@ -96,56 +96,56 @@ class StartsWithOpcode(BinaryOperationOpcode):
 #
 class LessThanOpcode(BinaryOperationOpcode):
     def __init__(self):
-        BinaryOperationOpcode.__init__(self, BinaryOperationNames.LT, 0x0C)
+        super().__init__(BinaryOperationNames.LT, 0x0C)
 
 #
 # Less-than-or-equal Opcode.
 #
 class LessThanEqOpcode(BinaryOperationOpcode):
     def __init__(self):
-        BinaryOperationOpcode.__init__(self, BinaryOperationNames.LTE, 0x0D)
+        super().__init__(BinaryOperationNames.LTE, 0x0D)
 
 #
 # Not-equal Opcode.
 #
 class NotEqOpcode(BinaryOperationOpcode):
     def __init__(self):
-        BinaryOperationOpcode.__init__(self, BinaryOperationNames.NE, 0x0E)
+        super().__init__(BinaryOperationNames.NE, 0x0E)
  
 #
 # Equal Opcode.
 #
 class EqualOpcode(BinaryOperationOpcode):
     def __init__(self):
-        BinaryOperationOpcode.__init__(self, BinaryOperationNames.EQ, 0x0F)
+        super().__init__(BinaryOperationNames.EQ, 0x0F)
 
 #
 # Greater-than Opcode.
 #
 class GreaterThanOpcode(BinaryOperationOpcode):
     def __init__(self):
-        BinaryOperationOpcode.__init__(self, BinaryOperationNames.GT, 0x10)
+        super().__init__(BinaryOperationNames.GT, 0x10)
 
 #
 # Greater-than-or-equal Opcode.
 #
 class GreaterThanEqOpcode(BinaryOperationOpcode):
     def __init__(self):
-        BinaryOperationOpcode.__init__(self, BinaryOperationNames.GTE, 0x11)
+        super().__init__(BinaryOperationNames.GTE, 0x11)
 
 #
 # And Opcode.
 #
 class AndOpcode(BinaryOperationOpcode):
     def __init__(self):
-        BinaryOperationOpcode.__init__(self, BinaryOperationNames.AND, 0x12)
+        super().__init__(BinaryOperationNames.AND, 0x12)
 
 #
 # Or Opcode.
 #
 class OrOpcode(BinaryOperationOpcode):
     def __init__(self):
-        BinaryOperationOpcode.__init__(self, BinaryOperationNames.OR, 0x13)
+        super().__init__(BinaryOperationNames.OR, 0x13)
 
 
 #
@@ -153,7 +153,7 @@ class OrOpcode(BinaryOperationOpcode):
 #
 class IntersectsOpcode(BinaryOperationOpcode):
     def __init__(self):
-        BinaryOperationOpcode.__init__(self, BinaryOperationNames.INTERSECTS,
+        super().__init__(BinaryOperationNames.INTERSECTS,
                                        0x19)
 
 #
@@ -161,7 +161,7 @@ class IntersectsOpcode(BinaryOperationOpcode):
 #
 class WithinOpcode(BinaryOperationOpcode):
     def __init__(self):
-        BinaryOperationOpcode.__init__(self, BinaryOperationNames.WITHIN,
+        super().__init__(BinaryOperationNames.WITHIN,
                                        0x1A)
     
     

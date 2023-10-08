@@ -20,7 +20,7 @@ KNOWN_PROPERTIES = {
 #
 class AssignGlobalVariableOpcode(Param1Opcode):  
     def __init__(self):
-        Param1Opcode.__init__(self, 0x4E)
+        super().__init__(0x4E)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -47,7 +47,7 @@ class AssignGlobalVarOpcode(AssignGlobalVariableOpcode):
 #
 class LoadPropertyOpcode(Param1Opcode):
     def __init__(self):
-        Param1Opcode.__init__(self, 0x5F)
+        super().__init__(0x5F)
 
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -65,7 +65,7 @@ class LoadPropertyOpcode(Param1Opcode):
 #
 class AssignPropertyOpcode(Param1Opcode):
     def __init__(self):
-        Param1Opcode.__init__(self, 0x50)
+        super().__init__(0x50)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -94,7 +94,7 @@ class AssignValToPropertyOpcode(AssignPropertyOpcode):
 #
 class AssignParameterOpcode(Param1Opcode):
     def __init__(self):
-        Param1Opcode.__init__(self, 0x51)
+        super().__init__(0x51)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -114,7 +114,7 @@ class AssignParameterOpcode(Param1Opcode):
 #
 class AssignLocalVariableOpcode(Param1Opcode):
     def __init__(self):
-        Param1Opcode.__init__(self, 0x52)
+        super().__init__(0x52)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -135,7 +135,7 @@ class AssignLocalVariableOpcode(Param1Opcode):
 #
 class AssignModeLocalVarOpcode(BiOpcode):
     def __init__(self, opcode1: int, opcode2: int, mode: str):
-        BiOpcode.__init__(self, opcode1, opcode2)
+        super().__init__(opcode1, opcode2)
         self.mode = mode
 
     def process(self, context: Context, stack: List[Node], \
@@ -162,7 +162,7 @@ class AssignModeLocalVarOpcode(BiOpcode):
 #
 class AssignModeFieldOpcode(BiOpcode):
     def __init__(self, opcode1: int, opcode2: int, mode: str):
-        BiOpcode.__init__(self, opcode1, opcode2)
+        super().__init__(opcode1, opcode2)
         self.mode = mode
     
     def process(self, context: Context, stack: List[Node], \
@@ -180,7 +180,7 @@ class AssignModeFieldOpcode(BiOpcode):
 #
 class AssignIntoLocalVarOpcode(AssignModeLocalVarOpcode):
     def __init__(self):
-        AssignModeLocalVarOpcode.__init__(self, 0x59, 0x15, 'into')
+        super().__init__(0x59, 0x15, 'into')
 
 
 #
@@ -188,7 +188,7 @@ class AssignIntoLocalVarOpcode(AssignModeLocalVarOpcode):
 #
 class AssignIntoFieldOpcode(AssignModeFieldOpcode):
     def __init__(self):
-        AssignModeFieldOpcode.__init__(self, 0x59, 0x16, 'into')
+        super().__init__(0x59, 0x16, 'into')
 
 
 
@@ -197,14 +197,14 @@ class AssignIntoFieldOpcode(AssignModeFieldOpcode):
 #
 class AssignAfterLocalVarOpcode(AssignModeLocalVarOpcode):
     def __init__(self):
-        AssignModeLocalVarOpcode.__init__(self, 0x59, 0x25, 'after')
+        super().__init__(0x59, 0x25, 'after')
 
 #
 # Assing after field Opcode.
 #
 class AssignAfterFieldOpcode(AssignModeFieldOpcode):
     def __init__(self):
-        AssignModeFieldOpcode.__init__(self, 0x59, 0x26, 'after')
+        super().__init__(0x59, 0x26, 'after')
 
 
 #
@@ -212,12 +212,12 @@ class AssignAfterFieldOpcode(AssignModeFieldOpcode):
 #
 class AssignBeforeLocalVarOpcode(AssignModeLocalVarOpcode):
     def __init__(self):
-        AssignModeLocalVarOpcode.__init__(self, 0x59, 0x35, 'before')
+        super().__init__(0x59, 0x35, 'before')
 
 #
 # Assing before field Opcode.
 #
 class AssignBeforeFieldOpcode(AssignModeFieldOpcode):
     def __init__(self):
-        AssignModeFieldOpcode.__init__(self, 0x59, 0x36, 'before')
+        super().__init__(0x59, 0x36, 'before')
 

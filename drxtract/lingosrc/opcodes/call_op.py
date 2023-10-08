@@ -14,7 +14,7 @@ from typing import List, cast
 #
 class CallLocalOpcode(Param1Opcode):
     def __init__(self):
-        Param1Opcode.__init__(self, 0x56)
+        super().__init__(0x56)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -34,7 +34,7 @@ class CallLocalOpcode(Param1Opcode):
 #
 class CallExternalOpcode(Param1Opcode):
     def __init__(self):
-        Param1Opcode.__init__(self, 0x57)
+        super().__init__(0x57)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -67,7 +67,7 @@ class CallExternalOpcode(Param1Opcode):
 #
 class CallFuncWithExtGlobalOpcode(Param1Opcode):
     def __init__(self):
-        Param1Opcode.__init__(self, 0x58)
+        super().__init__(0x58)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -97,7 +97,7 @@ class CallFuncWithExtGlobalOpcode(Param1Opcode):
 #
 class CallExternalMethodOpcode(Param1Opcode):
     def __init__(self):
-        Param1Opcode.__init__(self, 0x67)
+        super().__init__(0x67)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):

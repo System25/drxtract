@@ -12,7 +12,7 @@ from typing import List
 #
 class ExitOpcode(Opcode):
     def __init__(self):
-        Opcode.__init__(self, 0x01)
+        super().__init__(0x01)
 
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):

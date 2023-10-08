@@ -13,7 +13,7 @@ from typing import List
 #
 class JumpOpcode(Param1Opcode):
     def __init__(self):
-        Param1Opcode.__init__(self, 0x54)
+        super().__init__(0x54)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -37,7 +37,7 @@ class JumpOpcode(Param1Opcode):
 #
 class FowardJumpOpcode(Param2Opcode):
     def __init__(self):
-        Param2Opcode.__init__(self, 0x93)
+        super().__init__(0x93)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
@@ -54,7 +54,7 @@ class FowardJumpOpcode(Param2Opcode):
 #
 class ConditionalJumpOpcode(Param2Opcode):
     def __init__(self):
-        Param2Opcode.__init__(self, 0x95)
+        super().__init__(0x95)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
