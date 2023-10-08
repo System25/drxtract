@@ -39,7 +39,7 @@ class AssignGlobalVariableOpcode(Param1Opcode):
 #
 class AssignGlobalVarOpcode(AssignGlobalVariableOpcode):
     def __init__(self):
-        AssignGlobalVariableOpcode.__init__(self)
+        super().__init__()
         self.opcode = 0x4F
 
 #
@@ -85,7 +85,7 @@ class AssignPropertyOpcode(Param1Opcode):
 #
 class AssignValToPropertyOpcode(AssignPropertyOpcode):
     def __init__(self):
-        AssignPropertyOpcode.__init__(self)
+        super().__init__()
         self.opcode = 0x60
 
 

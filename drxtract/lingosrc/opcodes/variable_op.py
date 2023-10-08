@@ -46,7 +46,7 @@ class GlobalVariableOpcode(Param1Opcode):
 #
 class GlobalVarOpcode(GlobalVariableOpcode):
     def __init__(self):
-        GlobalVariableOpcode.__init__(self)
+        super().__init__()
         self.opcode = 0x49
 
 #

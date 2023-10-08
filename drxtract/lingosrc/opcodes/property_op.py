@@ -121,13 +121,12 @@ class SpecialPropertiesOpcode(BiOpcode):
 #
 class AssignSpecialPropertiesOpcode(SpecialPropertiesOpcode):
     def __init__(self):
-        SpecialPropertiesOpcode.__init__(self)
+        super().__init__()
         self.opcode = 0x5D
         
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
-        SpecialPropertiesOpcode.process(self, context, stack, fn, \
-                                        index)
+        super().process(context, stack, fn, index)
         op = BinaryOperation(BinaryOperationNames.ASSIGN, index)
         op.left = stack.pop()
         op.right = stack.pop()
@@ -332,7 +331,7 @@ class SystemPropertiesOpcode(BiOpcode):
 #
 class AssignSystemPropertiesOpcode(SystemPropertiesOpcode):
     def __init__(self):
-        SystemPropertiesOpcode.__init__(self)
+        super().__init__()
         self.opcode = 0x5D
     
     

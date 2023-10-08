@@ -54,7 +54,7 @@ class LoadListOpcode(Param1Opcode):
 #
 class LoadLListOpcode(LoadListOpcode):
     def __init__(self):
-        LoadListOpcode.__init__(self)
+        super().__init__()
         self.opcode = 0x43
         self.name = '<load_list>'
 
@@ -79,7 +79,7 @@ class LoadLongListOpcode(Param2Opcode):
 #
 class LoadLongLListOpcode(LoadLongListOpcode):
     def __init__(self):
-        LoadLongListOpcode.__init__(self)
+        super().__init__()
         self.opcode = 0x83
         self.name = '<load_list>'
 
