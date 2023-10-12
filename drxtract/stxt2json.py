@@ -152,39 +152,25 @@ def stxt2json(castData, fontmap, stxt_file):
 
 # ==============================================================================
 def main():
-    if len(sys.argv) < 4:
-        print("USAGE: stxt2json [pc|mac] <work directory> <stxt file name>")
+    if len(sys.argv) < 3:
+        print("USAGE: stxt2json <work directory> <stxt file name>")
 
     else:
-        if sys.argv[1] != 'pc' and sys.argv[1] != 'mac':
-            logging.error(" First argument must be 'pc' or 'mac'")
+        if not os.path.isdir(sys.argv[1]):
+            logging.error(" '%s' is not a directory"%(sys.argv[1]))
             sys.exit(-1)
 
-        if sys.argv[1] == 'pc':
-            # Always MAC bit order
-            #bit_order_type = 'pc'
-            #bit_order = "<"
-            pass
-
-        if not os.path.isdir(sys.argv[2]):
-            logging.error(" '%s' is not a directory"%(sys.argv[2]))
+        if not os.path.isfile(os.path.join(sys.argv[1], sys.argv[2])):
+            logging.error(" '%s' is not a file"%(os.path.join(sys.argv[1], sys.argv[2])))
             sys.exit(-1)
 
-        if not os.path.isfile(os.path.join(sys.argv[2], sys.argv[3])):
-            logging.error(" '%s' is not a file"%(os.path.join(sys.argv[2], sys.argv[3])))
-            sys.exit(-1)
-
-        if not os.path.isfile(os.path.join(sys.argv[2], sys.argv[3])):
-            logging.error(" '%s' is not a file"%(os.path.join(sys.argv[2], sys.argv[3])))
-            sys.exit(-1)
-        
-        if not sys.argv[3].endswith('.STXT'):
-            logging.error(" '%s' does not end in '.STXT'"%(sys.argv[3]))
+        if not sys.argv[2].endswith('.STXT'):
+            logging.error(" '%s' does not end in '.STXT'"%(sys.argv[2]))
             sys.exit(-1)
 
         # Get the font map
         fontmap = []
-        fontfile = os.path.join(os.path.dirname(os.path.dirname(sys.argv[2])), 'fonts.json')
+        fontfile = os.path.join(os.path.dirname(os.path.dirname(sys.argv[1])), 'fonts.json')
         if os.path.isfile(fontfile):
             with open(fontfile, mode='r', encoding='utf-8') as file:
                 text = file.read()
@@ -195,9 +181,9 @@ def main():
             
         # Get cast file data
         castData = {}
-        with open(os.path.join(sys.argv[2], 'data.json'), mode='r', encoding='utf-8') as file:
+        with open(os.path.join(sys.argv[1], 'data.json'), mode='r', encoding='utf-8') as file:
             text = file.read()
             castData = json.loads(text)
 
-        stxt2json(castData, fontmap, os.path.join(sys.argv[2], sys.argv[3]))
+        stxt2json(castData, fontmap, os.path.join(sys.argv[1], sys.argv[2]))
         

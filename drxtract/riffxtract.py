@@ -314,6 +314,10 @@ def parse_riff(fileContent, offset):
 
 
 def main():
+    global bit_order_type, bit_order
+    global MV93_FILE_TYPE, RIFX_FILE_FORMAT, IMAP_FILE_FORMAT
+    global MMAP_FILE_FORMAT, FREE_FILE_FORMAT, JUNK_FILE_FORMAT
+
     if len(sys.argv) < 4:
         print("USAGE: riffxtract [pc|mac] <file.drx> <directory>")
 
@@ -351,12 +355,12 @@ def main():
                 while index >= 0 and not found:
                     rifx_offset += index
                     content = content[index:]
-                    if content[8:12] == MV93_FILE_TYPE:
+                    if content[8:12] == MV93_FILE_TYPE.encode('ascii'):
                         found = True
                     else:
                         content = content[4:]
                         rifx_offset += 4
                         index = content.find(RIFX_FILE_FORMAT.encode('ascii'))
-
+                logging.debug("Use %s as RIFX index inside EXE"%(rifx_offset))
             parse_riff(fileContent, rifx_offset)
 

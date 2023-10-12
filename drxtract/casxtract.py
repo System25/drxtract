@@ -1218,9 +1218,8 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
                     logging.warn("There is no %s file (maybe empty file)"%(src))
 
                 if lnam_file is not None:
-                    cmd = '%slscr2lingo %s %s %s %s'%(
+                    cmd = '%slscr2lingo %s %s %s'%(
                         basepath, # Scripts path
-                        sys.argv[1], # pc or mac
                         dest_dir, # work directory
                         script_file, # script file name
                         lnam_file
@@ -1237,9 +1236,8 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
                         with open(codefile, mode='rb') as cfile:
                             castData['code'] = base64.b64encode(cfile.read()).decode()
 
-                    cmd = '%slscr2js %s %s %s %s'%(
+                    cmd = '%slscr2js %s %s %s'%(
                         basepath, # Scripts path
-                        sys.argv[1], # pc or mac
                         dest_dir, # work directory
                         script_file, # script file name
                         lnam_file
@@ -1299,9 +1297,8 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
                     os.system(cmd)
                     
                 if f.endswith('.STXT'):
-                    cmd = '%s/stxt2json %s %s "%s"'%(
+                    cmd = '%s/stxt2json %s "%s"'%(
                         os.path.dirname(sys.argv[0]), # Scripts path
-                        sys.argv[1], # pc or mac
                         dest_dir, # work directory
                         f # stxt file name
                     )
@@ -1338,6 +1335,8 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
 
 # ==============================================================================
 def main():
+    global bit_order_type, bit_order
+
     if len(sys.argv) < 3:
         print("USAGE: casxtract [pc|mac] <base directory>")
 

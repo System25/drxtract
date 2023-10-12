@@ -15,12 +15,7 @@ import logging
 
 logging.basicConfig(level=logging.DEBUG)
 
-# Default bit order for MAC
-bit_order_type = 'mac'
-bit_order = ">"
-
-
-def main():
+def main():   
     if len(sys.argv) < 4:
         print("USAGE: drxtract [pc|mac] <file.drx> <directory>")
 
@@ -28,10 +23,6 @@ def main():
         if sys.argv[1] != 'pc' and sys.argv[1] != 'mac':
             logging.error("First argument must be 'pc' or 'mac'")
             sys.exit(-1)
-
-        if sys.argv[1] == 'pc':
-            bit_order_type = 'pc'
-            bit_order = "<"
 
         if len(os.path.dirname(sys.argv[0])) == 0:
             basepath = '%s '%(sys.executable)

@@ -27,10 +27,6 @@ from .palettes.web216 import WEB_256COLORS_PALETTE
 logging.basicConfig(level=logging.DEBUG)
 
 
-# Default bit order for MAC
-bit_order_type = 'mac'
-bit_order = ">"
-
 DIR5_IMAGE_TYPE = 1
 DIR4_IMAGE_TYPE = 0x1C0000
 
