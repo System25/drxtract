@@ -4,7 +4,8 @@
 # You will need Python's Transcrypt.
 #
 
-drxtract.lib.js:
+../mods/drxtract/index.js:
+	mkdir -p ../mods/drxtract
 	$(MAKE) -C drxtract
 
 clean:
