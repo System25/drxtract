@@ -59,12 +59,12 @@ $(OUTPUT)/index.js: $(jsclasses)
 	sed -i -E "s/^import \{([^}]+)\} from '([^']+)'/import {\1} from '\2.js'/" $@
 	sed -i -E "s/^class[ ]+([^ ]+)/export class \1/" $@
 	sed -i -E "s/^function[ ]+([A-Za-z0-9]+)/export function \1/" $@
-	sed -i -E 's/"[ ]*%[ ]*([A-Za-z0-9_]+)/".sformat(\1)/' $@
-	sed -i -E "s/'[ ]*%[ ]*([A-Za-z0-9_]+)/'.sformat(\1)/" $@
-	sed -i -E "s/'[ ]*%[ ]*\(([^\)]+)\)/'.sformat(\1)/" $@
-	sed -i -E 's/"[ ]*%[ ]*\(([^\)]+)\)/".sformat(\1)/' $@
-	sed -i -E "s/'[ ]*%[ ]*\[([^\)]+)\]/'.sformat(\1)/" $@
-	sed -i -E 's/"[ ]*%[ ]*\[([^\)]+)\]/".sformat(\1)/' $@
+	sed -i -E 's/([^\\])"[ ]*%[ ]*([A-Za-z0-9_]+)/\1".sformat(\2)/' $@
+	sed -i -E "s/([^\\])'[ ]*%[ ]*([A-Za-z0-9_]+)/\1'.sformat(\2)/" $@
+	sed -i -E "s/([^\\])'[ ]*%[ ]*\(([^\)]+)\)/\1'.sformat(\2)/" $@
+	sed -i -E 's/([^\\])"[ ]*%[ ]*\(([^\)]+)\)/\1".sformat(\2)/' $@
+	sed -i -E "s/([^\\])'[ ]*%[ ]*\[([^\)]+)\]/\1'.sformat(\2)/" $@
+	sed -i -E 's/([^\\])"[ ]*%[ ]*\[([^\)]+)\]/\1".sformat(\2)/' $@
 	sed -i -E 's/(ValueError|ZeroDivisionError|EnvironmentError)/Error/' $@
 	$(foreach pack,$(py_packages), \
 		sed -i "s|$(notdir $(pack)).js'|$(notdir $(pack))/index.js'|" $@ ; \
