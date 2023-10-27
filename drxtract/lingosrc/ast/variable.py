@@ -3,7 +3,7 @@
 # License: GNU GPL v2 (see LICENSE file for details).
 
 from .node import Node
-from ..util import get_keys
+from ..util import get_keys, is_same_class
 from typing import List
 
 KNOWN_SYMBOLS: List[str] = [
@@ -41,7 +41,7 @@ class GlobalVariable(Node):
         super().__init__(name, position)
 
     def __eq__(self, other):
-        if isinstance(other, self.__class__):
+        if is_same_class(other, self):
             return self.name == other.name
         return False
 

@@ -3,11 +3,44 @@
 # License: GNU GPL v2 (see LICENSE file for details).
 
 import struct
-from typing import Dict, KeysView
+from typing import Dict, KeysView, Any
 
 #
 # Utility functions.
 # 
+
+# =============================================================================
+def is_same_class(o1: Any, o2: Any) -> bool:
+    """
+    Retuns true if both objects share the same class.
+    
+    Parameters
+    ----------
+    o1 : any object.
+    o2 : any object.
+            
+    Returns
+    -------
+    bool True if both objects share the same class.
+        
+    """
+    return isinstance(o1, o2.__class__)
+
+# =============================================================================
+def get_class_name(o: Any) -> str:
+    """
+    Retuns the name of the class of the object.
+    
+    Parameters
+    ----------
+    o : any object.
+            
+    Returns
+    -------
+    str Objects class name.
+        
+    """
+    return o.__class__.__name__
 
 # =============================================================================
 def get_keys(d: Dict) -> KeysView:

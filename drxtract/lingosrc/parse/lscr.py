@@ -5,7 +5,7 @@
 from typing import List, cast
 from ..ast import Script, FunctionDef, Node, LocalVariable, ParameterName
 from ..model import Context, Header
-from ..util import escape_string, unpack_float80, get_keys
+from ..util import escape_string, unpack_float80, get_keys, get_class_name
 from ..opcodes import OPCODES, Opcode, BiOpcode, TriOpcode, \
     Param1Opcode, Param2Opcode, BI_OPCODES, TRI_OPCODES
 from .loop_detection import condition_detect, loop_detect
@@ -282,7 +282,7 @@ def parse_opcodes(fdata: bytes, context: Context, bc_off: int,
             parse_obj.process(context, stack, fn, index)
             index = idxc
             if DEBUG_OPCODES:
-                logging.debug("-> %s"%(parse_obj.__class__.__name__))
+                logging.debug("-> %s"%(get_class_name(parse_obj)))
             
         else:
             raise Exception("opcode not implemented: %s"%(opcode))
