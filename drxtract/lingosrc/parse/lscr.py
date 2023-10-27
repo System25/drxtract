@@ -250,8 +250,8 @@ def parse_opcodes(fdata: bytes, context: Context, bc_off: int,
                 opcode2 = int(fdata[idxc])
                 idxc = idxc + 1
                 if DEBUG_OPCODES:
-                    logging.debug("[%s] op0: %s op1: %s"%(index, hex(opcode),
-                                                          hex(opcode2)))
+                    logging.debug("[%s] op0: %x op1: %x"%(index, opcode,
+                                                          opcode2))
                 
                 if isinstance(parse_obj, BiOpcode):
                     op_idx = opcode * 256 + opcode2
@@ -265,10 +265,10 @@ def parse_opcodes(fdata: bytes, context: Context, bc_off: int,
                 idxc = idxc + 1
                 
                 if DEBUG_OPCODES:
-                    logging.debug("[%s] op0: %s op1: %s op2: %s"%(index,
-                                                             hex(opcode),
-                                                             hex(opcode2),
-                                                             hex(opcode3)))
+                    logging.debug("[%s] op0: %x op1: %x op2: %x"%(index,
+                                                             opcode,
+                                                             opcode2,
+                                                             opcode3))
                 
                 if isinstance(parse_obj, TriOpcode):
                     op_idx = opcode * 65536 + opcode2 * 256 + opcode3
@@ -277,7 +277,7 @@ def parse_opcodes(fdata: bytes, context: Context, bc_off: int,
                     cast(Param2Opcode, parse_obj).param1 = opcode2
                     cast(Param2Opcode, parse_obj).param2 = opcode3
             elif DEBUG_OPCODES:
-                logging.debug("[%s] op0: %s"%(index, hex(opcode)))
+                logging.debug("[%s] op0: %x"%(index, opcode))
                     
             parse_obj.process(context, stack, fn, index)
             index = idxc
