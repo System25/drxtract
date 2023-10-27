@@ -3,10 +3,27 @@
 # License: GNU GPL v2 (see LICENSE file for details).
 
 import struct
+from typing import Dict, KeysView
 
 #
 # Utility functions.
 # 
+
+# =============================================================================
+def get_keys(d: Dict) -> KeysView:
+    """
+    Retuns the keys of a dictionary.
+    
+    Parameters
+    ----------
+    d : dictionary.
+            
+    Returns
+    -------
+    KeysView The list of keys.
+        
+    """
+    return d.keys()
 
 # =============================================================================
 def code_indentation(indentation:int) -> str:

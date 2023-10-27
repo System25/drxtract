@@ -3,6 +3,7 @@
 # License: GNU GPL v2 (see LICENSE file for details).
 
 from .node import Node
+from ..util import get_keys
 from typing import List, Dict
 
 KNOWN_SYMBOLS: List[str] = [
@@ -30,7 +31,7 @@ class ConstantValue(Node):
 
     def generate_lingo(self, indentation: int) -> str:
         n: str = self.name
-        if n in PREDEFINED_CONSTANTS.keys():
+        if n in get_keys(PREDEFINED_CONSTANTS):
             return PREDEFINED_CONSTANTS[n]
         
         return n

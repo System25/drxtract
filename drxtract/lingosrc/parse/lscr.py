@@ -5,7 +5,7 @@
 from typing import List, cast
 from ..ast import Script, FunctionDef, Node, LocalVariable, ParameterName
 from ..model import Context, Header
-from ..util import escape_string, unpack_float80
+from ..util import escape_string, unpack_float80, get_keys
 from ..opcodes import OPCODES, Opcode, BiOpcode, TriOpcode, \
     Param1Opcode, Param2Opcode, BI_OPCODES, TRI_OPCODES
 from .loop_detection import condition_detect, loop_detect
@@ -243,7 +243,7 @@ def parse_opcodes(fdata: bytes, context: Context, bc_off: int,
         opcode = int(fdata[idxc])
         idxc = idxc + 1
 
-        if opcode in OPCODES.keys():
+        if opcode in get_keys(OPCODES):
             parse_obj:Opcode = OPCODES[opcode]
             
             if parse_obj.nbytes == 2:

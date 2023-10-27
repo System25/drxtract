@@ -3,6 +3,7 @@
 # License: GNU GPL v2 (see LICENSE file for details).
 
 from .node import Node
+from ..util import get_keys
 from typing import List
 
 KNOWN_SYMBOLS: List[str] = [
@@ -65,7 +66,7 @@ class PropertyName(Node):
     def generate_js(self, indentation: int) -> str: 
         obj_name: str = 'me'
         propName = self.name
-        if self.name in KNOWN_PROPERTIES.keys():
+        if self.name in get_keys(KNOWN_PROPERTIES):
             obj_name = KNOWN_PROPERTIES[propName]
         return "%s.%s"%(obj_name, propName)
 

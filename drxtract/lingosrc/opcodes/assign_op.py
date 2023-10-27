@@ -8,6 +8,7 @@ from ..ast import GlobalVariable, PropertyName, \
    UnaryOperation, UnaryOperationNames, Statement, Node, \
    ConstantValue, FunctionDef, PropertyAccessorOperation, LocalVariable
 from ..model import Context
+from ..util import get_keys
 from typing import List
 
 
@@ -54,7 +55,7 @@ class LoadPropertyOpcode(Param1Opcode):
         op1 = self.param1
         property_name = context.name_list[op1]
         op: Node = PropertyName(property_name, index)
-        if property_name in KNOWN_PROPERTIES.keys():
+        if property_name in get_keys(KNOWN_PROPERTIES):
             obj: Node = LocalVariable(KNOWN_PROPERTIES[property_name], index)
             op = PropertyAccessorOperation(obj, property_name, index)
         

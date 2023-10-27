@@ -11,6 +11,7 @@ from ..ast import FunctionDef, Sprite, StringOperationNames, \
     LoadListOperation, Statement, UnaryOperation, UnaryOperationNames, \
     MenuitemsAccessorOperation, SoundChannel
 from ..model import Context
+from ..util import get_keys
 from typing import List, cast, Optional
 
 SPECIAL_PROPERTIES = ['floatPrecision', 'mouseDownScript', 'mouseUpScript',
@@ -317,7 +318,7 @@ class SystemPropertiesOpcode(BiOpcode):
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
         property_index = int(cast(ConstantValue, stack.pop()).name)
-        property_name = list(SYSTEM_PROPERTIES.keys())[property_index]
+        property_name = list(get_keys(SYSTEM_PROPERTIES))[property_index]
         
         obj: Node = LocalVariable(SYSTEM_PROPERTIES[property_name], index)
         if context.tell_object is not None:
