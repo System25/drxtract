@@ -4,10 +4,11 @@
 # You will need Python's Transcrypt.
 #
 
+JSSRC="../../mods/_drxtract"
 OUTPUT="../../mods/drxtract"
 PY2JS='pj'
 STRIP='strip-hints'
-sources = $(wildcard lingosrc/[^_]*.py) \
+sources = \
 	$(wildcard lingosrc/ast/[^_]*.py) \
 	$(wildcard lingosrc/codegen/[^_]*.py) \
 	$(wildcard lingosrc/model/[^_]*.py) \
@@ -41,13 +42,12 @@ $(OUTPUT)/index.js: $(jsclasses)
 	sed -i -E "s/^export /import /"  $(OUTPUT)/lingosrc/opcodes/index.js ; \
 	echo "export { OPCODES, BI_OPCODES, TRI_OPCODES, Opcode, BiOpcode, TriOpcode, Param1Opcode, Param2Opcode };" >> $(OUTPUT)/lingosrc/opcodes/index.js
 	touch $(OUTPUT)/index.js
+	cd $(JSSRC); find . -name "*.js" -exec cp \{\} ../drxtract/\{\} \;
 
 %.pys: %.py
 	$(STRIP) -o $@ $<
 	sed -i -E "s/cast\([ ]*([A-Za-z_0-9]+)[ ]*,[ ]*([A-Za-z_0-9\.]+)[ ]*\)/\2/" $@
 	sed -i -E "s/^from typing import .*//" $@
-	sed -i -E "s/^from enum import Enum//" $@
-	sed -i "s/(Enum)//" $@
 	sed -i -E "s/^from abc import .*//" $@
 	sed -i -E "s/__metaclass__ = .*//" $@
 	sed -i "s/@abstractmethod//" $@
@@ -57,14 +57,9 @@ $(OUTPUT)/index.js: $(jsclasses)
 %.js: %.pys
 	$(PY2JS) $<
 	sed -i -E "s/^import \{([^}]+)\} from '([^']+)'/import {\1} from '\2.js'/" $@
+	sed -i -E "s/^import \{Enum\} from 'enum.js'/import {Enum} from 'enum'/" $@
 	sed -i -E "s/^class[ ]+([^ ]+)/export class \1/" $@
 	sed -i -E "s/^function[ ]+([A-Za-z0-9]+)/export function \1/" $@
-	sed -i -E 's/([^\\])"[ ]*%[ ]*([A-Za-z0-9_]+)/\1".sformat(\2)/' $@
-	sed -i -E "s/([^\\])'[ ]*%[ ]*([A-Za-z0-9_]+)/\1'.sformat(\2)/" $@
-	sed -i -E "s/([^\\])'[ ]*%[ ]*\(([^\)]+)\)/\1'.sformat(\2)/" $@
-	sed -i -E 's/([^\\])"[ ]*%[ ]*\(([^\)]+)\)/\1".sformat(\2)/' $@
-	sed -i -E "s/([^\\])'[ ]*%[ ]*\[([^\)]+)\]/\1'.sformat(\2)/" $@
-	sed -i -E 's/([^\\])"[ ]*%[ ]*\[([^\)]+)\]/\1".sformat(\2)/' $@
 	sed -i -E 's/(ValueError|ZeroDivisionError|EnvironmentError)/Error/' $@
 	$(foreach pack,$(py_packages), \
 		sed -i "s|$(notdir $(pack)).js'|$(notdir $(pack))/index.js'|" $@ ; \
