@@ -62,7 +62,7 @@ def generate_lingo_code(script: Script) -> str:
         
         last = len(f.statements)-1
         if f.statements[last].code.name == 'exit':
-            del f.statements[last]
+            f.statements.pop()
         
         for st in f.statements:
             code = code + st.generate_lingo(1)
