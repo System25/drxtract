@@ -7,7 +7,7 @@
 #
 
 from ..ast import Script
-from ..util import code_indentation
+from ..util import code_indentation, vsprintf
 from typing import List
 
 # =============================================================================
@@ -36,17 +36,17 @@ def generate_js_code(script: Script) -> str:
         if f.name == 'new':
             f.name = 'birth'
         
-        code = code + "function %s("%(f.name)
+        code = code + vsprintf("function %s(", f.name)
         if len(f.parameters) > 0:
             params: List[str] = []
             for n in f.parameters:
                 params.append(n.name)
             
-            code = code + "%s"%(', '.join(params))
+            code = code + vsprintf("%s", ', '.join(params))
         code += ") {\n"
         
         for lv in f.local_vars:
-            code = code + code_indentation(1) + "var %s;\n"%(lv.name)
+            code = code + code_indentation(1) + vsprintf("var %s;\n", lv.name)
             
         if len(f.local_vars) > 0:
             code = code + "\n"

@@ -7,7 +7,7 @@ from .variable import LocalVariable, GlobalVariable, ParameterName
 from .conversion import LoadListOperation
 from .constant_val import Symbol
 from typing import List, Optional, cast
-from ..util import code_indentation
+from ..util import code_indentation, vsprintf
 
 LIST_FUNCTIONS: List[str] = ['findpos', 'findposnear', 'getaprop', 'getone',
                              'getpos', 'getpropat', 'getprop']
@@ -90,7 +90,7 @@ class CallFunction(Node):
             params: LoadListOperation = cast(LoadListOperation, self.parameters)
             if 'sound' == self.name:
                 sym: Node = params.operands.pop()
-                return "sound %s %s"%(sym.name,
+                return vsprintf("sound %s %s", sym.name,
                                       params.generate_lingo(indentation))
             
             if self.use_parenthesis:
@@ -157,13 +157,13 @@ class CallMethod(Node):
     def generate_lingo(self, indentation: int) -> str:
         obj: Node = cast(Node, self.object)
         params: Node = cast(Node, self.parameters)
-        return "tell %s to %s(%s)"%(obj.generate_lingo(indentation),
+        return vsprintf("tell %s to %s(%s)", obj.generate_lingo(indentation),
                             self.name,
                             params.generate_lingo(indentation))
 
     def generate_js(self, indentation: int) -> str:
         obj: Node = cast(Node, self.object)
         params: Node = cast(Node, self.parameters)
-        return "%s.%s(%s)"%(obj.generate_js(indentation),
+        return vsprintf("%s.%s(%s)", obj.generate_js(indentation),
                             self.name,
                             params.generate_js(indentation))

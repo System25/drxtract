@@ -3,7 +3,7 @@
 # License: GNU GPL v2 (see LICENSE file for details).
 
 from .node import Node
-from ..util import get_keys, is_same_class
+from ..util import get_keys, is_same_class, vsprintf
 from typing import List
 
 KNOWN_SYMBOLS: List[str] = [
@@ -46,7 +46,7 @@ class GlobalVariable(Node):
         return False
 
     def generate_js(self, indentation: int) -> str: 
-        return "_global.%s"%(self.name)
+        return vsprintf("_global.%s", self.name)
 #
 # Property name class.
 # 
@@ -61,14 +61,14 @@ class PropertyName(Node):
         if self.name in KNOWN_SYMBOLS or isinstance(self, DefinedPropertyName):
             return self.name
         else:
-            return "the %s"%(self.name)
+            return vsprintf("the %s", self.name)
 
     def generate_js(self, indentation: int) -> str: 
         obj_name: str = 'me'
         propName = self.name
         if self.name in get_keys(KNOWN_PROPERTIES):
             obj_name = KNOWN_PROPERTIES[propName]
-        return "%s.%s"%(obj_name, propName)
+        return vsprintf("%s.%s", obj_name, propName)
 
 #
 # Defined Property name class.
@@ -99,10 +99,10 @@ class DateTimeFunction(Node):
         super().__init__(name, position)
 
     def generate_lingo(self, indentation: int) -> str: 
-        return "the %s"%(self.name)
+        return vsprintf("the %s", self.name)
 
     def generate_js(self, indentation: int) -> str: 
-        return "_system.date('%s')"%(self.name)
+        return vsprintf("_system.date('%s')", self.name)
 
 #
 # Menu class.
@@ -114,10 +114,10 @@ class Menu(Node):
         super().__init__(name, position)
     
     def generate_lingo(self, indentation: int) -> str: 
-        return "menu %s"%(self.name)
+        return vsprintf("menu %s", self.name)
 
     def generate_js(self, indentation: int) -> str: 
-        return "_menuBar.menu[%s]"%(self.name)
+        return vsprintf("_menuBar.menu[%s]", self.name)
     
 #
 # Menuitem class.
@@ -129,10 +129,10 @@ class MenuItem(Node):
         super().__init__(name, position)
 
     def generate_lingo(self, indentation: int) -> str: 
-        return "menuItem %s"%(self.name)
+        return vsprintf("menuItem %s", self.name)
 
     def generate_js(self, indentation: int) -> str: 
-        return "item[%s]"%(self.name)    
+        return vsprintf("item[%s]", self.name)    
 
 #
 # SoundChannel class.
@@ -144,10 +144,10 @@ class SoundChannel(Node):
         super().__init__(name, position)
 
     def generate_lingo(self, indentation: int) -> str: 
-        return "sound %s"%(self.name)
+        return vsprintf("sound %s", self.name)
 
     def generate_js(self, indentation: int) -> str: 
-        return "sound(%s)"%(self.name)
+        return vsprintf("sound(%s)", self.name)
 
 #
 # Sprite class.
@@ -159,10 +159,10 @@ class Sprite(Node):
         super().__init__(name, position)
 
     def generate_lingo(self, indentation: int) -> str: 
-        return "sprite %s"%(self.name)
+        return vsprintf("sprite %s", self.name)
 
     def generate_js(self, indentation: int) -> str: 
-        return "sprite(%s)"%(self.name)
+        return vsprintf("sprite(%s)", self.name)
 
 
 #
@@ -184,7 +184,7 @@ class Cast(Node):
         super().__init__(name, position)
 
     def generate_lingo(self, indentation: int) -> str: 
-        return "cast %s"%(self.name)
+        return vsprintf("cast %s", self.name)
 
     def generate_js(self, indentation: int) -> str: 
-        return "member(%s)"%(self.name)
+        return vsprintf("member(%s)", self.name)

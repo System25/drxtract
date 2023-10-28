@@ -4,6 +4,7 @@
 
 from .node import Node
 from typing import List
+from ..util import vsprintf
 
 #
 # Load a list Operation class.
@@ -75,7 +76,7 @@ class ToDictionaryOperation(Node):
             val = self.operand.operands[i].generate_lingo(indentation)
             sym = self.operand.operands[j].generate_lingo(indentation)
                    
-            oplist.append("%s: %s"%(sym, val))
+            oplist.append(vsprintf("%s: %s", sym, val))
 
         oplist.reverse()
         

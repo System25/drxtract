@@ -103,7 +103,7 @@ def parse_frb(fdata: bytes, header: Header, context: Context, script: Script):
     idx = header.frb_offset
     for i in range(0, header.frb_nrecords):
 
-        logging.debug("Function Record Block: %i (starts in: %x)"%(i, idx)) 
+        logging.debug("Function Record Block: %i (starts in: %x)", i, idx) 
         # $0000-$0001  uint16  Namelist index for the function's name,
         # or 0xFFFF if there is no name(?)
         namelist_index = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
@@ -161,23 +161,23 @@ def parse_frb(fdata: bytes, header: Header, context: Context, script: Script):
         unknown_rb6 = struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
         idx += 4
 
-        logging.debug("namelist_index = %x"%(namelist_index)) 
-        logging.debug("unknown_rb0 = %x"%(unknown_rb0)) 
-        logging.debug("bc_length = %x"%(bc_length)) 
-        logging.debug("bc_off = %x"%(bc_off)) 
-        logging.debug("bc_narg = %x"%(bc_narg)) 
-        logging.debug("argnames_off = %x"%(argnames_off)) 
-        logging.debug("bc_nlocal = %x"%(bc_nlocal)) 
-        logging.debug("localnames_off = %x"%(localnames_off)) 
-        logging.debug("count_c = %x"%(count_c)) 
-        logging.debug("unknown_rb3 = %x"%(unknown_rb3)) 
-        logging.debug("unknown_rb4 = %x"%(unknown_rb4)) 
-        logging.debug("unknown_rb5 = %x"%(unknown_rb5)) 
-        logging.debug("count_d = %x"%(count_d)) 
-        logging.debug("unknown_rb6 = %x"%(unknown_rb6)) 
+        logging.debug("namelist_index = %x", namelist_index) 
+        logging.debug("unknown_rb0 = %x", unknown_rb0) 
+        logging.debug("bc_length = %x", bc_length) 
+        logging.debug("bc_off = %x", bc_off) 
+        logging.debug("bc_narg = %x", bc_narg) 
+        logging.debug("argnames_off = %x", argnames_off) 
+        logging.debug("bc_nlocal = %x", bc_nlocal) 
+        logging.debug("localnames_off = %x", localnames_off) 
+        logging.debug("count_c = %x", count_c) 
+        logging.debug("unknown_rb3 = %x", unknown_rb3) 
+        logging.debug("unknown_rb4 = %x", unknown_rb4) 
+        logging.debug("unknown_rb5 = %x", unknown_rb5) 
+        logging.debug("count_d = %x", count_d) 
+        logging.debug("unknown_rb6 = %x", unknown_rb6) 
 
 
-        logging.debug("Function Record Block: %i (ends in: %x)"%(i, idx)) 
+        logging.debug("Function Record Block: %i (ends in: %x)", i, idx) 
 
         fname = 'noname'
         if namelist_index >= 0 and namelist_index < len(context.name_list):
@@ -189,8 +189,8 @@ def parse_frb(fdata: bytes, header: Header, context: Context, script: Script):
         for nl in range(0, bc_nlocal):
             idxl = 2*nl + localnames_off
             n = struct.unpack(lsrc_bit_order+"h", fdata[idxl:idxl+2])[0]
-            logging.debug("idxl = %x n=%s"%(idxl, n))
-            logging.debug('localvs[%s] = "%s"'%(nl, context.name_list[n]))
+            logging.debug("idxl = %x n=%s", idxl, n)
+            logging.debug('localvs[%s] = "%s"', nl, context.name_list[n])
             fn.local_vars.append(
                 LocalVariable(context.name_list[n], idxl))
 
@@ -198,8 +198,8 @@ def parse_frb(fdata: bytes, header: Header, context: Context, script: Script):
         for nl in range(0, bc_narg):
             idxl = 2*nl + argnames_off
             n = struct.unpack(lsrc_bit_order+"h", fdata[idxl:idxl+2])[0]
-            logging.debug("idxl = %x n=%s"%(idxl, n))
-            logging.debug('paramns[%s] = "%s"'%(nl, context.name_list[n]))
+            logging.debug("idxl = %x n=%s", idxl, n)
+            logging.debug('paramns[%s] = "%s"', nl, context.name_list[n])
             fn.parameters.append(
                 ParameterName(context.name_list[n], idxl))
             
@@ -250,8 +250,8 @@ def parse_opcodes(fdata: bytes, context: Context, bc_off: int,
                 opcode2 = int(fdata[idxc])
                 idxc = idxc + 1
                 if DEBUG_OPCODES:
-                    logging.debug("[%s] op0: %x op1: %x"%(index, opcode,
-                                                          opcode2))
+                    logging.debug("[%s] op0: %x op1: %x", index, opcode,
+                                                          opcode2)
                 
                 if isinstance(parse_obj, BiOpcode):
                     op_idx = opcode * 256 + opcode2
@@ -265,10 +265,10 @@ def parse_opcodes(fdata: bytes, context: Context, bc_off: int,
                 idxc = idxc + 1
                 
                 if DEBUG_OPCODES:
-                    logging.debug("[%s] op0: %x op1: %x op2: %x"%(index,
+                    logging.debug("[%s] op0: %x op1: %x op2: %x", index,
                                                              opcode,
                                                              opcode2,
-                                                             opcode3))
+                                                             opcode3)
                 
                 if isinstance(parse_obj, TriOpcode):
                     op_idx = opcode * 65536 + opcode2 * 256 + opcode3
@@ -277,15 +277,15 @@ def parse_opcodes(fdata: bytes, context: Context, bc_off: int,
                     cast(Param2Opcode, parse_obj).param1 = opcode2
                     cast(Param2Opcode, parse_obj).param2 = opcode3
             elif DEBUG_OPCODES:
-                logging.debug("[%s] op0: %x"%(index, opcode))
+                logging.debug("[%s] op0: %x", index, opcode)
                     
             parse_obj.process(context, stack, fn, index)
             index = idxc
             if DEBUG_OPCODES:
-                logging.debug("-> %s"%(get_class_name(parse_obj)))
+                logging.debug("-> %s", get_class_name(parse_obj))
             
         else:
-            raise Exception("opcode not implemented: %s"%(opcode))
+            raise Exception("opcode not implemented: %s", opcode)
 
     condition_detect(fn)
     loop_detect(fn)
@@ -486,7 +486,7 @@ def parse_lrcr_crb(fdata: bytes, header: Header) -> List[str]:
 
     logging.debug("====== parse LSCR constants record block =================")
     for i in range(0, header.crb_nconstants):
-        logging.debug("idx = %s"%(idx))
+        logging.debug("idx = %s", idx)
         if bytes_per_const == 8:
             # uint32: Value type ID 
             logging.debug("4 bytes constant ID")
@@ -510,8 +510,8 @@ def parse_lrcr_crb(fdata: bytes, header: Header) -> List[str]:
         constant_offset = struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
         idx += 4
 
-        #logging.debug("constant_type = %s"%(constant_type)) 
-        #logging.debug("constant_offset = %s"%(constant_offset))
+        #logging.debug("constant_type = %s", constant_type) 
+        #logging.debug("constant_offset = %s", constant_offset)
 
         if constant_type == 1:
             # Text constant
@@ -521,7 +521,7 @@ def parse_lrcr_crb(fdata: bytes, header: Header) -> List[str]:
             strlength = struct.unpack(lsrc_bit_order+"i",
                                       fdata[idxc:idxc+4])[0] - 1
             idxc += 4
-            #logging.debug("strlength = %s"%(strlength)) 
+            #logging.debug("strlength = %s", strlength) 
 
             strval = fdata[idxc:idxc+strlength].decode('ISO-8859-1')
             constants.append(escape_string(strval))
@@ -539,19 +539,19 @@ def parse_lrcr_crb(fdata: bytes, header: Header) -> List[str]:
             floatlength = struct.unpack(lsrc_bit_order+"i",
                                         fdata[idxc:idxc+4])[0]
             idxc += 4
-            #logging.debug("floatlength = %s"%(floatlength))
+            #logging.debug("floatlength = %s", floatlength)
             
             float_val =  unpack_float80(fdata[idxc:idxc+floatlength])
-            #logging.debug("float Value = %s"%(float_val))
+            #logging.debug("float Value = %s", float_val)
             constants.append(float_val)
 
 
         else:
             # Unknown
-            logging.error("Unknown constant type: %s"%(constant_type))
+            logging.error("Unknown constant type: %s", constant_type)
             raise ValueError("Unknown constant type!")
 
-        logging.debug("constants[%s] = %s"%(i, constants[i]))
+        logging.debug("constants[%s] = %s", i, constants[i])
         
     header.bytes_per_constant = bytes_per_const
     return constants
@@ -621,25 +621,26 @@ def parse_lrcr_file_header(fdata: bytes) -> Header:
     idx += 4
 
     logging.debug("====== parse LSCR file header ============================")
-    logging.debug("scr_type = %08x"%(scr_type)) 
-    logging.debug("unknown_01 = %08x"%(unknown_01)) 
-    logging.debug("filesize0 = %s"%(filesize0)) 
-    logging.debug("filesize1 = %s"%(filesize1)) 
-    logging.debug("unknown_04 = %08x"%(unknown_04)) 
-    logging.debug("unknown_05 = %08x"%(unknown_05)) 
-    logging.debug("unknown_06 = %08x"%(unknown_06)) 
-    logging.debug("unknown_07 = %08x"%(unknown_07)) 
-    logging.debug("unknown_08 = %08x"%(unknown_08)) 
-    logging.debug("unknown_09 = %08x"%(unknown_09)) 
-    logging.debug("unknown_10 = %08x"%(unknown_10)) 
-    logging.debug("unknown_11 = %08x"%(unknown_11)) 
-    logging.debug("unknown_12 = %08x"%(unknown_12)) 
-    logging.debug("unknown_13 = %08x"%(unknown_13)) 
-    logging.debug("unknown_14 = %08x"%(unknown_14)) 
-    logging.debug("unknown_15 = %08x"%(unknown_15)) 
+    logging.debug("scr_type = %08x", scr_type) 
+    logging.debug("unknown_01 = %08x", unknown_01) 
+    logging.debug("filesize0 = %s", filesize0) 
+    logging.debug("filesize1 = %s", filesize1) 
+    logging.debug("unknown_04 = %08x", unknown_04) 
+    logging.debug("unknown_05 = %08x", unknown_05) 
+    logging.debug("unknown_06 = %08x", unknown_06) 
+    logging.debug("unknown_07 = %08x", unknown_07) 
+    logging.debug("unknown_08 = %08x", unknown_08) 
+    logging.debug("unknown_09 = %08x", unknown_09) 
+    logging.debug("unknown_10 = %08x", unknown_10) 
+    logging.debug("unknown_11 = %08x", unknown_11) 
+    logging.debug("unknown_12 = %08x", unknown_12) 
+    logging.debug("unknown_13 = %08x", unknown_13) 
+    logging.debug("unknown_14 = %08x", unknown_14) 
+    logging.debug("unknown_15 = %08x", unknown_15) 
 
     if filesize1 != filesize0 or filesize1 != len(fdata):
-        logging.error("bad filesize (%s, %s, %s)"%(filesize1, filesize0, len(fdata))) 
+        logging.error("bad filesize (%s, %s, %s)", filesize1, filesize0,
+                      len(fdata)) 
         raise ValueError("Bad file size!")
 
     # $0040-$0041 uint16 Offset to the properties records block  
@@ -656,10 +657,10 @@ def parse_lrcr_file_header(fdata: bytes) -> Header:
     grb_offset = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
     idx += 2
 
-    logging.debug("prb_offset = %s"%(prb_offset)) 
-    logging.debug("grb_nrecords = %s"%(grb_nrecords)) 
-    logging.debug("unknown_18 = %s"%(unknown_18)) 
-    logging.debug("frb_offset = %s"%(grb_offset)) 
+    logging.debug("prb_offset = %s", prb_offset) 
+    logging.debug("grb_nrecords = %s", grb_nrecords) 
+    logging.debug("unknown_18 = %s", unknown_18) 
+    logging.debug("frb_offset = %s", grb_offset) 
 
 
     # $0048-$0049 uint16 Number of function records 
@@ -673,9 +674,9 @@ def parse_lrcr_file_header(fdata: bytes) -> Header:
     frb_offset = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
     idx += 2
 
-    logging.debug("frb_nrecords = %s"%(frb_nrecords)) 
-    logging.debug("unknown_19 = %s"%(unknown_19)) 
-    logging.debug("frb_offset = %s"%(frb_offset)) 
+    logging.debug("frb_nrecords = %s", frb_nrecords) 
+    logging.debug("unknown_19 = %s", unknown_19) 
+    logging.debug("frb_offset = %s", frb_offset) 
 
     # $004E-$004F    uint16  Number of constants 
     crb_nconstants = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
@@ -702,13 +703,13 @@ def parse_lrcr_file_header(fdata: bytes) -> Header:
     con_offset = struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
     idx += 2
 
-    logging.debug("crb_nconstants = %s"%(crb_nconstants))
-    logging.debug("unknown_20 = %s"%(unknown_20))
-    logging.debug("crb_offset = %s"%(crb_offset))
-    logging.debug("unknown_21 = %s"%(unknown_21))
-    logging.debug("unknown_22 = %s"%(unknown_22))
-    logging.debug("unknown_23 = %s"%(unknown_23))
-    logging.debug("con_offset = %s"%(con_offset))
+    logging.debug("crb_nconstants = %s", crb_nconstants)
+    logging.debug("unknown_20 = %s", unknown_20)
+    logging.debug("crb_offset = %s", crb_offset)
+    logging.debug("unknown_21 = %s", unknown_21)
+    logging.debug("unknown_22 = %s", unknown_22)
+    logging.debug("unknown_23 = %s", unknown_23)
+    logging.debug("con_offset = %s", con_offset)
 
     header = Header()
     header.con_offset = con_offset

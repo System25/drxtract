@@ -11,7 +11,7 @@ from ..ast import FunctionDef, Sprite, StringOperationNames, \
     LoadListOperation, Statement, UnaryOperation, UnaryOperationNames, \
     MenuitemsAccessorOperation, SoundChannel
 from ..model import Context
-from ..util import get_keys
+from ..util import get_keys, vsprintf
 from typing import List, cast, Optional
 
 SPECIAL_PROPERTIES = ['floatPrecision', 'mouseDownScript', 'mouseUpScript',
@@ -173,7 +173,7 @@ class NameOfCastElementsOpcode(BiOpcode):
             op.of = MenuitemsAccessorOperation(Menu(param2.name, index), index) 
         
         else:
-            raise Exception("Unknown op type: %s"%(optype))           
+            raise Exception(vsprintf("Unknown op type: %s", optype))           
         
         stack.append(op)
 

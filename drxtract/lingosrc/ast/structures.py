@@ -5,7 +5,7 @@
 from .node import Node
 from .function_op import Statement
 from typing import List, Optional, cast
-from ..util import code_indentation
+from ..util import code_indentation, vsprintf
 
 #
 # Repeat Operation class.
@@ -31,14 +31,14 @@ class RepeatOperation(Node):
             str_cond = str_cond[1:-1]
 
         if self.type == 'while':
-            code = "repeat while %s\n"%(str_cond)
+            code = vsprintf("repeat while %s\n", str_cond)
         elif self.type == 'for':
-            code = "repeat with %s = %s %s %s\n"%(self.varname,
+            code = vsprintf("repeat with %s = %s %s %s\n", self.varname,
                     cast(Node, self.start).generate_lingo(0),
                     'to' if self.sign == '+' else 'down to',
                     cast(Node, self.end).generate_lingo(0))
         else:
-            code = "repeat with %s in %s\n"%(self.varname,
+            code = vsprintf("repeat with %s in %s\n", self.varname,
                         cast(Node, self.start).generate_lingo(0))
         
         for st in self.statements_list:
@@ -51,18 +51,18 @@ class RepeatOperation(Node):
         cond = cast(Node, self.condition)
         str_cond: str = cond.generate_js(0)
         if not str_cond.startswith('('):
-            str_cond = "(%s)"%(str_cond)
+            str_cond = vsprintf("(%s)", str_cond)
 
         if self.type == 'while':
-            code = "while %s {\n"%(str_cond)
+            code = vsprintf("while %s {\n", str_cond)
         elif self.type == 'for':
-            code = "for(%s = %s; %s; %s%s) {\n"%(self.varname,
+            code = vsprintf("for(%s = %s; %s; %s%s) {\n", self.varname,
                     cast(Node, self.start).generate_js(0),
                     str_cond[1:-1],
                     self.varname,
                     '++' if self.sign == '+' else '--')
         else:
-            code = "for(%s of %s) {\n"%(self.varname,
+            code = vsprintf("for(%s of %s) {\n", self.varname,
                         cast(Node, self.start).generate_js(0))
         
         for st in self.statements_list:
@@ -86,7 +86,7 @@ class IfThenOperation(Node):
     def generate_lingo(self, indentation: int) -> str: 
         cond = cast(Node, self.condition)
 
-        code = "if %s then\n"%(cond.generate_lingo(0))
+        code = vsprintf("if %s then\n", cond.generate_lingo(0))
         for st in self.if_statements_list:
             code = code + st.generate_lingo(indentation + 1)
         
@@ -102,9 +102,9 @@ class IfThenOperation(Node):
         cond = cast(Node, self.condition)
         str_cond: str = cond.generate_js(0)
         if not str_cond.startswith('('):
-            str_cond = "(%s)"%(str_cond)
+            str_cond = vsprintf("(%s)", str_cond)
 
-        code = "if %s {\n"%(str_cond)
+        code = vsprintf("if %s {\n", str_cond)
         for st in self.if_statements_list:
             code = code + st.generate_js(indentation + 1)
         

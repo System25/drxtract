@@ -10,6 +10,23 @@ from typing import Dict, KeysView, Any
 # 
 
 # =============================================================================
+def vsprintf(fmt: str, *args) -> str:
+    """
+    Retuns a C-style vsprintf formatted string.
+    
+    Parameters
+    ----------
+    fmt : String format.
+    args : parameters.
+            
+    Returns
+    -------
+    str Formatted string.
+        
+    """
+    return fmt%(args)
+
+# =============================================================================
 def is_same_class(o1: Any, o2: Any) -> bool:
     """
     Retuns true if both objects share the same class.

@@ -6,6 +6,7 @@ from .node import Node
 from .variable import Menu, MenuItem
 from enum import Enum
 from typing import Optional, cast, Dict
+from ..util import vsprintf
 import re
 
 #
@@ -157,13 +158,13 @@ class UnaryOperation(Node):
             operation = '-'
         else:
             operation = operation + ' '
-        return "%s%s"%(operation, operand.generate_lingo(indentation))
+        return vsprintf("%s%s", operation, operand.generate_lingo(indentation))
 
     def generate_js(self, indentation: int) -> str:
         operand = cast(Node, self.operand)
         operation = self.name
         operation = JS_UNA_OP[operation]
-        return "%s(%s)"%(operation, operand.generate_js(indentation))
+        return vsprintf("%s(%s)", operation, operand.generate_js(indentation))
 
 #
 # Binary Operation class.
@@ -185,17 +186,17 @@ class BinaryOperation(Node):
             left: str = l.generate_lingo(indentation)
             right: str = r.generate_lingo(indentation)
             if left.startswith('field(') and left.endswith(')'):
-                return "put %s into %s"%(right, left)       
+                return vsprintf("put %s into %s", right, left)       
             else:
-                return "set %s = %s"%(left, right)
+                return vsprintf("set %s = %s", left, right)
         
         op:str = LINGO_BIN_OP[operation]
         if op.startswith('sprite... '):
-            return "sprite %s %s %s"%(l.generate_lingo(indentation),
+            return vsprintf("sprite %s %s %s", l.generate_lingo(indentation),
                                       op.removeprefix('sprite... '),
                                       r.generate_lingo(indentation))
                 
-        return "(%s %s %s)"%(l.generate_lingo(indentation), op,
+        return vsprintf("(%s %s %s)", l.generate_lingo(indentation), op,
                              r.generate_lingo(indentation))
 
     def generate_js(self, indentation: int) -> str:
@@ -204,15 +205,16 @@ class BinaryOperation(Node):
         
         operation = self.name
         if operation == 'assign':
-            return "%s = %s"%(l.generate_js(indentation),
+            return vsprintf("%s = %s", l.generate_js(indentation),
                               r.generate_js(indentation))            
         
         op: str = JS_BIN_OP[operation]
         if op.startswith('.'):
-            return "sprite(%s)%s(sprite(%s))"%(l.generate_js(indentation), op,
-                               r.generate_js(indentation))
+            return vsprintf("sprite(%s)%s(sprite(%s))",
+                            l.generate_js(indentation), op,
+                            r.generate_js(indentation))
         else:  
-            return "(%s %s %s)"%(l.generate_js(indentation), op,
+            return vsprintf("(%s %s %s)", l.generate_js(indentation), op,
                                  r.generate_js(indentation))
 
 #
@@ -230,7 +232,7 @@ class SpAssignOperation(Node):
     def generate_lingo(self, indentation: int) -> str:
         l = cast(Node, self.left)
         r = cast(Node, self.right)
-        return "put %s %s %s"%(r.generate_lingo(indentation),
+        return vsprintf("put %s %s %s", r.generate_lingo(indentation),
                                 self.mode,
                                 l.generate_lingo(indentation))
     
@@ -242,11 +244,13 @@ class SpAssignOperation(Node):
             left = re.sub('(field\\([^\\)]+\\))', '\\1.text', left)
         
         if self.mode == 'after':
-            return "%s = %s + %s"%(left, left, r.generate_js(indentation))
+            return vsprintf("%s = %s + %s", left, left,
+                            r.generate_js(indentation))
         elif self.mode == 'before':
-            return "%s = %s + %s"%(left, r.generate_js(indentation), left)
+            return vsprintf("%s = %s + %s", left, r.generate_js(indentation),
+                            left)
         else:
-            return "%s = %s"%(left, r.generate_js(indentation))
+            return vsprintf("%s = %s", left, r.generate_js(indentation))
 #
 # String Operation class.
 # 
@@ -261,23 +265,23 @@ class StringOperation(Node):
     
     def generate_lingo(self, indentation: int) -> str:
         if self.end is None:
-            return '%s %s of %s'%(self.name,
+            return vsprintf('%s %s of %s', self.name,
                                   cast(Node, self.start).generate_lingo(0),
                                   cast(Node, self.of).generate_lingo(0))
             
-        return '%s %s to %s of %s'%(self.name,
+        return vsprintf('%s %s to %s of %s', self.name,
                       cast(Node, self.start).generate_lingo(0),
                       cast(Node, self.end).generate_lingo(0),
                       cast(Node, self.of).generate_lingo(0))
     
     def generate_js(self, indentation: int) -> str:
         if self.end is None:
-            return '%s.getPropRef("%s", %s)'%(
+            return vsprintf('%s.getPropRef("%s", %s)',
                 cast(Node, self.of).generate_js(0),
                 self.name,
                 cast(Node, self.start).generate_js(0))
             
-        return '%s.getPropRef("%s", %s, %s)'%(
+        return vsprintf('%s.getPropRef("%s", %s, %s)',
             cast(Node, self.of).generate_js(0),
             self.name,
             cast(Node, self.start).generate_js(0),
@@ -298,13 +302,14 @@ class UnaryStringOperation(Node):
         if self.type is not None:
             op_type = cast(StringOperationNames, self.type).value
             if self.name == UnaryOperationNames.LAST.value:
-                return "the %s %s of %s"%(self.name, op_type,
+                return vsprintf("the %s %s of %s", self.name, op_type,
                                          operand.generate_lingo(indentation))
             else:
-                return "the %s of %ss of %s"%(self.name, op_type,
+                return vsprintf("the %s of %ss of %s", self.name, op_type,
                                          operand.generate_lingo(indentation))
         
-        return "the %s of %s"%(self.name, operand.generate_lingo(indentation))
+        return vsprintf("the %s of %s", self.name,
+                        operand.generate_lingo(indentation))
 
     def generate_js(self, indentation: int) -> str:
         operand = cast(Node, self.of)
@@ -313,18 +318,18 @@ class UnaryStringOperation(Node):
         if self.type is not None:
             op_type = cast(StringOperationNames, self.type).value
             if self.name == UnaryOperationNames.LAST.value:
-                return "%s.getProp(\"%s\", \"%s\")"%(
+                return vsprintf("%s.getProp(\"%s\", \"%s\")",
                             operand.generate_js(indentation),
                             op_type, operation)
             else:
-                return "%s.%s.%s"%(operand.generate_js(indentation),
+                return vsprintf("%s.%s.%s", operand.generate_js(indentation),
                                op_type,
                                operation)
         
         if operand.name == 'menus':
             operand.name = '_menuBar.menu'
         
-        return "%s.%s"%(operand.generate_js(indentation), operation)
+        return vsprintf("%s.%s", operand.generate_js(indentation), operation)
 #
 # Property accessor operation class.
 # 
@@ -339,18 +344,19 @@ class PropertyAccessorOperation(Node):
     def generate_lingo(self, indentation: int) -> str:
         obj_str = self.obj.generate_lingo(indentation)
         if obj_str == 'me':
-            return '%s'%(self.prop)
+            return vsprintf('%s', self.prop)
         elif obj_str.startswith('_') or obj_str == 'tell_obj':
-            return 'the %s'%(self.prop)
+            return vsprintf('the %s', self.prop)
         else:
-            return "the %s of %s"%(self.prop, obj_str)
+            return vsprintf("the %s of %s", self.prop, obj_str)
 
     def generate_js(self, indentation: int) -> str:
         obj_str = self.obj.generate_js(indentation)
         if obj_str == 'tell_obj':
-            return '%s'%(self.prop)
+            return vsprintf('%s', self.prop)
         else:
-            return "%s.%s"%(self.obj.generate_js(indentation), self.prop)
+            return vsprintf("%s.%s", self.obj.generate_js(indentation),
+                            self.prop)
 
 #
 # Key property accessor operation class.
@@ -363,13 +369,13 @@ class KeyPropertyAccessorOperation(Node):
         self.prop: str = name
         
     def generate_lingo(self, indentation: int) -> str:
-        return "the %s"%(self.prop)
+        return vsprintf("the %s", self.prop)
 
     def generate_js(self, indentation: int) -> str:
         if self.prop in ('date', 'time'):
-            return "_system.date('%s')"%(self.prop)
+            return vsprintf("_system.date('%s')", self.prop)
         
-        return "_key.%s"%(self.prop)
+        return vsprintf("_key.%s", self.prop)
     
 #
 # Menuitem accessor operation class.
@@ -383,11 +389,11 @@ class MenuitemAccessorOperation(Node):
         self.item: MenuItem = item
         
     def generate_lingo(self, indentation: int) -> str:
-        return "%s of %s"%(self.item.generate_lingo(0),
+        return vsprintf("%s of %s", self.item.generate_lingo(0),
                            self.menu.generate_lingo(0))
 
     def generate_js(self, indentation: int) -> str: 
-        return "%s.%s"%(self.menu.generate_js(0),
+        return vsprintf("%s.%s", self.menu.generate_js(0),
                         self.item.generate_js(0))
     
 #
@@ -401,8 +407,8 @@ class MenuitemsAccessorOperation(Node):
         self.menu: Menu = menu
 
     def generate_lingo(self, indentation: int) -> str:
-        return "menuItems of %s"%(self.menu.generate_lingo(0))
+        return vsprintf("menuItems of %s", self.menu.generate_lingo(0))
 
     def generate_js(self, indentation: int) -> str: 
-        return "%s.item"%(self.menu.generate_js(0))
+        return vsprintf("%s.item", self.menu.generate_js(0))
     

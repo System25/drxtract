@@ -5,6 +5,7 @@
 from typing import List
 import struct
 import logging
+from ..util import vsprintf
 
 #
 # Parse LNAM file data
@@ -40,31 +41,31 @@ def parse_lnam_file_data(fdata: bytes) -> List[str]:
     # Unknown header data
     unk = struct.unpack(lnam_bit_order+"i", fdata[(indx):(indx+4)])[0]
     indx = indx + 4
-    logging.debug("Unknown: %08x"%(unk))
+    logging.debug("Unknown: %08x", unk)
 
     unk = struct.unpack(lnam_bit_order+"i", fdata[(indx):(indx+4)])[0]
     indx = indx + 4
-    logging.debug("Unknown: %08x"%(unk))
+    logging.debug("Unknown: %08x", unk)
 
     filesize = struct.unpack(lnam_bit_order+"i", fdata[(indx):(indx+4)])[0]
     indx = indx + 4
-    logging.debug("filesize: %08x"%(filesize))
+    logging.debug("filesize: %08x", filesize)
 
     filesize_cp = struct.unpack(lnam_bit_order+"i", fdata[(indx):(indx+4)])[0]
     indx = indx + 4
-    logging.debug("filesize_cp: %08x"%(filesize_cp))
+    logging.debug("filesize_cp: %08x", filesize_cp)
 
     unk = struct.unpack(lnam_bit_order+"h", fdata[(indx):(indx+2)])[0]
     indx = indx + 2
-    logging.debug("Unknown: %08x"%(unk))
+    logging.debug("Unknown: %08x", unk)
 
     nnames = struct.unpack(lnam_bit_order+"h", fdata[(indx):(indx+2)])[0]
     indx = indx + 2
-    logging.debug("Number of names: %s"%(nnames))
+    logging.debug("Number of names: %s", nnames)
 
 
     if filesize_cp != filesize:
-        logging.error("Bad file size! (%s != %s)"%(filesize_cp, filesize))
+        logging.error("Bad file size! (%s != %s)", filesize_cp, filesize)
         raise ValueError("Bad file size!")
 
 
@@ -77,7 +78,7 @@ def parse_lnam_file_data(fdata: bytes) -> List[str]:
         indx = indx + nbytes
 
         name_list.append(name)
-        logging.debug("name_list[%s] = %s"%(i, name))
+        logging.debug("name_list[%s] = %s", i, name)
                 
     return name_list
 
