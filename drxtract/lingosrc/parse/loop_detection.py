@@ -236,8 +236,8 @@ def loop_detect_in_statements(statements: List[Statement]):
             
             if is_repeat_while(ro):
                 # Repeat while
-                ifop: IfThenOperation = cast(IfThenOperation,
-                                             ro.statements_list[0].code)
+                ifop: IfThenOperation = \
+                    cast(IfThenOperation, ro.statements_list[0].code)
                 nop: UnaryOperation = cast(UnaryOperation, ifop.condition) 
                 ro.condition = nop.operand
                 ro.statements_list.pop(0)
@@ -276,8 +276,8 @@ def loop_detect_in_statements(statements: List[Statement]):
                 ro.varname = cast(Node, first_op.left).name
                 
                 assign_fn: CallFunction = cast(CallFunction, first_op.right)
-                assign_fn_par:LoadListOperation = cast(
-                    LoadListOperation, assign_fn.parameters)
+                assign_fn_par:LoadListOperation = \
+                    cast(LoadListOperation, assign_fn.parameters)
                 ro.start = assign_fn_par.operands[1]
                 
                 ro.statements_list.pop(0)
@@ -323,8 +323,8 @@ def is_repeat_with_in_list(ro: RepeatOperation):
     cond_func: CallFunction = cast(CallFunction, cond.right)
     if index != '1' or cond_func.name != 'count':
         return False
-    cond_func_par:LoadListOperation = cast(
-        LoadListOperation, cond_func.parameters)
+    cond_func_par:LoadListOperation = \
+        cast(LoadListOperation, cond_func.parameters)
 
     if len(ro.statements_list) > 0:
         st: Statement = ro.statements_list[0]
@@ -339,8 +339,8 @@ def is_repeat_with_in_list(ro: RepeatOperation):
             if not assign_fn.name == 'getAt':
                 return False
             
-            assign_fn_par:LoadListOperation = cast(
-                LoadListOperation, assign_fn.parameters)
+            assign_fn_par:LoadListOperation = \
+                cast(LoadListOperation, assign_fn.parameters)
 
             if (cond_func_par.operands[0] != assign_fn_par.operands[1]
                 or assign_fn_par.operands[0].name != '1'):
