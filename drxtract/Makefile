@@ -46,7 +46,7 @@ $(OUTPUT)/index.js: $(jsclasses)
 
 %.pys: %.py
 	$(STRIP) -o $@ $<
-	sed -i -E "s/cast\([ ]*([A-Za-z_0-9]+)[ ]*,[ ]*([A-Za-z_0-9\.]+)[ ]*\)/\2/" $@
+	sed -i -E "s/cast\([ ]*([A-Za-z_0-9]+)[ ]*,[ ]*([^ \)]+)[ ]*\)/\2/" $@
 	sed -i -E "s/^from typing import .*//" $@
 	sed -i -E "s/^from abc import .*//" $@
 	sed -i -E "s/__metaclass__ = .*//" $@
