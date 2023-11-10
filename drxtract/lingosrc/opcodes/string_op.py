@@ -23,7 +23,7 @@ def add_str_operation(op: Node, start_pos: Node, end_pos: Node, \
     
     return operation
 
-def add_modifiers(self, op: Node, stack: List[Node], index: int):
+def add_modifiers(op: Node, stack: List[Node], index: int):
     
     op_ll_pos = stack.pop()    # Last line position
     op_fl_pos = stack.pop()    # First line position
@@ -57,7 +57,7 @@ class StringOperationOpcode(Opcode):
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
         op = stack.pop()           # The string to slice
-        op = add_modifiers(self, op, stack, index)
+        op = add_modifiers(op, stack, index)
         stack.append(op)
 
 #
@@ -71,7 +71,7 @@ class HiliteOpcode(Opcode):
                 fn: FunctionDef, index: int):
         field = UnaryOperation(UnaryOperationNames.FIELD, index)
         field.operand = stack.pop()  # The field to hilite     
-        field = add_modifiers(self, field, stack, index)
+        field = add_modifiers(field, stack, index)
         
         op = UnaryOperation(UnaryOperationNames.HILITE, index)
         op.operand = field
@@ -90,7 +90,7 @@ class PutIntoFieldOpcode(BiOpcode):
         
         field = UnaryOperation(UnaryOperationNames.FIELD, index)
         field.operand = stack.pop()  # The field to put     
-        field = add_modifiers(self, field, stack, index)
+        field = add_modifiers(field, stack, index)
         
         op = SpAssignOperation(BinaryOperationNames.ASSIGN, index)
         op.left = field
@@ -112,7 +112,7 @@ class PutIntoFieldSpOpcode(BiOpcode):
         
         field = UnaryOperation(UnaryOperationNames.FIELD, index)
         field.operand = stack.pop()  # The field to put     
-        field = add_modifiers(self, field, stack, index)
+        field = add_modifiers(field, stack, index)
         
         op = SpAssignOperation(BinaryOperationNames.ASSIGN, index)
         op.left = field
@@ -132,7 +132,7 @@ class PutIntoListOpcode(BiOpcode):
                 fn: FunctionDef, index: int):
         
         lval = stack.pop()
-        lval = add_modifiers(self, lval, stack, index)
+        lval = add_modifiers(lval, stack, index)
         
         op = SpAssignOperation(BinaryOperationNames.ASSIGN, index)
         op.left = lval
@@ -153,7 +153,7 @@ class PutIntoStringOpcode(BiOpcode):
         
         op1 = int(stack.pop().name)
         lval = fn.local_vars[op1]
-        lval = add_modifiers(self, lval, stack, index)
+        lval = add_modifiers(lval, stack, index)
         
         op = SpAssignOperation(BinaryOperationNames.ASSIGN, index)
         op.left = lval
@@ -173,7 +173,7 @@ class PutAfterListOpcode(BiOpcode):
                 fn: FunctionDef, index: int):
         
         lval = stack.pop()
-        lval = add_modifiers(self, lval, stack, index)
+        lval = add_modifiers(lval, stack, index)
         
         op = SpAssignOperation(BinaryOperationNames.ASSIGN, index)
         op.left = lval
@@ -194,7 +194,7 @@ class PutAfterStringOpcode(BiOpcode):
         
         op1 = int(stack.pop().name)
         lval = fn.local_vars[op1]
-        lval = add_modifiers(self, lval, stack, index)
+        lval = add_modifiers(lval, stack, index)
         
         op = SpAssignOperation(BinaryOperationNames.ASSIGN, index)
         op.left = lval
@@ -215,7 +215,7 @@ class PutAfterFieldOpcode(BiOpcode):
         
         field = UnaryOperation(UnaryOperationNames.FIELD, index)
         field.operand = stack.pop()  # The field to put     
-        field = add_modifiers(self, field, stack, index)
+        field = add_modifiers(field, stack, index)
         
         op = SpAssignOperation(BinaryOperationNames.ASSIGN, index)
         op.left = field
@@ -235,7 +235,7 @@ class PutBeforeListOpcode(BiOpcode):
                 fn: FunctionDef, index: int):
         
         lval = stack.pop()
-        lval = add_modifiers(self, lval, stack, index)
+        lval = add_modifiers(lval, stack, index)
         
         op = SpAssignOperation(BinaryOperationNames.ASSIGN, index)
         op.left = lval
@@ -256,7 +256,7 @@ class PutBeforeStringOpcode(BiOpcode):
         
         op1 = int(stack.pop().name)
         lval = fn.local_vars[op1]
-        lval = add_modifiers(self, lval, stack, index)
+        lval = add_modifiers(lval, stack, index)
         
         op = SpAssignOperation(BinaryOperationNames.ASSIGN, index)
         op.left = lval
@@ -277,7 +277,7 @@ class PutBeforeFieldOpcode(BiOpcode):
         
         field = UnaryOperation(UnaryOperationNames.FIELD, index)
         field.operand = stack.pop()  # The field to put     
-        field = add_modifiers(self, field, stack, index)
+        field = add_modifiers(field, stack, index)
         
         op = SpAssignOperation(BinaryOperationNames.ASSIGN, index)
         op.left = field
@@ -297,7 +297,7 @@ class DeleteFromListOpcode(BiOpcode):
                 fn: FunctionDef, index: int):
         
         lval = stack.pop()  # The list to delete from     
-        lval = add_modifiers(self, lval, stack, index)
+        lval = add_modifiers(lval, stack, index)
         
         op = UnaryOperation(UnaryOperationNames.DELETE, index)
         op.operand = lval
@@ -316,7 +316,7 @@ class DeleteFromStringOpcode(BiOpcode):
         
         op1 = int(stack.pop().name)
         lval = fn.local_vars[op1]
-        lval = add_modifiers(self, lval, stack, index)
+        lval = add_modifiers(lval, stack, index)
         
         op = UnaryOperation(UnaryOperationNames.DELETE, index)
         op.operand = lval
@@ -334,7 +334,7 @@ class DeleteFromFieldOpcode(BiOpcode):
                 fn: FunctionDef, index: int):
         field = UnaryOperation(UnaryOperationNames.FIELD, index)
         field.operand = stack.pop()  # The field to delete     
-        field = add_modifiers(self, field, stack, index)
+        field = add_modifiers(field, stack, index)
         
         op = UnaryOperation(UnaryOperationNames.DELETE, index)
         op.operand = field
