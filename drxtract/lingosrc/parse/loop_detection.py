@@ -240,7 +240,7 @@ def loop_detect_in_statements(statements: List[Statement]):
                     cast(IfThenOperation, ro.statements_list[0].code)
                 nop: UnaryOperation = cast(UnaryOperation, ifop.condition) 
                 ro.condition = nop.operand
-                ro.statements_list.pop(0)
+                ro.statements_list = ro.statements_list[1:]
             
             if is_repeat_with(ro, previous_st):
                 # Repeat with
@@ -280,7 +280,7 @@ def loop_detect_in_statements(statements: List[Statement]):
                     cast(LoadListOperation, assign_fn.parameters)
                 ro.start = assign_fn_par.operands[1]
                 
-                ro.statements_list.pop(0)
+                ro.statements_list = ro.statements_list[1:]
 
             
             loop_detect_in_statements(ro.statements_list)
