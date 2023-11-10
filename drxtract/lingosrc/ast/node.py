@@ -2,7 +2,7 @@
 # E-mail: system252001@yahoo.es
 # License: GNU GPL v2 (see LICENSE file for details).
 
-from ..util import is_same_class
+from ..util import is_same_class, vsprintf, get_class_name
 
 #
 # Node class.
@@ -18,6 +18,10 @@ class Node:
         if is_same_class(other, self):
             return self.name == other.name and self.position == other.position
         return False
+    
+    def __str__(self):
+        return vsprintf('%s("%s", %s)', get_class_name(self), self.name,
+                        self.position)
 
     def generate_lingo(self, indentation: int) -> str: 
         return self.name
