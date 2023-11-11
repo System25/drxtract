@@ -8,3 +8,5 @@
 from .lnam import parse_lnam_file_data
 from .lscr import parse_lrcr_file_data
 from .file_operations import parse_lnam_file, parse_lrcr_file
+
+__all__ = ['parse_lnam_file_data', 'parse_lrcr_file_data']

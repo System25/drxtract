@@ -7,3 +7,5 @@
 #
 from .lingo import generate_lingo_code
 from .js import generate_js_code
+
+__all__ = ['generate_lingo_code', 'generate_js_code']

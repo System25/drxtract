@@ -246,3 +246,6 @@ for op in TRI_OPCODES_LIST:
 	idxt: int = op.opcode * 65536 + op.opcode2*256 + op.opcode3
 	TRI_OPCODES[idxt] = op
 
+__all__ = ['OPCODES', 'BI_OPCODES', 'TRI_OPCODES', 'Opcode', 'BiOpcode',
+		'TriOpcode', 'Param1Opcode', 'Param2Opcode']
+
