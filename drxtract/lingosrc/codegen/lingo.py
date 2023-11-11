@@ -9,6 +9,7 @@
 from ..ast import Script
 from ..util import code_indentation, vsprintf
 from typing import List
+from builtins import sorted
 
 # =============================================================================
 def generate_lingo_code(script: Script) -> str:
@@ -49,7 +50,7 @@ def generate_lingo_code(script: Script) -> str:
             code = code + vsprintf(" %s", ', '.join(params))
         code += "\n"
         
-        f.global_vars.sort(key = lambda x: x.name)
+        f.global_vars = sorted(f.global_vars, key = lambda x: x.name)
         gv_count: int = 0
         for gv in f.global_vars:
             if gv.name not in script.global_vars:
