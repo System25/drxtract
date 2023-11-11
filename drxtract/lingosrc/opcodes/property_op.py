@@ -13,6 +13,7 @@ from ..ast import FunctionDef, Sprite, StringOperationNames, \
 from ..model import Context
 from ..util import get_keys, vsprintf
 from typing import List, cast, Optional
+from builtins import list
 
 SPECIAL_PROPERTIES = ['floatPrecision', 'mouseDownScript', 'mouseUpScript',
                       'keyDownScript', 'keyUpScript', 'timeoutScript']
