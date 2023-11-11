@@ -36,11 +36,9 @@ $(OUTPUT)/index.js: $(jsclasses)
 		sed -i -E "s/^from typing import .*//" $(pack)/__init__.pys ; \
 		$(PY2JS) $(pack)/__init__.pys ; \
 		rm $(pack)/__init__.pys ; \
-		sed -i -E "s/^import \{([^}]+)\} from '([^']+)'/export {\1} from '\2.js'/"  $(pack)/__init__.js ; \
+		sed -i -E "s/^import \{([^}]+)\} from '([^']+)'/import {\1} from '\2.js'/"  $(pack)/__init__.js ; \
 		mv $(pack)/__init__.js $(OUTPUT)/$(pack)/index.js ; \
 	)
-	sed -i -E "s/^export /import /"  $(OUTPUT)/lingosrc/opcodes/index.js ; \
-	echo "export { OPCODES, BI_OPCODES, TRI_OPCODES, Opcode, BiOpcode, TriOpcode, Param1Opcode, Param2Opcode };" >> $(OUTPUT)/lingosrc/opcodes/index.js
 	touch $(OUTPUT)/index.js
 	cd $(JSSRC); find . -name "*.js" -exec cp \{\} ../drxtract/\{\} \;
 
