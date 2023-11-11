@@ -339,8 +339,7 @@ class AssignSystemPropertiesOpcode(SystemPropertiesOpcode):
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
-        SystemPropertiesOpcode.process(self, context, stack, fn, \
-                                       index)
+        super().process(context, stack, fn, index)
         op = BinaryOperation(BinaryOperationNames.ASSIGN, index)
         op.left = stack.pop()
         op.right = stack.pop()
