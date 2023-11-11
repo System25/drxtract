@@ -58,6 +58,7 @@ $(OUTPUT)/index.js: $(jsclasses)
 	$(PY2JS) $<
 	sed -i -E "s/^import \{([^}]+)\} from '([^']+)'/import {\1} from '\2.js'/" $@
 	sed -i -E "s/^import \{Enum\} from 'enum.js'/import {Enum} from 'enum'/" $@
+	sed -i -E "s/^import \{([^}]+)\} from 'builtins.js'/import {\1} from 'py2jscompat'/" $@	
 	sed -i -E "s/^class[ ]+([^ ]+)/export class \1/" $@
 	sed -i -E "s/^function[ ]+([A-Za-z0-9]+)/export function \1/" $@
 	sed -i -E 's/(ValueError|ZeroDivisionError|EnvironmentError)/Error/' $@
