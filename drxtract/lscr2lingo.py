@@ -66,4 +66,8 @@ def main():
         file_name = "%s.%s"%(nfiles, file_ext)
         with open(file_name, 'wb') as file:
             file.write(lingo.encode('utf-8'))
+            
+if __name__ == '__main__':
+    main()
+
         

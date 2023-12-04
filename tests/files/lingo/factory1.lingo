@@ -1,0 +1,86 @@
+factory makeStack
+
+method mnew masterObject, theObject
+    instance myLength, myMaster
+
+    set myMaster = masterObject
+    set theObject = dumpObject(theObject)
+    set myLength = 0
+    me mReset
+end
+
+method mReset
+    repeat with i = 1 to myLength
+        me mput, i, 0
+    end repeat
+    set myLength = 0
+end
+
+method mname
+    return "Stack:Factory"
+end
+
+method mPush value
+    set myLength = (myLength + 1)
+    me mput, myLength, value
+end
+
+method mPop
+    if (myLength > 0) then
+        set value = me(mget, myLength)
+        set myLength = (myLength - 1)
+        return value
+    else
+        return #StackUnderflow
+    end if
+end
+
+method mPull
+    if (myLength > 0) then
+        set value = me(mget, 1)
+        me mRemove, 1
+        return value
+    else
+        return #StackUnderflow
+    end if
+end
+
+method mRemove position
+    if (((myLength > 0) and (position > 0)) and (position <= myLength)) then
+        repeat with i = position to (myLength - 1)
+            me mput, i, me(mget, (i + 1))
+        end repeat
+        set myLength = (myLength - 1)
+    end if
+end
+
+method mGetLength
+    return myLength
+end
+
+method mPutLength whatLength
+    set myLength = whatLength
+end
+
+method mShow
+    put "** makeStack: mShow"
+    put ("Stack length:" && myLength)
+    repeat with i = 1 to myLength
+        set value = me(mget, i)
+        if objectp(value) then
+            set value = value(mname)
+        end if
+        put ((("Stack position" && i) && ":") && value)
+    end repeat
+end
+
+method mRelease
+    if myMaster then
+        repeat with i = 1 to myLength
+            me mput, i, dumpObject(me(mget, i))
+        end repeat
+        set myLength = 0
+    else
+        me mReset
+    end if
+end

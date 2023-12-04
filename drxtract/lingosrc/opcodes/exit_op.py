@@ -18,3 +18,15 @@ class ExitOpcode(Opcode):
                 fn: FunctionDef, index: int):
         op = CallFunction('exit', index)
         fn.statements.append(Statement(op, index))
+
+#
+# Exit factory method Opcode.
+#
+class ExitFactoryMethodOpcode(Opcode):
+    def __init__(self):
+        super().__init__(0x02)
+
+    def process(self, context: Context, stack: List[Node], \
+                fn: FunctionDef, index: int):
+        op = CallFunction('exit', index)
+        fn.statements.append(Statement(op, index))

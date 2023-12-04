@@ -52,6 +52,7 @@ class FunctionDef(Node):
         self.local_vars: List[LocalVariable] = []
         self.global_vars: List[GlobalVariable] = []
         self.statements: List[Statement] = []
+        self.is_method: bool = False
 
 #
 # Call function operation class.
@@ -89,8 +90,8 @@ class CallFunction(Node):
             
             params: LoadListOperation = cast(LoadListOperation, self.parameters)
             if 'sound' == self.name:
-                sym: Node = params.operands.pop()
-                return vsprintf("sound %s %s", sym.name,
+                modif: Node = params.operands.pop()
+                return vsprintf("sound %s %s", modif.name,
                                       params.generate_lingo(indentation))
             
             if self.use_parenthesis:

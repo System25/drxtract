@@ -16,3 +16,7 @@ class Script:
         self.properties: List[str] = []
         self.global_vars: List[str] = []
         self.functions: List[FunctionDef] = []
+        self.scr_num: int = -1
+        self.cont_scr_num: int = -1
+        self.factory_name: str = ''
+        

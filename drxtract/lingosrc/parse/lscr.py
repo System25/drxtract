@@ -5,7 +5,8 @@
 from typing import List, cast
 from ..ast import Script, FunctionDef, Node, LocalVariable, ParameterName
 from ..model import Context, Header
-from ..util import escape_string, unpack_float80, get_keys, get_class_name
+from ..util import escape_string, unpack_float80, get_keys, get_class_name, \
+    vsprintf
 from ..opcodes import OPCODES, Opcode, BiOpcode, TriOpcode, \
     Param1Opcode, Param2Opcode, BI_OPCODES, TRI_OPCODES
 from .loop_detection import condition_detect, loop_detect
@@ -54,6 +55,11 @@ def parse_lrcr_file_data(fdata: bytes, name_list: List[str]) -> Script:
     
     # Read the properties record blocks
     script = Script()
+    script.scr_num = header.scr_num
+    script.cont_scr_num = header.cont_scr_num
+    if header.factory_name_idx >= 0:
+        script.factory_name = name_list[header.factory_name_idx]
+    
     script.properties = parse_lrcr_prb(fdata, header, name_list)
     context.properties = script.properties
     
@@ -198,10 +204,16 @@ def parse_frb(fdata: bytes, header: Header, context: Context, script: Script):
         for nl in range(0, bc_narg):
             idxl = 2*nl + argnames_off
             n = struct.unpack(lsrc_bit_order+"h", fdata[idxl:idxl+2])[0]
-            logging.debug("idxl = %x n=%s", idxl, n)
-            logging.debug('paramns[%s] = "%s"', nl, context.name_list[n])
-            fn.parameters.append(
-                ParameterName(context.name_list[n], idxl))
+            if n > 0:
+                logging.debug("idxl = %x n=%s", idxl, n)
+                logging.debug('paramns[%s] = "%s"', nl, context.name_list[n])
+                fn.parameters.append(
+                    ParameterName(context.name_list[n], idxl))
+            else:
+                logging.debug("n=%s --> is factory method", n)
+                fn.is_method = True
+                fn.parameters.append(
+                    ParameterName('me', idxl))
             
         parse_opcodes(fdata, context, bc_off, bc_length, fn)
         script.functions.append(fn)
@@ -285,7 +297,7 @@ def parse_opcodes(fdata: bytes, context: Context, bc_off: int,
                 logging.debug("-> %s", get_class_name(parse_obj))
             
         else:
-            raise Exception("opcode not implemented: %s", opcode)
+            raise Exception(vsprintf("opcode not implemented: %s", opcode))
 
     condition_detect(fn)
     loop_detect(fn)
@@ -384,7 +396,7 @@ def parse_lrcr_prb(fdata: bytes, header: Header, name_list: List[str]
             fname = 'noname'
             if namelist_index >= 0 and namelist_index < len(name_list):
                 fname = name_list[namelist_index]
-            logging.debug('pnames[%d]=%s'%(i, fname))
+            logging.debug('pnames[%d]=%s (idx=%d)'%(i, fname, namelist_index))
             i += 1
             pnames.append(fname)            
     
@@ -595,10 +607,14 @@ def parse_lrcr_file_header(fdata: bytes) -> Header:
     idx += 4
     filesize1 =  struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
     idx += 4
-    unknown_04 =  struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
-    idx += 4
-    unknown_05 =  struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
-    idx += 4
+    unknown_04 =  struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+    idx += 2
+    scr_num =  struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+    idx += 2
+    unknown_05 =  struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+    idx += 2 
+    cont_scr_num =  struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+    idx += 2
     unknown_06 =  struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
     idx += 4
     unknown_07 =  struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
@@ -611,8 +627,10 @@ def parse_lrcr_file_header(fdata: bytes) -> Header:
     idx += 4
     unknown_11 =  struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
     idx += 4
-    unknown_12 =  struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
-    idx += 4
+    factory_name_idx =  struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+    idx += 2
+    unknown_12 =  struct.unpack(lsrc_bit_order+"h", fdata[idx:idx+2])[0]
+    idx += 2
     unknown_13 =  struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
     idx += 4
     unknown_14 =  struct.unpack(lsrc_bit_order+"i", fdata[idx:idx+4])[0]
@@ -625,14 +643,17 @@ def parse_lrcr_file_header(fdata: bytes) -> Header:
     logging.debug("unknown_01 = %08x", unknown_01) 
     logging.debug("filesize0 = %s", filesize0) 
     logging.debug("filesize1 = %s", filesize1) 
-    logging.debug("unknown_04 = %08x", unknown_04) 
-    logging.debug("unknown_05 = %08x", unknown_05) 
+    logging.debug("unknown_04 = %04x", unknown_04)
+    logging.debug("Script number = %s", scr_num) 
+    logging.debug("unknown_05 = %04x", unknown_05)
+    logging.debug("Continues Script number = %s", cont_scr_num)
     logging.debug("unknown_06 = %08x", unknown_06) 
     logging.debug("unknown_07 = %08x", unknown_07) 
     logging.debug("unknown_08 = %08x", unknown_08) 
     logging.debug("unknown_09 = %08x", unknown_09) 
     logging.debug("unknown_10 = %08x", unknown_10) 
-    logging.debug("unknown_11 = %08x", unknown_11) 
+    logging.debug("unknown_11 = %08x", unknown_11)
+    logging.debug("factory_name_idx = %d", factory_name_idx)
     logging.debug("unknown_12 = %08x", unknown_12) 
     logging.debug("unknown_13 = %08x", unknown_13) 
     logging.debug("unknown_14 = %08x", unknown_14) 
@@ -712,6 +733,9 @@ def parse_lrcr_file_header(fdata: bytes) -> Header:
     logging.debug("con_offset = %s", con_offset)
 
     header = Header()
+    header.scr_num = scr_num
+    header.cont_scr_num = cont_scr_num
+    header.factory_name_idx = factory_name_idx
     header.con_offset = con_offset
     header.crb_offset = crb_offset
     header.crb_nconstants = crb_nconstants

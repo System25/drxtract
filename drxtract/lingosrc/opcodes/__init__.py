@@ -22,14 +22,14 @@ from .assign_op import AssignGlobalVariableOpcode, AssignGlobalVarOpcode, \
 	AssignAfterFieldOpcode, AssignBeforeLocalVarOpcode, \
 	AssignBeforeFieldOpcode
 
-from .exit_op import ExitOpcode
+from .exit_op import ExitOpcode, ExitFactoryMethodOpcode
 
 from .jump_op import JumpOpcode, FowardJumpOpcode, ConditionalJumpOpcode
 
 from .tell_op import WindowTellStartOpcode, WindowTellEndOpcode
 
 from .call_op import CallLocalOpcode, CallExternalOpcode, \
-	CallFuncWithExtGlobalOpcode, CallExternalMethodOpcode
+	CallObjectMethodOpcode, CallExternalMethodOpcode
 
 from .property_op import SpecialPropertiesOpcode, \
 	AssignSpecialPropertiesOpcode, NumberOfElementsOpcode, \
@@ -147,6 +147,7 @@ OPCODES_LIST: List[Opcode] = [
 	AssignBeforeFieldOpcode(),
 	
 	ExitOpcode(),
+	ExitFactoryMethodOpcode(),
 	
 	JumpOpcode(),
 	FowardJumpOpcode(),
@@ -157,7 +158,7 @@ OPCODES_LIST: List[Opcode] = [
 	
 	CallLocalOpcode(),
 	CallExternalOpcode(),
-	CallFuncWithExtGlobalOpcode(),
+	CallObjectMethodOpcode(),
 	CallExternalMethodOpcode(),
 	
 	SpecialPropertiesOpcode(),
