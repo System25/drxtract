@@ -15,6 +15,9 @@ MMAP_FILE_FORMAT = 'mmap'
 FREE_FILE_FORMAT = 'free'
 JUNK_FILE_FORMAT = 'junk'
 
+RIFX_LE_HEADER = 'XFIR'
+MV93_LE_HEADER = '39VM'
+
 #
 # RIFF data class
 # 
@@ -117,18 +120,17 @@ def find_riff_in_exe(content: bytes) -> int:
         
     """
     rifx_offset: int = 0
-    index: int = content.find(RIFX_FILE_FORMAT.encode('ascii'))
+    index: int = content.find(RIFX_LE_HEADER.encode('ascii'))
     found: bool = False
     while index >= 0 and not found:
         rifx_offset += index
         content = content[index:]
-        if content[8:12] == MV93_FILE_TYPE.encode('ascii'):
+        if content[8:12] == MV93_LE_HEADER.encode('ascii'):
             found = True
         else:
             content = content[4:]
             rifx_offset += 4
-            index = content.find(RIFX_FILE_FORMAT.encode('ascii'))
+            index = content.find(RIFX_LE_HEADER.encode('ascii'))
     logging.info("Use %s as RIFX index inside EXE", rifx_offset)
     
     return rifx_offset
-

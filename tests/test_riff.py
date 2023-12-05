@@ -42,17 +42,14 @@ class TestScript(unittest.TestCase):
             self.assertEqual(fileContent, chunk.data,
                              "Difference in: " + file_name)
     
-    
-    @parameterized.expand([
-        ['>', 'AppleGame'],
-        
-    ])
-    def test_script(self, byte_order: str, dir_name: str):
-        dir_file = os.path.join(dir_name, dir_name + ".dir")
-        output_folder = os.path.join(dir_name, "files", "bin")
+    def compare_dir(self, byte_order: str, dir_file: str, output_folder: str):
         rifx_offset: int = 0
         with open(dir_file, mode='rb') as file:
             fileContent: bytes = file.read()
+            if dir_file.upper().endswith('.EXE'):
+                # Try to find DRX header inside the EXE file
+                rifx_offset = find_riff_in_exe(fileContent)
+            
             riffData: RiffData = parse_riff(fileContent, rifx_offset, byte_order)
             
             # Parse the imap block
@@ -77,4 +74,25 @@ class TestScript(unittest.TestCase):
 
                 
                 self.compare_chunk(chunk, idx, output_folder)
+    
+    @parameterized.expand([
+        ['>', 'AppleGame'],
+        ['<', 'Lorem'],
         
+    ])
+    def test_riff(self, byte_order: str, dir_name: str):
+        dir_file = os.path.join(dir_name, dir_name + ".dir")
+        output_folder = os.path.join(dir_name, "files", "bin")
+        
+        self.compare_dir(byte_order, dir_file, output_folder)
+
+    @parameterized.expand([
+        ['Lorem_proj'],
+        
+    ])
+    def test_exe(self, dir_name: str):
+        dir_file = os.path.join(dir_name, dir_name + ".exe")
+        output_folder = os.path.join(dir_name, "files", "bin")
+        
+        self.compare_dir('<', dir_file, output_folder)
+
