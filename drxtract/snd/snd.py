@@ -56,38 +56,6 @@ class DataType:
         """Sound init param"""
 
 #
-# Sound command names enumeration.
-# 
-class SoundCommandNames(Enum):
-    NULL = 0            # do nothing
-    QUIET = 3           # stop a sound that is playing
-    FLUSH = 4           # flush a sound channel
-    REINIT = 5          # reinitialize a sound channel
-    WAIT = 10           # suspend processing in a channel
-    PAUSE = 10          # pause processing in a channel
-    RESUME = 12         # resume processing in a channel
-    CALLBACK = 13       # execute a callback procedure
-    SYNC = 14           # synchronize channels
-    AVAILABLE = 24      # see if initialization options are supported
-    VERSION = 25        # determine version
-    TOTAL_LOAD = 26     # report total CPU load
-    LOAD = 27           # report CPU load for a new channel
-    FREQ_DURATION = 40  # play a note for a duration
-    REST = 41           # rest a channel for a duration
-    FREQ = 42           # change the pitch of a sound
-    AMP = 43            # change the amplitude of a sound
-    TIMBRE = 44         # change the timbre of a sound
-    GET_AMP = 45        # get the amplitude of a sound
-    VOLUME = 46         # set volume
-    GET_VOLUME = 47     # get volume
-    WAVE_TABLE = 60     # install a wave table as a voice
-    SOUND = 80          # install a sampled sound as a voice
-    BUFFER = 81         # play a sampled sound
-    RATE = 82           # set the pitch of a sampled sound
-    GET_RATE = 85       # get the pitch of a sampled sound
-
-
-#
 # Sound command class.
 #
 class SoundCommand:
