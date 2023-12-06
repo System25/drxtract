@@ -31,7 +31,8 @@ def main():
             sys.exit(-1)
 
         if not os.path.isfile(os.path.join(sys.argv[1], sys.argv[2])):
-            logging.error(" '%s' is not a file"%(os.path.join(sys.argv[2], sys.argv[3])))
+            logging.error(" '%s' is not a file"%(os.path.join(sys.argv[1],
+                                                              sys.argv[2])))
             sys.exit(-1)
         
         if not sys.argv[2].endswith('.snd_'):

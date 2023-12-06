@@ -24,6 +24,7 @@ class TestScript(unittest.TestCase):
 
     @parameterized.expand([
         ['bounce'],
+        ['bumpuf'],
         
     ])
     def test_exe(self, dir_name: str):

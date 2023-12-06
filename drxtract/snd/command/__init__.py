@@ -6,11 +6,12 @@ from typing import List, Dict
 
 from .cmd import SoundCmd
 from .nullCmd import NullCmd
-from .bufferCmd import BufferCmd
+from .bufferCmd import BufferCmd, SampledSoundCmd
 
 SOUND_CMD_LIST: List[SoundCmd] = [
     NullCmd(),
-    BufferCmd()
+    BufferCmd(),
+    SampledSoundCmd()
 ]
 
 SOUND_COMMANDS: Dict[int, SoundCmd] = {}

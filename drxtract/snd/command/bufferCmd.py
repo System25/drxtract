@@ -16,6 +16,7 @@ COMPRESSED = 0xFE
 MIDDLE_C = 60
 
 
+        
 #
 # Buffer command class.
 # Play a sampled sound.
@@ -25,13 +26,7 @@ class BufferCmd(SoundCmd):
     def __init__(self):
         super().__init__(0x8051)
         
-    def get_frames(self, sound: SampledSound, param1: int,
-                   param2: int, fdata: bytes) -> bytes:
-        logging.debug("bufferCmd(%d, %d)", param1, param2)
-        
-        # param2: offset to sound header
-        idx = param2
-        
+    def _get_frames(self, sound: SampledSound, idx: int, fdata: bytes) -> bytes:
         # Read the sampled sound header (pag. 104)
         #
         # PACKED RECORD (standar sound header)
@@ -182,3 +177,31 @@ class BufferCmd(SoundCmd):
             
         else:
             raise ValueError("Unsupported bits per sample!")
+        
+    def get_frames(self, sound: SampledSound, param1: int,
+                   param2: int, fdata: bytes) -> bytes:
+        logging.debug("bufferCmd(%d, %d)", param1, param2)
+        
+        # param2: offset to sound header
+        idx = param2
+        return self._get_frames(sound, idx, fdata)
+        
+        
+#
+# Sampled sound command class.
+# install a sampled sound as a voice.
+# (this is similar to bufferCmd)
+# https://www.burgerbecky.com/burgerlib/docs/Sound_Manager.pdf
+# 
+class SampledSoundCmd(BufferCmd):
+    def __init__(self):
+        super().__init__()
+        self.command = 0x8050
+        
+    def get_frames(self, sound: SampledSound, param1: int,
+                   param2: int, fdata: bytes) -> bytes:
+        logging.debug("soundCmd(%d, %d)", param1, param2)
+        
+        # param2: offset to sound header
+        idx = param2
+        return self._get_frames(sound, idx, fdata)
