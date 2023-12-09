@@ -1,0 +1,14 @@
+{
+    "text": "Lorem ipsum",
+    "txt_format": [
+        {
+            "bold": false,
+            "color": "#000000",
+            "font_family": "Arial",
+            "font_size": 12,
+            "italic": false,
+            "start": 0,
+            "underline": false
+        }
+    ]
+}
