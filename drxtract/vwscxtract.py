@@ -55,15 +55,12 @@ def main():
         vwsc_elements = parse_vwsc_file(os.path.join(sys.argv[1],
                                                      BINDIR, vwsc_file))
         
-               
         data = vwsc_to_score(vwsc_elements)
-
-      
-        
         
         # Write score data to JSON file
         with open(os.path.join(sys.argv[1], 'score.json'), 'wb') as jsfile:
-            jsfile.write(json.dumps(data, indent=4, sort_keys=True).encode('utf-8'))
+            jsfile.write(json.dumps(data, indent=4, sort_keys=True).encode(
+                'utf-8'))
 
         
 if __name__ == '__main__':
