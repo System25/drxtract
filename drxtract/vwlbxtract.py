@@ -11,9 +11,9 @@
 
 import sys
 import os
-import struct
 import logging
 import json
+from .vwlb import parse_vwlb_data
 
 BINDIR = 'bin'
 
@@ -22,41 +22,12 @@ BINDIR = 'bin'
 
 # ==============================================================================
 # Reads from VWLB file the markers channel of the score and its frame
-def parse_vwlb_file(vwlb_file):
-    vwlb_data = []
-    
+def parse_vwlb_file(vwlb_file):    
     with open(vwlb_file, mode='rb') as file:
         fdata = file.read()
-
-        indx = 0
-        nmarkers = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
-        indx = indx + 2
-        logging.debug("N Markers: %d"%(nmarkers))
-        
-        mnidx = 2 + 4 * (nmarkers + 1)
-        
-        for _ in range(0, nmarkers):
-            marker = {}
+        return parse_vwlb_data(fdata)
             
-            frame = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
-            indx = indx + 2
-            logging.debug("Frame: %d"%(frame))
-            marker['frame'] = frame
-            
-            name_start = mnidx + struct.unpack(">h", fdata[(indx):(indx+2)])[0]
-            indx = indx + 2
-            logging.debug("name_start: %d"%(name_start))
-            
-            name_end = mnidx + struct.unpack(">h", fdata[(indx+2):(indx+4)])[0]
-            logging.debug("name_end: %d"%(name_end))
-            
-            name = fdata[name_start:name_end].decode('utf-8')
-            logging.debug("Name: %s"%(name))
-            marker['name'] = name
-            
-            vwlb_data.append(marker)
-            
-    return vwlb_data
+    return []
 
 # ==============================================================================
 def main():
@@ -79,8 +50,12 @@ def main():
             logging.error('Can not find a VWLB file!')
             sys.exit(-1)
         
-        vwlb_elements = parse_vwlb_file(os.path.join(sys.argv[1], BINDIR, vwlb_file))
+        vwlb_elements = parse_vwlb_file(os.path.join(sys.argv[1], BINDIR,
+                                                     vwlb_file))
         # Write markers data to JSON file
         with open(os.path.join(sys.argv[1], 'markers.json'), 'wb') as jsfile:
-            jsfile.write(json.dumps(vwlb_elements, indent=4, sort_keys=True).encode('utf-8'))
+            jsfile.write(json.dumps(vwlb_elements, indent=4, sort_keys=True
+                                    ).encode('utf-8'))
 
+if __name__ == '__main__':
+    main()

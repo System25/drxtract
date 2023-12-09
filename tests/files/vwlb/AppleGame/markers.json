@@ -1,0 +1,50 @@
+[
+    {
+        "frame": 2,
+        "name": "Intro"
+    },
+    {
+        "frame": 3,
+        "name": "Wait"
+    },
+    {
+        "frame": 7,
+        "name": "Play"
+    },
+    {
+        "frame": 11,
+        "name": "LBuck"
+    },
+    {
+        "frame": 23,
+        "name": ""
+    },
+    {
+        "frame": 25,
+        "name": "RBuck"
+    },
+    {
+        "frame": 37,
+        "name": ""
+    },
+    {
+        "frame": 39,
+        "name": "GameOver"
+    },
+    {
+        "frame": 52,
+        "name": ""
+    },
+    {
+        "frame": 65,
+        "name": "Win"
+    },
+    {
+        "frame": 85,
+        "name": ""
+    },
+    {
+        "frame": 88,
+        "name": "help"
+    }
+]
