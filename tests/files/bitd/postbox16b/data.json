@@ -1,0 +1,29 @@
+{
+    "bottom": 545,
+    "content": {
+        "basic": [
+            "0x00000000",
+            "0xc8000f23",
+            "0x00000000",
+            "0x00000000"
+        ],
+        "extra": [
+            "",
+            "C1BPU1RCT1guQk1Q"
+        ]
+    },
+    "depth": 16,
+    "fileName": "20.png",
+    "h_padding": 0,
+    "height": 533,
+    "left": -12,
+    "locH": 200,
+    "locV": 266,
+    "name": "POSTBOX.BMP",
+    "right": 412,
+    "thumbnailFileName": "21.png",
+    "top": -12,
+    "type": "bitmap",
+    "w_padding": 0,
+    "width": 400
+}

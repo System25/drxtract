@@ -1,0 +1,31 @@
+{
+    "bottom": 720,
+    "content": {
+        "basic": [
+            "0x00000000",
+            "0x88016f37",
+            "0x00000000",
+            "0x00000000"
+        ],
+        "extra": [
+            "",
+            "CVBfMjRCLkJNUA=="
+        ]
+    },
+    "depth": 8,
+    "fileName": "20.png",
+    "h_padding": 0,
+    "height": 708,
+    "left": -12,
+    "locH": 427,
+    "locV": 354,
+    "name": "P_24B.BMP",
+    "palette": -100,
+    "palette_txt": "systemWinDir4",
+    "right": 867,
+    "thumbnailFileName": "21.png",
+    "top": -12,
+    "type": "bitmap",
+    "w_padding": 0,
+    "width": 855
+}

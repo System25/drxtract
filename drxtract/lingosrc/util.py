@@ -135,3 +135,24 @@ def escape_string(strval: str) -> str:
     """
 
     return '"' + strval.encode("unicode_escape").decode('ascii') + '"'
+
+# =============================================================================
+def repeat_string(word:str, n:int) -> str:
+    """
+    Returns a string with the word repeated N times.
+    
+    Parameters
+    ----------
+    word : str
+        The word to repeat.
+    n: int
+        The number of times that the word will be repeated.
+        
+    Returns
+    -------
+    str
+        The word repeated N times.
+        
+    """
+
+    return word * n
