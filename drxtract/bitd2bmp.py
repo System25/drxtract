@@ -13,6 +13,7 @@ import os
 import logging
 import json
 from .bitd import bitd2bmp
+from .clut import clut2palette
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -63,33 +64,7 @@ def bitd_file2bmp(castData, bitd_file):
             
             with open(os.path.join(clut_dir, clut_file), mode='rb') as cfile:
                 cData = cfile.read()
-                clutData = bytearray(256*4)
-                indx = 0
-                cindx = 0
-                for _ in range(0, 256):
-                    # The same color in RGB - BRG form
-                    r0 = cData[indx]
-                    indx += 1
-                    g0 = cData[indx]
-                    indx += 1
-                    b0 = cData[indx]
-                    indx += 1
-                    
-                    b1 = cData[indx]
-                    indx += 1
-                    g1 = cData[indx]
-                    indx += 1
-                    r1 = cData[indx]
-                    indx += 1
-                    
-                    clutData[cindx] = b1
-                    cindx += 1
-                    clutData[cindx] = g1
-                    cindx += 1
-                    clutData[cindx] = r1
-                    cindx += 1
-                    clutData[cindx] = 0  # Alpha
-                    cindx += 1
+                clutData = clut2palette(cData)
            
             logging.debug('Using a custom palette: %s'%(bmp_palette))
             
