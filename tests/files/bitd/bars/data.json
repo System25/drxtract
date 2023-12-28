@@ -1,0 +1,31 @@
+{
+    "bottom": 312,
+    "content": {
+        "basic": [
+            "0x00000000",
+            "0x9002170e",
+            "0x00000000",
+            "0x00000000"
+        ],
+        "extra": [
+            "",
+            "CEJBUlMuQk1Q"
+        ]
+    },
+    "depth": 8,
+    "fileName": "22.png",
+    "h_padding": 0,
+    "height": 300,
+    "left": -11,
+    "locH": 200,
+    "locV": 150,
+    "name": "BARS.BMP",
+    "palette": 1,
+    "palette_txt": 1,
+    "right": 412,
+    "thumbnailFileName": "23.png",
+    "top": -12,
+    "type": "bitmap",
+    "w_padding": 1,
+    "width": 400
+}

@@ -18,12 +18,18 @@ class Decoder8b(Decoder):
                         w:int, h:int,
                         padding_w:int, padding_h:int,
                         width:int, w_size:int) -> bytes:
-        # Create a white image
-        data = bytearray(width * h)
-        
+        # Create a white image        
         w = w - padding_w
         w = w + (w%2)
-        logging.info("w=%d, h=%d", w, h-padding_h)
+        
+        if w + padding_w > width:
+            bw =  width + 4
+        else:
+            bw = width
+        
+        data = bytearray(bw * h)
+        logging.info("w=%d, h=%d, width=%d, padding_w=%d, bw=%d",
+                     w, h-padding_h, width, padding_w, bw)
         x = 0
         y = h - 1 - padding_h
         idx = 0
@@ -159,14 +165,14 @@ class Decoder8b(Decoder):
         width = bmp_width
         if (width%4) > 0:
             # The image width must be divisible by four
-            width = width + 4 - (width%4)    
+            width = width + 4 - (width%4)
     
         # get the pixel information
         # RLE encoded bytes contains 1 pixel color
         w = bmp_width - bmp_padding_w
         
         # Must be an even number
-        w_size = w + (w%2)  
+        w_size = w + (w%2)
     
         if len(fdata) == w_size*(bmp_height-bmp_padding_h):
             logging.debug("The size of the data matches the image resolution."

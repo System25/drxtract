@@ -60,6 +60,7 @@ class TestScript(unittest.TestCase):
 
     @parameterized.expand([
         ['rectangle'],
+        ['bars'],
     ])
     def test_bitd_using_custom_palette(self, dir_name: str):
         clut_file = os.path.join(dir_name, dir_name + ".CLUT")
