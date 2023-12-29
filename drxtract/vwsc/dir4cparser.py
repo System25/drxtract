@@ -4,7 +4,7 @@
 
 from .cparser import VwscChannelParser, DEBUG_SPRITE_INFO, \
     DEBUG_PALETTE_CHANNEL_INFO, DEBUG_MAIN_CHANNEL_INFO
-from .constants import DIR4_PALETTE_NAMES
+from ..common import DIR4_PALETTE_NAMES
 import logging
 import struct
 from typing import Dict, Any

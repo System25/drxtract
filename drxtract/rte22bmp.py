@@ -8,6 +8,8 @@
 # Script to extract Macromedia Director RTE bimap files.
 # 
 
+# TODO! This is still a WIP
+
 import sys
 import os
 import struct
@@ -212,3 +214,5 @@ def main():
             out_name #output file
         ))
         
+if __name__ == '__main__':
+    main()

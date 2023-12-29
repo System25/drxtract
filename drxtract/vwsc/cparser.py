@@ -6,7 +6,7 @@ from abc import ABCMeta, abstractmethod
 import logging
 from typing import Dict, Any
 from ..lingosrc.util import get_keys
-from .constants import DIR_INK_NAMES, DIR_PALETTE_NAMES, DIR_TRANSITION_NAMES, \
+from ..common import DIR_INK_NAMES, DIR_PALETTE_NAMES, DIR_TRANSITION_NAMES, \
     DIR_SPRITE_TYPES
 
 DEBUG_MAIN_CHANNEL_INFO: bool = False

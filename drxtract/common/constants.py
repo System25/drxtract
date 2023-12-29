@@ -131,3 +131,10 @@ DIR4_PALETTE_NAMES: Dict[int, str] = {
     -7: 'metallic',
     -8: 'web216'
 }
+
+DIR_SHAPE_NAMES: Dict[int, str] = {
+    1: 'rect',
+    2: 'roundRect',
+    3: 'oval',
+    4: 'line'
+}
