@@ -12,6 +12,7 @@
 import sys
 import os
 import logging
+import re
 import json
 import base64
 from shutil import copyfile
@@ -25,9 +26,9 @@ from .cast import parse_cast_file_data
 logging.basicConfig(level=logging.DEBUG)
 
 
-# Default bit order for MAC
-bit_order_type = 'mac'
-bit_order = ">"
+# Default byte order for MAC
+byte_order_type = 'mac'
+byte_order = ">"
 
 BINDIR = 'bin'
 CASDIR = 'cas'
@@ -51,13 +52,13 @@ def replace_ext(filename, new_extension):
 
 
 # ==============================================================================
-def parse_key_file(key_file):
+def parse_key_file(byte_order, key_file):
     logging.debug("Parsing key file: %s ---------------------------"%(key_file))
 
     with open(key_file, mode='rb') as file:
         fdata = file.read()
 
-        return parse_key_file_data(fdata)
+        return parse_key_file_data(byte_order, fdata)
     return {}
 
 # ==============================================================================
@@ -102,16 +103,27 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
         copyfile(cast_file, os.path.join(dest_dir, os.path.basename(cast_file)))
 
         castData = parse_cast_file_data(fdata)
+        #logging.debug("casData: " + json.dumps(castData))
+
+        # Check if there is a CAST member script
+        if (('content' in castData) and ('extra' in castData['content'])
+            and len(castData['content']['extra']) > 0
+            and castData['content']['extra'][0] != ''):
+            with open(os.path.join(dest_dir, 'member.lingo'), 'wb') as cfile:
+                cfile.write(base64.b64decode(castData['content']['extra'][0]))
 
         # Decompile script (if any)
-        scridx = castData['content']['basic']['script_index']
+        if ('content' in castData) and ('basic' in castData['content']):
+            scridx = castData['content']['basic']['script_index']
+        else:
+            scridx = 0
         if scridx > 0:
             logging.debug("Script index: %d", scridx)
-            if scridx <= 0 or lctx_elements[scridx - 1] < 0:
+            if scridx <= 0 or lctx_elements[scridx - 1]['index'] < 0:
                 logging.debug("Empty script file!")
             else:
                 reference: LingoScripReference = lctx_elements[scridx - 1]
-                script_file = reference.index + ".Lscr"
+                script_file = "%d.Lscr"%(reference['index'])
                 logging.debug("Script file: %s", script_file)
 
                 src = os.path.join(os.path.dirname(cast_file), script_file)
@@ -166,7 +178,9 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
         if kelm is None or len(kelm) <= 0:
             logging.info("%s: has no related data!", cast_file)
         else:
-            for f in kelm:
+            for rf in kelm:
+                f = "%s.%s"%(rf['index'], rf['chunkID'])
+                f = re.sub(r"[^A-Za-z0-9\-_\.]", "_", f)
                 logging.debug("Related file: %s", f)
                 src = os.path.join(os.path.dirname(cast_file), f)
                 dst = os.path.join(dest_dir, f)
@@ -238,7 +252,7 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
 
 # ==============================================================================
 def main():
-    global bit_order_type, bit_order
+    global byte_order_type, byte_order
 
     if len(sys.argv) < 3:
         print("USAGE: casxtract [pc|mac] <base directory>")
@@ -249,15 +263,16 @@ def main():
             sys.exit(-1)
 
         if sys.argv[1] == 'pc':
-            bit_order_type = 'pc'
-            bit_order = "<"
+            byte_order_type = 'pc'
+            byte_order = "<"
 
         if not os.path.isdir(sys.argv[2]):
-            logging.error(" '%s' is not a directory"%(sys.argv[2]))
+            logging.error(" '%s' is not a directory", sys.argv[2])
             sys.exit(-1)
 
-        if not os.path.isdir(os.path.join(sys.argv[2], BINDIR)):
-            logging.error(" '%s' is not a directory"%(os.path.join(sys.argv[2], BINDIR)))
+        bin_dir = os.path.join(sys.argv[2], BINDIR)
+        if not os.path.isdir(bin_dir):
+            logging.error(" '%s' is not a directory", bin_dir)
             sys.exit(-1)
 
         if not os.path.isdir(os.path.join(sys.argv[2], CASDIR)):
@@ -271,7 +286,7 @@ def main():
         
         sord_file = None
         
-        for f in os.listdir(os.path.join(sys.argv[2], BINDIR)):
+        for f in os.listdir(bin_dir):
             if f.endswith('KEY_'):
                 key_file = f
             
@@ -301,7 +316,7 @@ def main():
         if lnam_file is None:
             logging.warn('Can not find a Lnam file!')
         else:
-            lnam_file = os.path.join(sys.argv[2], BINDIR, lnam_file)
+            lnam_file = os.path.join(bin_dir, lnam_file)
             
         if sord_file is None:
             logging.error('Can not find a Sord file!')
@@ -311,21 +326,22 @@ def main():
             logging.error('Can not find a VWCF or DRCF file!')
             sys.exit(-1)
         
-        config = parse_vwcf_file(os.path.join(sys.argv[2], BINDIR, vwcf_file))
+        config = parse_vwcf_file(os.path.join(bin_dir, vwcf_file))
         # Write config data to JSON file
         with open(os.path.join(sys.argv[2], CASDIR, 'config.json'), 'wb') as jsfile:
             jsfile.write(json.dumps(config, indent=4, sort_keys=True).encode('utf-8'))
         
-        cas_elements = parse_cas_file(os.path.join(sys.argv[2], BINDIR, cas_file))
-        key_elements = parse_key_file(os.path.join(sys.argv[2], BINDIR, key_file))
+        cas_elements = parse_cas_file(os.path.join(bin_dir, cas_file))
+        key_elements = parse_key_file(byte_order,
+                                      os.path.join(bin_dir, key_file))
         if lctx_file is None:
             logging.warn('Can not find a Lctx file!')
             lctx_elements = []
         else:
-            lctx_elements = parse_lctx_file(os.path.join(sys.argv[2], BINDIR, lctx_file))
+            lctx_elements = parse_lctx_file(os.path.join(bin_dir, lctx_file))
         
         
-        logging.info('There are %i elements in the casting!'%(len(cas_elements)))
+        logging.info('There are %i elements in the casting!', len(cas_elements))
         
         # Extract casting elements
         for elm in range(1, len(cas_elements)+1):
@@ -339,11 +355,11 @@ def main():
             if cas_index in key_elements:
                 kelm = key_elements[cas_index]
             
-            fname = '%i.CASt'%(int(cas_elements[elm - 1], 16))
-            if os.path.isfile(os.path.join(sys.argv[2], BINDIR, fname)):
+            fname = '%i.CASt'%(cas_elements[elm - 1])
+            if os.path.isfile(os.path.join(bin_dir, fname)):
                 logging.info('Casting element number %i is %s file!',
                              elm, fname)
-                parse_cast_file(os.path.join(sys.argv[2], BINDIR, fname), kelm,
+                parse_cast_file(os.path.join(bin_dir, fname), kelm,
                                 os.path.join(sys.argv[2], CASDIR, str(elm)),
                                lctx_elements, lnam_file)
             else:
