@@ -23,15 +23,19 @@ class TextInputParser(CastParser):
         logging.info("Is a text input field")
         castData['type'] = 'field'            
 
+        unknown0 =  int(header_data[idx])
+        idx += 1            
+        logging.debug("unknown0 = %s", unknown0)  
+
         border =  int(header_data[idx])
         idx += 1            
         logging.debug("border = %s", border)  
         
-        margin =  int(header_data[idx])
+        margin =  int(int(header_data[idx])/2)
         idx += 1            
         logging.debug("margin = %s", margin)               
 
-        boxDropShadow =  int(header_data[idx])
+        boxDropShadow =  int(int(header_data[idx])/2)
         idx += 1            
         logging.debug("boxDropShadow = %s", boxDropShadow)               
 
@@ -89,9 +93,9 @@ class TextInputParser(CastParser):
         idx += 1   
         logging.debug("unknown6 = %s", unknown6)                    
         
-        unknown7 =  struct.unpack(">h", header_data[idx:idx+2])[0]
+        scrollTop =  struct.unpack(">h", header_data[idx:idx+2])[0]
         idx += 2
-        logging.debug("unknown7 = %s", unknown7)
+        logging.debug("scrollTop = %s", scrollTop)
         
         top =  struct.unpack(">h", header_data[idx:idx+2])[0]
         idx += 2
@@ -115,8 +119,8 @@ class TextInputParser(CastParser):
 
         dropShadow =  int(header_data[idx])
         idx += 1            
-        logging.debug("dropShadow = %s", dropShadow)            
-        
+        logging.debug("dropShadow = %s", dropShadow)
+
         options =  int(header_data[idx])
         idx += 1            
         logging.debug("options = %s", options)
@@ -129,11 +133,12 @@ class TextInputParser(CastParser):
         if options & 0x1:
             editable = True                
         if options & 0x2:
-            autoTab = True
-        
+            autoTab = True            
+
         scrollHeight =  struct.unpack(">h", header_data[idx:idx+2])[0]
         idx += 2
-        logging.debug("scrollHeight = %s", scrollHeight)             
+        logging.debug("scrollHeight = %s", scrollHeight)
+
         
         castData['wordWrap'] = wordWrap    
         castData['boxType'] = boxTypeName  
@@ -150,6 +155,7 @@ class TextInputParser(CastParser):
         castData['width'] = right - left
         castData['pageHeight'] = pageHeight
         castData['scrollHeight'] = scrollHeight
+        castData['scrollTop'] = scrollTop
         
         return castData
                     
