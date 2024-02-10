@@ -9,6 +9,7 @@
 import unittest
 import os
 import json
+import wave
 from parameterized import parameterized
 
 from drxtract.dir import parse_dir_file_data, DirectorFile
@@ -88,3 +89,45 @@ class TestScript(unittest.TestCase):
         #    file.write(actualData.encode('utf-8'))
         
             self.assertEqual(expectedData, actualData)
+            
+    @parameterized.expand([
+        ['<', 'd4sn0001'],
+        ['<', 'd4sn0002']
+    ])
+    def test_sound(self, byte_order: str, dir_name: str):
+        dir_file = os.path.join('sound', dir_name, dir_name + ".DIR")
+        json_file = os.path.join('sound', dir_name, "data.json")
+        wav_file = os.path.join('sound', dir_name, "sound.wav")
+        
+        with open(json_file, mode='rb') as file:
+            expectedData = json.loads(file.read().decode('utf-8'))
+        
+        with open(dir_file, mode='rb') as file:
+            fdata = file.read()
+            
+            # Parse the director file
+            dirFile: DirectorFile = parse_dir_file_data(byte_order, 0, fdata)
+            
+            # Get the first element of the casting
+            elm = dirFile.cast[0]
+            self.assertEqual(expectedData['type'], elm['type'])
+            self.assertEqual(expectedData['loop'], elm['loop'])
+            self.assertEqual(expectedData['content']['name'],
+                             elm['content']['name'])
+            sound = elm['sampled_sound']
+            self.assertEqual(expectedData['channelCount'], sound.num_channels)
+            self.assertEqual(expectedData['sampleRate'], sound.sample_rate)
+            self.assertEqual(expectedData['sampleSize'], sound.bits_per_sample)
+
+            # Compare sounds
+            wavef = wave.open(wav_file,'r')
+            self.assertEqual(wavef.getnchannels(), sound.num_channels)
+            self.assertEqual(wavef.getsampwidth(), int(sound.bits_per_sample/8))
+            self.assertEqual(wavef.getframerate(), sound.sample_rate)
+
+            wav_frames = wavef.readframes(wavef.getnframes())
+            self.assertEqual(wav_frames, sound.samples)
+
+            wavef.close()
+
+            

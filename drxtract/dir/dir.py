@@ -15,6 +15,7 @@ from ..cast import parse_cast_file_data
 from ..vwsc import parse_vwsc_file_data, vwsc_to_score
 from ..stxt import parse_stxt_data, TextData
 from ..fmap import parse_fmap_data, FontInfo
+from ..snd import snd_to_sampled, SampledSound
 
 
 IMAP_FILE_FORMAT = 'imap'
@@ -217,6 +218,10 @@ def parse_dir_file_data(byte_order: str, rifx_offset, \
                     text_data: TextData = parse_stxt_data(chunk.data, fontmap)
                     castData['text'] = text_data['text']
                     castData['txt_format'] = text_data['txt_format']
+                    
+                elif res.chunkID == 'snd ':
+                    snd_data: SampledSound = snd_to_sampled(chunk.data)
+                    castData['sampled_sound'] = snd_data
                     
                 else:
                     raise ValueError("Unknown related element: " + res.chunkID)
