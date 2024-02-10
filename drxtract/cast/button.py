@@ -23,6 +23,10 @@ class ButtonParser(CastParser):
         logging.info("Is a push button")
         castData['type'] = 'button'
         
+        unknown0 =  int(header_data[idx])
+        idx += 1            
+        logging.debug("unknown0 = %s", unknown0)
+        
         unknown1 =  struct.unpack(">h", header_data[idx:idx+2])[0]
         idx += 2
         logging.debug("unknown1 = %s", unknown1) 
@@ -31,19 +35,9 @@ class ButtonParser(CastParser):
         idx += 2
         logging.debug("unknown2 = %s", unknown2)             
         
-        text_alignment =  struct.unpack(">h", header_data[idx:idx+2])[0]
+        unknown3 =  struct.unpack(">h", header_data[idx:idx+2])[0]
         idx += 2
-        
-        if text_alignment == 0:
-            text_alignment = 'left'
-        elif text_alignment == 1:
-            text_alignment = 'center'
-        elif text_alignment == -1:
-            text_alignment = 'right'
-        else:
-            logging.warn("Unknown text alignment = %s", text_alignment)  
-        
-        logging.debug("text_alignment = %s", text_alignment)      
+        logging.debug("unknown3 = %s", unknown3)      
         
         bgcolor_red =  int(header_data[idx])
         idx += 1            
@@ -114,7 +108,6 @@ class ButtonParser(CastParser):
         
         castData['backgroundColor'] = vsprintf('#%0.2X%0.2X%0.2X',
             bgcolor_red, bgcolor_green, bgcolor_blue)
-        castData['alignment'] = text_alignment
         castData['buttonType'] = buttonType
         
         return castData

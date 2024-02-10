@@ -61,3 +61,30 @@ class TestScript(unittest.TestCase):
         
             self.assertEqual(expectedData, actualData)
 
+    @parameterized.expand([
+        ['<', 'd4bt0001'],
+        ['<', 'd4bt0002'],
+        ['<', 'd4bt0003'],
+        ['<', 'd4bt0004']
+    ])
+    def test_buttons(self, byte_order: str, dir_name: str):
+        dir_file = os.path.join('button', dir_name, dir_name + ".DIR")
+        json_file = os.path.join('button', dir_name, "data.json")
+        
+        with open(json_file, mode='rb') as file:
+            expectedData = file.read().decode('utf-8')
+        
+        with open(dir_file, mode='rb') as file:
+            fdata = file.read()
+            
+            # Parse the director file
+            dirFile: DirectorFile = parse_dir_file_data(byte_order, 0, fdata)
+            
+            # Get the first element of the casting
+            actualData = json.dumps(dirFile.cast[0], indent=4, sort_keys=True)
+            
+            
+        #with open(os.path.join('text', dir_name, "test.json"), mode='wb') as file:
+        #    file.write(actualData.encode('utf-8'))
+        
+            self.assertEqual(expectedData, actualData)
