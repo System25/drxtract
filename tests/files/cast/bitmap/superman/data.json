@@ -1,0 +1,19 @@
+{
+    "bottom": 164,
+    "content": {
+        "name": "SUPERMAN.BMP"
+    },
+    "depth": 8,
+    "h_padding": 61,
+    "height": 152,
+    "left": 64,
+    "locH": 157,
+    "locV": 106,
+    "palette": "1",
+    "palette_txt": "1",
+    "right": 251,
+    "top": 49,
+    "type": "bitmap",
+    "w_padding": 76,
+    "width": 239
+}

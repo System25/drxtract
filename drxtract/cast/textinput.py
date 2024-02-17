@@ -65,7 +65,7 @@ class TextInputParser(CastParser):
         elif alignment == -1:
             alignment = 'right'
         else:
-            logging.warn("Unknown text alignment = %s", alignment)  
+            logging.warning("Unknown text alignment = %s", alignment)  
         
         logging.debug("alignment = %s", alignment)
         

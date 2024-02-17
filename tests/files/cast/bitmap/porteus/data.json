@@ -1,0 +1,20 @@
+{
+    "bottom": 720,
+    "content": {
+        "name": "PORTEUS.BMP"
+    },
+    "depth": 8,
+    "h_padding": 0,
+    "height": 708,
+    "left": -12,
+    "locH": 427,
+    "locV": 354,
+    "name": "P_24B.BMP",
+    "palette": "-100",
+    "palette_txt": "systemWinDir4",
+    "right": 867,
+    "top": -12,
+    "type": "bitmap",
+    "w_padding": 0,
+    "width": 855
+}

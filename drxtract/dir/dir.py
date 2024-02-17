@@ -16,6 +16,8 @@ from ..vwsc import parse_vwsc_file_data, vwsc_to_score
 from ..stxt import parse_stxt_data, TextData
 from ..fmap import parse_fmap_data, FontInfo
 from ..snd import snd_to_sampled, SampledSound
+from ..bitd import bitd2bmp
+from ..clut import clut2palette
 
 
 IMAP_FILE_FORMAT = 'imap'
@@ -222,6 +224,21 @@ def parse_dir_file_data(byte_order: str, rifx_offset, \
                 elif res.chunkID == 'snd ':
                     snd_data: SampledSound = snd_to_sampled(chunk.data)
                     castData['sampled_sound'] = snd_data
+                
+                elif res.chunkID == 'CLUT':
+                    clutData: bytes = clut2palette(chunk.data)
+                    castData['palette'] = clutData
+                
+                elif res.chunkID == 'THUM':
+                    logging.info("Thumnail are ignored!")
+                
+                elif res.chunkID == 'BITD':
+                    clutData = bytes()
+                    paletteId = int(castData['palette'])
+                    if paletteId > 0:
+                        clutData = cast[paletteId - 1]['palette']
+                    bmp_data: bytes = bitd2bmp(castData, clutData, chunk.data)
+                    castData['bitmap'] = bmp_data
                     
                 else:
                     raise ValueError("Unknown related element: " + res.chunkID)

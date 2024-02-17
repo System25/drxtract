@@ -166,7 +166,7 @@ class Decoder:
                     palette = PALETTES[self.nbits][palette_name]
                     packed_data = s.pack(*palette)
                 else:
-                    logging.warn("Using default windows color palette!")
+                    logging.warning("Using default windows color palette!")
                     palette = PALETTES[self.nbits]['default']
                     packed_data = s.pack(*palette)  
         

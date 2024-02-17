@@ -130,4 +130,51 @@ class TestScript(unittest.TestCase):
 
             wavef.close()
 
+    @parameterized.expand([
+        ['<', 'apple', 0],
+        ['<', 'appleInPipe', 0],
+        ['<', 'bars', 1],
+        ['<', 'line', 1],
+        ['<', 'porteus', 0],
+        ['<', 'superman', 1],
+    ])
+    def test_image(self, byte_order: str, dir_name: str, cast_idx: int):
+        dir_file = os.path.join('bitmap', dir_name, dir_name + ".DIR")
+        json_file = os.path.join('bitmap', dir_name, "data.json")
+        bmp_file = os.path.join('bitmap', dir_name, dir_name + ".bmp")
+        
+        with open(json_file, mode='rb') as file:
+            expectedData = json.loads(file.read().decode('utf-8'))
+        
+        with open(bmp_file, mode='rb') as file:
+            expected_bmp = file.read()
+        
+        with open(dir_file, mode='rb') as file:
+            fdata = file.read()
             
+            # Parse the director file
+            dirFile: DirectorFile = parse_dir_file_data(byte_order, 0, fdata)
+            
+            # Get the first element of the casting
+            bmp = dirFile.cast[cast_idx]
+            
+            self.assertEqual(expectedData['type'], bmp['type'])
+            self.assertEqual(expectedData['depth'], bmp['depth'])
+            self.assertEqual(expectedData['content']['name'],
+                             bmp['content']['name'])
+            self.assertEqual(expectedData['width'], bmp['width'])
+            self.assertEqual(expectedData['height'], bmp['height'])
+            self.assertEqual(expectedData['locH'], bmp['locH'])
+            self.assertEqual(expectedData['locV'], bmp['locV'])
+            self.assertEqual(expectedData['top'], bmp['top'])
+            self.assertEqual(expectedData['bottom'], bmp['bottom'])
+            self.assertEqual(expectedData['left'], bmp['left'])
+            self.assertEqual(expectedData['right'], bmp['right'])       
+            self.assertEqual(expectedData['h_padding'], bmp['h_padding'])
+            self.assertEqual(expectedData['w_padding'], bmp['w_padding'])
+            self.assertEqual(expectedData['palette'], bmp['palette'])
+            self.assertEqual(expectedData['palette_txt'], bmp['palette_txt'])
+
+            self.assertEqual(expected_bmp, bmp['bitmap'])
+
+

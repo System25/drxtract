@@ -62,7 +62,7 @@ def main():
                 text = file.read()
                 fontmap = json.loads(text)
         else:
-            logging.warn("Fonts map not found in: %s"%(fontfile))
+            logging.warning("Fonts map not found in: %s"%(fontfile))
             
             
         # Get cast file data

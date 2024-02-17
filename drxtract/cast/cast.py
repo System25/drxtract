@@ -313,7 +313,7 @@ def parse_cast_file_data(fdata: bytes) -> Dict[str, Any]:
         parser = PARSERS[dataSt.dataType]
         castData = parser.parse(dataSt.headerData, content)
     else:
-        logging.warn("data_type unknown (%s)!", data_type)
+        logging.warning("data_type unknown (%s)!", data_type)
 
     castData['content'] = content
     return castData

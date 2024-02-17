@@ -104,7 +104,7 @@ def parse_vwsc_data(fdata: bytes) -> List[Any]:
             while channelSize > 0:
                 delta_size = struct.unpack(">h", fdata[(idx):(idx+2)])[0]
                 if (delta_size > channelSize) or (delta_size <= 0):
-                    logging.warn("Delta size out of limits: %d > %d",
+                    logging.warning("Delta size out of limits: %d > %d",
                                  delta_size, channelSize)
                     break
                 idx = idx + 2

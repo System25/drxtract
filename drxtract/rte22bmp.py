@@ -129,7 +129,7 @@ def save_4bit_bmp(bmp_width, bmp_height, file, fdata, bmp_padding_h):
             y -= 1
 
     if idx != len(fdata):
-        logging.warn("there is more data to decode. Probably the image is not properly generated. (%s != %s)"%(idx, len(fdata)))
+        logging.warning("there is more data to decode. Probably the image is not properly generated. (%s != %s)"%(idx, len(fdata)))
         
     # Write the pixel information
     file.write(struct.pack("B"*(width*bmp_height), *castData))

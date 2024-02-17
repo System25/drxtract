@@ -62,7 +62,7 @@ class ImageParser(CastParser):
             bmp_bpp = 2               
             
         else:
-            logging.warn("Unknown BPP value: %s", bmp_bpp_val)
+            logging.warning("Unknown BPP value: %s", bmp_bpp_val)
 
         logging.debug("bmp_bpp = %s", bmp_bpp)
 

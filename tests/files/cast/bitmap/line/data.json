@@ -1,0 +1,19 @@
+{
+    "bottom": 277,
+    "content": {
+        "name": "LINE.BMP"
+    },
+    "depth": 8,
+    "h_padding": 235,
+    "height": 265,
+    "left": 56,
+    "locH": 73,
+    "locV": 250,
+    "palette": "1",
+    "palette_txt": "1",
+    "right": 91,
+    "top": 223,
+    "type": "bitmap",
+    "w_padding": 68,
+    "width": 79
+}

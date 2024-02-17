@@ -1,0 +1,19 @@
+{
+    "bottom": 168,
+    "content": {
+        "name": "APPLE.BMP"
+    },
+    "depth": 8,
+    "h_padding": 136,
+    "height": 156,
+    "left": 29,
+    "locH": 50,
+    "locV": 146,
+    "palette": "0",
+    "palette_txt": "systemMac",
+    "right": 71,
+    "top": 124,
+    "type": "bitmap",
+    "w_padding": 41,
+    "width": 59
+}

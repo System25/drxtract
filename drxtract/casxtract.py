@@ -131,7 +131,7 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
                 if os.path.isfile(src):
                     copyfile(src, dst)
                 else:
-                    logging.warn("There is no %s file (maybe empty file)", src)
+                    logging.warning("There is no %s file (maybe empty file)", src)
 
                 if lnam_file is not None:
                     cmd = '%slscr2lingo %s %s %s'%(
@@ -187,7 +187,7 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
                 if os.path.isfile(src):
                     copyfile(src, dst)
                 else:
-                    logging.warn("There is no %s file (maybe empty file)", src)
+                    logging.warning("There is no %s file (maybe empty file)", src)
 
                 if f.endswith('.BITD'):
                     cmd = '%s/bitd2bmp %s %s'%(
@@ -314,7 +314,7 @@ def main():
             sys.exit(-1)
 
         if lnam_file is None:
-            logging.warn('Can not find a Lnam file!')
+            logging.warning('Can not find a Lnam file!')
         else:
             lnam_file = os.path.join(bin_dir, lnam_file)
             
@@ -335,7 +335,7 @@ def main():
         key_elements = parse_key_file(byte_order,
                                       os.path.join(bin_dir, key_file))
         if lctx_file is None:
-            logging.warn('Can not find a Lctx file!')
+            logging.warning('Can not find a Lctx file!')
             lctx_elements = []
         else:
             lctx_elements = parse_lctx_file(os.path.join(bin_dir, lctx_file))
@@ -363,8 +363,8 @@ def main():
                                 os.path.join(sys.argv[2], CASDIR, str(elm)),
                                lctx_elements, lnam_file)
             else:
-                logging.warn('File %s for casting element %i does not exists!',
-                             fname, elm)
+                logging.warning('File %s for casting element %i does not '
+                                + 'exists!', fname, elm)
 
 if __name__ == '__main__':
     main()
