@@ -177,4 +177,38 @@ class TestScript(unittest.TestCase):
 
             self.assertEqual(expected_bmp, bmp['bitmap'])
 
+    @parameterized.expand([
+        ['<', 'factory', 0]
+    ])
+    def test_script(self, byte_order: str, dir_name: str, cast_idx: int):
+        dir_file = os.path.join('script', dir_name, dir_name + ".DIR")
+        json_file = os.path.join('script', dir_name, "data.json")
+        lingo_file = os.path.join('script', dir_name, dir_name + ".lingo")
+        js_file = os.path.join('script', dir_name, dir_name + ".js")
+        
+        with open(json_file, mode='rb') as file:
+            expectedData = file.read().decode('utf-8')
+        
+        with open(lingo_file, mode='rb') as file:
+            expected_lingo = file.read().decode('utf-8')
+        
+        with open(js_file, mode='rb') as file:
+            expected_js = file.read().decode('utf-8')
+        
+        with open(dir_file, mode='rb') as file:
+            fdata = file.read()
+            
+            # Parse the director file
+            dirFile: DirectorFile = parse_dir_file_data(byte_order, 0, fdata)
+            
+            # Get the first element of the casting
+            lscr = dirFile.cast[cast_idx]
+            actualData = json.dumps(lscr, indent=4, sort_keys=True)
+            
+            self.assertEqual(expectedData, actualData)
 
+            # Check lingo script reference
+            lscr_idx = lscr['content']['basic']['script_index'] - 1            
+            self.assertEqual(expected_lingo, dirFile.lingoScr[lscr_idx])
+            
+            self.assertEqual(expected_js, dirFile.jsScr[lscr_idx])

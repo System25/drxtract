@@ -10,7 +10,7 @@ from ..riff import RiffData, parse_riff, InputMAP, MemoryMAP, \
 from ..key import parse_key_file_data
 from ..vwcf import parse_vwcf_file_data
 from ..cas import parse_cas_file_data
-from ..lctx import parse_lctx_file_data
+from ..lctx import parse_lctx_file_data, LingoScripReference
 from ..cast import parse_cast_file_data
 from ..vwsc import parse_vwsc_file_data, vwsc_to_score
 from ..stxt import parse_stxt_data, TextData
@@ -18,6 +18,10 @@ from ..fmap import parse_fmap_data, FontInfo
 from ..snd import snd_to_sampled, SampledSound
 from ..bitd import bitd2bmp
 from ..clut import clut2palette
+from ..lingosrc.parse.lnam import parse_lnam_file_data
+from ..lingosrc.parse.lscr import parse_lrcr_file_data, Script
+from ..lingosrc.codegen.lingo import generate_lingo_code
+from ..lingosrc.codegen.js import generate_js_code
 
 
 IMAP_FILE_FORMAT = 'imap'
@@ -165,14 +169,45 @@ def parse_dir_file_data(byte_order: str, rifx_offset, \
     cas_elements = parse_cas_file_data(chunk.data)
     
     # Read the Lctx chunk (if exists)
-    lctx_elements = []
-    lingoScr: List[str] = []
-    jsScr: List[str] = []
+    lctx_elements: List[LingoScripReference] = []
+    lingoScr: Dict[int, str] = {}
+    jsScr: Dict[int, str] = {}
     if exists_chunk(mmap.resources, 'Lctx'):
         logging.debug('Parse Lctx chunk')
         res = locate_chunk(mmap.resources, 'Lctx')
         chunk = riffData.get_by_offset(res.offset - rifx_offset)
         lctx_elements = parse_lctx_file_data(chunk.data)
+        
+        # Read the Lnam chunk
+        name_list: List[str] = []
+        if exists_chunk(mmap.resources, 'Lnam'):
+            logging.debug('Parse Lnam chunk')
+            res = locate_chunk(mmap.resources, 'Lnam')
+            chunk = riffData.get_by_offset(res.offset - rifx_offset)            
+            name_list = parse_lnam_file_data(chunk.data)
+
+        for lscr_ref in lctx_elements:
+            # Decompile scripts
+            lscr_idx = lscr_ref['index']
+            if lscr_idx < 0:
+                logging.debug("No script")
+                continue
+            logging.debug("Decompile script %d", lscr_idx)
+
+            res = mmap.resources[lscr_idx]
+            chunk = riffData.get_by_offset(res.offset - rifx_offset)
+            lscr:Script = parse_lrcr_file_data(chunk.data, name_list)
+            if lscr.cont_scr_num < 0:
+                logging.debug("New script: %d", lscr.scr_num)
+                lingoScr[lscr.scr_num] =  generate_lingo_code(lscr)
+                jsScr[lscr.scr_num] = generate_js_code(lscr)
+                
+            else:
+                logging.debug("Continue a previous script: %d",
+                              lscr.cont_scr_num)
+                lingoScr[lscr.cont_scr_num] += "\n" + generate_lingo_code(lscr)
+                jsScr[lscr.cont_scr_num] += "\n" + generate_js_code(lscr)
+            
     
     # Read the VWLB chunk (if exists)
     markers: List[Marker] = []
