@@ -58,7 +58,8 @@ def parse_lrcr_file_data(fdata: bytes, name_list: List[str]) -> Script:
     script.scr_num = header.scr_num
     script.cont_scr_num = header.cont_scr_num
     if header.factory_name_idx >= 0:
-        script.factory_name = name_list[header.factory_name_idx]
+        fname_idx = header.factory_name_idx
+        script.factory_name = name_list[fname_idx]
     
     script.properties = parse_lrcr_prb(fdata, header, name_list)
     context.properties = script.properties
@@ -396,7 +397,7 @@ def parse_lrcr_prb(fdata: bytes, header: Header, name_list: List[str]
             fname = 'noname'
             if namelist_index >= 0 and namelist_index < len(name_list):
                 fname = name_list[namelist_index]
-            logging.debug('pnames[%d]=%s (idx=%d)'%(i, fname, namelist_index))
+            logging.debug('pnames[%d]=%s (idx=%d)', i, fname, namelist_index)
             i += 1
             pnames.append(fname)            
     
