@@ -29,10 +29,12 @@ class Decoder24b(Decoder):
             if (val & 0x80) != 0:
                 # RLE encoded
                 run_length = 257 - val
-                run_value = fdata[idx+1]
-                idx = idx + 2
+                idx = idx + 1
+                run_value = fdata[idx]
+                idx = idx + 1
                 for _ in range(0, run_length):
-                    data[y*width + x] = run_value
+                    p = y*width + x
+                    data[p] = run_value
                     x += 1
                     if x >= width:
                         x = 0
@@ -44,7 +46,8 @@ class Decoder24b(Decoder):
                 run_length = val + 1
                 idx = idx + 1
                 for _ in range(0, run_length):
-                    data[y*width + x] = fdata[idx]
+                    p = y*width + x
+                    data[p] = fdata[idx]
                     idx = idx + 1
                     x += 1
                     if x >= width:
@@ -52,9 +55,11 @@ class Decoder24b(Decoder):
                         y -= 1
     
             else: # val is zero
-                run_value = fdata[idx+1]
-                idx = idx + 2
-                data[y*width + x] = run_value
+                idx = idx + 1
+                run_value = fdata[idx]
+                idx = idx + 1
+                p = y*width + x
+                data[p] = run_value
                 x += 1
                 if x >= width:
                     x = 0
@@ -80,9 +85,17 @@ class Decoder24b(Decoder):
             yw4 = y*w4
             yw3 = y*w3
             for x in range(0, w):
-                dataMix[yw3 + x*3 + 0] = data[yw4 + w3 + x]  # Red
-                dataMix[yw3 + x*3 + 1] = data[yw4 + w2 + x]  # Green
-                dataMix[yw3 + x*3 + 2] = data[yw4 + w1 + x]  # Blue
+                sr = yw4 + w3 + x
+                dr = yw3 + x*3 + 0
+                dataMix[dr] = data[sr]  # Red
+                
+                sg = yw4 + w2 + x
+                dg = yw3 + x*3 + 1
+                dataMix[dg] = data[sg]  # Green
+                
+                sb = yw4 + w1 + x
+                db = yw3 + x*3 + 2
+                dataMix[db] = data[sb]  # Blue
         
         return dataMix
 

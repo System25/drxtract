@@ -13,7 +13,11 @@ sources = \
 	$(wildcard lingosrc/codegen/[^_]*.py) \
 	$(wildcard lingosrc/model/[^_]*.py) \
 	$(wildcard lingosrc/opcodes/[^_]*.py) \
-	$(wildcard lingosrc/parse/[^_f]*.py)
+	$(wildcard lingosrc/parse/[^_f]*.py) \
+	$(wildcard bitd/[^_]*.py) \
+	$(wildcard cas/[^_]*.py) \
+	$(wildcard vwsc/[^_]*.py)
+	
 stripped = $(sources:.py=.pys)
 jsclasses = $(stripped:.pys=.js)
 
@@ -22,7 +26,10 @@ py_packages = lingosrc \
 	lingosrc/codegen \
 	lingosrc/model \
 	lingosrc/opcodes \
-	lingosrc/parse
+	lingosrc/parse \
+	bitd \
+	cas \
+	vwsc
 
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 current_dir := $(dir $(mkfile_path))
@@ -78,5 +85,11 @@ clean:
 	rm -f lingosrc/opcodes/*.map
 	rm -f lingosrc/parse/*.js
 	rm -f lingosrc/parse/*.map
+	rm -f bitd/*.js
+	rm -f bitd/*.map
+	rm -f cas/*.js
+	rm -f cas/*.map
+	rm -f vwsc/*.js
+	rm -f vwsc/*.map
 	rm -rf $(OUTPUT)/*
 

@@ -42,8 +42,9 @@ class Decoder8b(Decoder):
                     logging.error("Unexpected end of data! (data length=%s)",
                                   len(fdata))
                     break
-                run_value = fdata[idx+1]
-                idx = idx + 2
+                idx = idx + 1
+                run_value = fdata[idx]
+                idx = idx + 1
     
                 if x + run_length > w:
                     logging.debug("Run too long! (%s, %s)", run_length, w-x)
@@ -54,7 +55,8 @@ class Decoder8b(Decoder):
                                       +"(x=%s y=%s col=%s)", x, y, run_value)
                         break
 
-                    data[y*width + x + padding_w] = run_value
+                    p = y*width + x + padding_w
+                    data[p] = run_value
                     x += 1
                 
                 if x >= w:
@@ -79,7 +81,8 @@ class Decoder8b(Decoder):
                                       fdata[idx])
                         break
                     
-                    data[y*width + x + padding_w] = fdata[idx]
+                    p = y*width + x + padding_w
+                    data[p] = fdata[idx]
                     x += 1            
     
                     idx = idx + 1

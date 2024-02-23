@@ -30,8 +30,9 @@ class Decoder16b(Decoder):
             if (val & 0x80) != 0:
                 # RLE encoded
                 run_length = 257 - val
-                run_value = fdata[idx+1]
-                idx = idx + 2
+                idx = idx + 1
+                run_value = fdata[idx]
+                idx = idx + 1
     
                 # Jump to next byte when necessary
                 if ((x + run_length) > w) and (x < w):
@@ -43,7 +44,8 @@ class Decoder16b(Decoder):
                     y -= 1
     
                 for _ in range(0, run_length):
-                    data[y*width + x] = run_value
+                    p = y*width + x
+                    data[p] = run_value
                     x += 1
                 
     
@@ -62,7 +64,8 @@ class Decoder16b(Decoder):
                     y -= 1
     
                 for _ in range(0, run_length):
-                    data[y*width + x] = fdata[idx]
+                    p = y*width + x
+                    data[p] = fdata[idx]
                     idx = idx + 1
                     x += 1
                     if x >= width:
@@ -87,8 +90,13 @@ class Decoder16b(Decoder):
         for y in range(0, h):
             yw2 = y*w2
             for x in range(0, w):
-                dataMix[yw2 + x*2 + 0] = data[yw2 + w1 + x]  # Upper
-                dataMix[yw2 + x*2 + 1] = data[yw2 + w0 + x]  # Lower
+                psu = yw2 + w1 + x
+                pdu = yw2 + x*2 + 0
+                dataMix[pdu] = data[psu]  # Upper
+                
+                psl = yw2 + w0 + x
+                pdl = yw2 + x*2 + 1
+                dataMix[pdl] = data[psl]  # Lower
         
         return dataMix
 

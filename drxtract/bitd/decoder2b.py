@@ -40,7 +40,8 @@ class Decoder2b(Decoder):
                     logging.error("Unexpected end of data! (data length=%s)",
                                   len(fdata))
                     break
-                run_value = fdata[idx+1]
+                idx = idx + 1
+                run_value = fdata[idx]
                 idx = idx + 2
     
                 if x + run_length > w:
@@ -53,8 +54,9 @@ class Decoder2b(Decoder):
                             logging.debug("Painting out of image (rle)! "
                                           +"(x=%s y=%s col=%s)", x, y, bitval)
                             break
-    
-                        data[y*width + x + padding_w] = bitval
+                        
+                        p = y*width + x + padding_w
+                        data[p] = bitval
                         x += 1
                 
                 if x >= w:
@@ -81,8 +83,9 @@ class Decoder2b(Decoder):
                                           bitval)
                             break
                         
-                        data[y*width + x + padding_w] = bitval
-                        x += 1            
+                        p = y*width + x + padding_w
+                        data[p] = bitval
+                        x += 1
     
                     idx = idx + 1
                     if idx > len(fdata):
@@ -90,7 +93,7 @@ class Decoder2b(Decoder):
                         break
     
     
-                if x >= w:           
+                if x >= w:
                     x = 0
                     y -= 1
                     if y < 0:

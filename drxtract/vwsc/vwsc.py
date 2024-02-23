@@ -45,11 +45,11 @@ def parse_vwsc_data(fdata: bytes) -> List[Any]:
     vwsc_data: List[Any] = []
     
     idx = 0
-    dataSize = struct.unpack(">i", fdata[(idx):(idx+4)])[0]
+    dataSize = struct.unpack(">i", fdata[idx:idx+4])[0]
     idx = idx + 4
     logging.debug("dataSize = %08x", dataSize)
 
-    dataMarker = struct.unpack(">i", fdata[(idx):(idx+4)])[0]
+    dataMarker = struct.unpack(">i", fdata[idx:idx+4])[0]
     idx = idx + 4
     logging.debug("dataMarker = %08x", dataMarker)
 
@@ -82,18 +82,19 @@ def parse_vwsc_data(fdata: bytes) -> List[Any]:
     
     channelDataList = bytearray(channel_count * frame_size)
     
-    cparser: VwscChannelParser = CHANNEL_PARSERS[frame_size];
+    cparser: VwscChannelParser = CHANNEL_PARSERS[frame_size]
     
     column = 0
     while idx < dataSize:
         column += 1
         logging.debug("column: %d idx: %08x", column, idx)
-        channelSize = struct.unpack(">h", fdata[(idx):(idx+2)])[0]
+        channelSize = struct.unpack(">h", fdata[idx:idx+2])[0]
         idx = idx + 2
         logging.debug("channelSize: %d", channelSize)
         if channelSize == 2:
             logging.debug('This frame is equals to the previous one!')
-            vwsc_data.append(vwsc_data[-1])
+            last_idx = len(vwsc_data) - 1
+            vwsc_data.append(vwsc_data[last_idx])
             continue
         
         channelSize -= 2
@@ -102,13 +103,13 @@ def parse_vwsc_data(fdata: bytes) -> List[Any]:
         if channelSize > 0:
             # Apply the differences from the previous channel
             while channelSize > 0:
-                delta_size = struct.unpack(">h", fdata[(idx):(idx+2)])[0]
+                delta_size = struct.unpack(">h", fdata[idx:idx+2])[0]
                 if (delta_size > channelSize) or (delta_size <= 0):
                     logging.warning("Delta size out of limits: %d > %d",
                                  delta_size, channelSize)
                     break
                 idx = idx + 2
-                delta_offset = struct.unpack(">h", fdata[(idx):(idx+2)])[0]
+                delta_offset = struct.unpack(">h", fdata[idx:idx+2])[0]
                 if delta_offset < 0:
                     delta_offset = (delta_offset & 0xFF)
                 
@@ -118,12 +119,13 @@ def parse_vwsc_data(fdata: bytes) -> List[Any]:
                 logging.debug("delta_size: %d", delta_size)
                 logging.debug("delta_offset: %d", delta_offset)
 
-                deltaData = fdata[(idx):(idx+delta_size)]
+                deltaData = fdata[idx:idx+delta_size]
                 idx = idx + delta_size
                 channelSize -= delta_size
                 
                 for i in range(0, delta_size):
-                    channelDataList[delta_offset + i] = deltaData[i]
+                    p = delta_offset + i
+                    channelDataList[p] = deltaData[i]
             
             vwsc_data.append(cparser.parse_vwsc_channels(channelDataList,
                                                          column))
@@ -163,10 +165,10 @@ def parse_vwsc_file_data(fdata: bytes) -> List[Any]:
     """
     # Check if the real VWSC data is wrapped into other data
     indx = 0
-    dataSize = struct.unpack(">i", fdata[(indx):(indx+4)])[0]
+    dataSize = struct.unpack(">i", fdata[indx:indx+4])[0]
     indx = indx + 4
     
-    dataMarker = struct.unpack(">i", fdata[(indx):(indx+4)])[0]
+    dataMarker = struct.unpack(">i", fdata[indx:indx+4])[0]
     indx = indx + 4
     
     logging.debug("parse_vwsc_file ===========================================")
@@ -201,17 +203,17 @@ def parse_vwsc_file_data(fdata: bytes) -> List[Any]:
         # useful for
         indx += nmarkers1 * 4
         
-        dataSize = struct.unpack(">i", fdata[(indx):(indx+4)])[0]
+        dataSize = struct.unpack(">i", fdata[indx:indx+4])[0]
         indx = indx + 4
 
-        dataMarker = struct.unpack(">i", fdata[(indx):(indx+4)])[0]
+        dataMarker = struct.unpack(">i", fdata[indx:indx+4])[0]
         indx = indx + 4
     
     if dataMarker != 0x14:
         raise ValueError('Can\'f find data marker in VWSC file!')
     
     indx -= 8
-    data = fdata[indx:(indx+dataSize)]
+    data = fdata[indx:indx+dataSize]
     indx += dataSize
     
     # VWSC data structure depends on Director version
@@ -278,8 +280,10 @@ def vwsc_to_score(vwsc_elements: List[Any]) -> Dict[str, Any]:
         if ('sound1_cast' in main and main['sound1_cast'] > 0):    
             
             prev = {}
-            if len(data['sound1']) > 0 and data['sound1'][-1]['endFrame'] == i:
-                prev = data['sound1'][-1]
+            if len(data['sound1']) > 0:
+                last_idx = len(data['sound1']) - 1
+                if data['sound1'][last_idx]['endFrame'] == i:
+                    prev = data['sound1'][last_idx]
 
             if (prev and prev['castId'] == main['sound1_cast']):
                 # This is the same as the previous sound
@@ -291,12 +295,14 @@ def vwsc_to_score(vwsc_elements: List[Any]) -> Dict[str, Any]:
                 snd['startFrame'] = i+1
                 snd['endFrame'] = i+1
                 snd['castId'] = main['sound1_cast']
-                data['sound1'].append(snd)   
+                data['sound1'].append(snd)
             
         if ('sound2_cast' in main and main['sound2_cast'] > 0):
             prev = {}
-            if len(data['sound2']) > 0 and data['sound2'][-1]['endFrame'] == i:
-                prev = data['sound2'][-1]
+            if len(data['sound2']) > 0:
+                last_idx = len(data['sound2']) - 1
+                if data['sound2'][last_idx]['endFrame'] == i:
+                    prev = data['sound2'][last_idx]
 
             if (prev and prev['castId'] == main['sound2_cast']):
                 # This is the same as the previous sound
@@ -308,25 +314,25 @@ def vwsc_to_score(vwsc_elements: List[Any]) -> Dict[str, Any]:
                 snd['startFrame'] = i+1
                 snd['endFrame'] = i+1
                 snd['castId'] = main['sound2_cast']
-                data['sound2'].append(snd)                  
+                data['sound2'].append(snd)
           
         if ('script' in main and main['script'] > 0):
             scr = {}
             scr['frame'] = i+1
             scr['castId'] = main['script']
-            data['script'].append(scr)             
+            data['script'].append(scr)
         
         if ('fps' in main and main['fps'] > 0):
             fps = {}
             fps['frame'] = i+1
             fps['fps'] = main['fps']
-            data['tempo'].append(fps)             
+            data['tempo'].append(fps)
         
         if 'palette_id' in vwsc_elements[i]['palette']:
             pal = {}
             pal['frame'] = i+1
             pal['palette_id'] = vwsc_elements[i]['palette']['palette_id']
-            data['palette'].append(pal)            
+            data['palette'].append(pal)
         
     for i in range(0, data['lastFrame']):
         for j in range(0, data['lastChannel']):
@@ -347,9 +353,10 @@ def vwsc_to_score(vwsc_elements: List[Any]) -> Dict[str, Any]:
                 sprite['trails'] = score[j]['trails']
                 
                 prev = {}
-                if len(data['sprite'][j]) > 0 and (data['sprite'][j][-1][
-                    'endFrame'] == i):
-                    prev = data['sprite'][j][-1]
+                if len(data['sprite'][j]) > 0:
+                    last_idx = len(data['sprite'][j]) - 1
+                    if (data['sprite'][j][last_idx]['endFrame'] == i):
+                        prev = data['sprite'][j][last_idx]
                     
                 if (prev and prev['castId'] == sprite['castId'] and
                     prev['castId'] == sprite['castId'] and
@@ -371,7 +378,7 @@ def vwsc_to_score(vwsc_elements: List[Any]) -> Dict[str, Any]:
                 else:
                     # This is a new sprite
                     sprite['startFrame'] = i+1
-                    sprite['endFrame'] = i+1                    
+                    sprite['endFrame'] = i+1
                     sprite['locZ'] = j+1
                     sprite['left'] = math.ceil(sprite['locH'] -
                                                sprite['width']/2)

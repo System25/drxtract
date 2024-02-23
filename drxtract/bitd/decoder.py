@@ -160,14 +160,15 @@ class Decoder:
         
         else:
             # System palette
-            if self.nbits in get_keys(PALETTES):
-                if palette_name in get_keys(PALETTES[self.nbits]):
+            nb = self.nbits
+            if nb in get_keys(PALETTES):
+                if palette_name in get_keys(PALETTES[nb]):
                     logging.debug('Using %s palette', palette_name)
-                    palette = PALETTES[self.nbits][palette_name]
+                    palette = PALETTES[nb][palette_name]
                     packed_data = s.pack(*palette)
                 else:
                     logging.warning("Using default windows color palette!")
-                    palette = PALETTES[self.nbits]['default']
+                    palette = PALETTES[nb]['default']
                     packed_data = s.pack(*palette)  
         
         self.bytesIo.write(packed_data)
