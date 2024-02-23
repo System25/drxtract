@@ -42,7 +42,7 @@ class Decoder2b(Decoder):
                     break
                 idx = idx + 1
                 run_value = fdata[idx]
-                idx = idx + 2
+                idx = idx + 1
     
                 if x + run_length > w:
                     logging.error("Run too long! (%s, %s)", run_length, w-x)
