@@ -183,7 +183,7 @@ def parse_dir_file_data(byte_order: str, rifx_offset, \
         if exists_chunk(mmap.resources, 'Lnam'):
             logging.debug('Parse Lnam chunk')
             res = locate_chunk(mmap.resources, 'Lnam')
-            chunk = riffData.get_by_offset(res.offset - rifx_offset)            
+            chunk = riffData.get_by_offset(res.offset - rifx_offset)
             name_list = parse_lnam_file_data(chunk.data)
 
         for lscr_ref in lctx_elements:
@@ -198,15 +198,16 @@ def parse_dir_file_data(byte_order: str, rifx_offset, \
             chunk = riffData.get_by_offset(res.offset - rifx_offset)
             lscr:Script = parse_lrcr_file_data(chunk.data, name_list)
             if lscr.cont_scr_num < 0:
-                logging.debug("New script: %d", lscr.scr_num)
-                lingoScr[lscr.scr_num] =  generate_lingo_code(lscr)
-                jsScr[lscr.scr_num] = generate_js_code(lscr)
+                n = lscr.scr_num
+                logging.debug("New script: %d", n)
+                lingoScr[n] =  generate_lingo_code(lscr)
+                jsScr[n] = generate_js_code(lscr)
                 
             else:
-                logging.debug("Continue a previous script: %d",
-                              lscr.cont_scr_num)
-                lingoScr[lscr.cont_scr_num] += "\n" + generate_lingo_code(lscr)
-                jsScr[lscr.cont_scr_num] += "\n" + generate_js_code(lscr)
+                n = lscr.cont_scr_num
+                logging.debug("Continue a previous script: %d", n)
+                lingoScr[n] += "\n" + generate_lingo_code(lscr)
+                jsScr[ln] += "\n" + generate_js_code(lscr)
             
     
     # Read the VWLB chunk (if exists)
@@ -246,7 +247,8 @@ def parse_dir_file_data(byte_order: str, rifx_offset, \
             kelm = key_elements[cas_index]
             for rf in kelm:
                 logging.debug("Related data: %d %s", rf['index'], rf['chunkID'])
-                res = mmap.resources[rf['index']]
+                rf_idx = rf['index']
+                res = mmap.resources[rf_idx]
                 if rf['chunkID'] != res.chunkID:
                     raise ValueError("Chunk ID mismatch!")
                 
@@ -271,7 +273,8 @@ def parse_dir_file_data(byte_order: str, rifx_offset, \
                     clutData = bytes()
                     paletteId = int(castData['palette'])
                     if paletteId > 0:
-                        clutData = cast[paletteId - 1]['palette']
+                        p = paletteId - 1
+                        clutData = cast[p]['palette']
                     bmp_data: bytes = bitd2bmp(castData, clutData, chunk.data)
                     castData['bitmap'] = bmp_data
                     

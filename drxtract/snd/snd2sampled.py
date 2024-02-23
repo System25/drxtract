@@ -45,9 +45,10 @@ def snd_to_sampled(fdata : bytes) ->  SampledSound:
     
     # Process the sound commands
     for cmd in sndData.commands:
-        logging.debug("Processing command: %d", cmd.command)
-        if cmd.command in get_keys(SOUND_COMMANDS):
-            soundCmd:SoundCmd = SOUND_COMMANDS[cmd.command]
+        command = cmd.command
+        logging.debug("Processing command: %d", command)
+        if command in get_keys(SOUND_COMMANDS):
+            soundCmd:SoundCmd = SOUND_COMMANDS[command]
             bytesIo.write(soundCmd.get_frames(sound, cmd.param1, cmd.param2,
                                               fdata))
             

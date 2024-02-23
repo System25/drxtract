@@ -239,7 +239,8 @@ def parse_basic_cast_data(basic_data: bytes) -> Dict[str, Any]:
             struct_indx.append(stindx)
 
         for i in range(0, nstruct):
-            stlen = struct_indx[i+1] - struct_indx[i]
+            p = i + 1
+            stlen = struct_indx[p] - struct_indx[i]
             logging.debug("The %d element of the structure is %d bytes long",
                           i, stlen)
             if stlen > 0:
@@ -309,8 +310,9 @@ def parse_cast_file_data(fdata: bytes) -> Dict[str, Any]:
 
     content = parse_basic_cast_data(dataSt.basicData)
     
-    if dataSt.dataType in get_keys(PARSERS):
-        parser = PARSERS[dataSt.dataType]
+    dt = dataSt.dataType
+    if dt in get_keys(PARSERS):
+        parser = PARSERS[dt]
         castData = parser.parse(dataSt.headerData, content)
     else:
         logging.warning("data_type unknown (%s)!", data_type)
