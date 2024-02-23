@@ -207,7 +207,7 @@ def parse_dir_file_data(byte_order: str, rifx_offset, \
                 n = lscr.cont_scr_num
                 logging.debug("Continue a previous script: %d", n)
                 lingoScr[n] += "\n" + generate_lingo_code(lscr)
-                jsScr[ln] += "\n" + generate_js_code(lscr)
+                jsScr[n] += "\n" + generate_js_code(lscr)
             
     
     # Read the VWLB chunk (if exists)
