@@ -10,7 +10,7 @@ from .decoder2b import Decoder2b
 from .decoder4b import Decoder4b
 from .decoder8b import Decoder8b
 from .decoder16b import Decoder16b
-from drxtract.bitd.decoder24b import Decoder24b
+from .decoder24b import Decoder24b
 
 DECODERS: Dict[int, Decoder] = {
     2: Decoder2b(),
