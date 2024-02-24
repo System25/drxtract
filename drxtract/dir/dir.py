@@ -36,7 +36,7 @@ class DirectorFile:
     """This class represents the content of a director file"""
     
     def __init__(self, info: Dict[str, Any], cast: List[Dict[str, Any]],
-                 lingoScr: List[str], jsScr: List[str],
+                 lingoScr: Dict[int, str], jsScr: Dict[int, str],
                  markers: List[Marker], score: Dict[str, Any]):
         self.info = info
         self.cast = cast
