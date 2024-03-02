@@ -14,6 +14,7 @@ sources = \
 	$(wildcard lingosrc/model/[^_]*.py) \
 	$(wildcard lingosrc/opcodes/[^_]*.py) \
 	$(wildcard lingosrc/parse/[^_f]*.py) \
+	$(wildcard palettes/[^_]*.py) \
 	$(wildcard bitd/[^_]*.py) \
 	$(wildcard cas/[^_]*.py) \
 	$(wildcard cast/[^_]*.py) \
@@ -39,6 +40,7 @@ py_packages = lingosrc \
 	lingosrc/model \
 	lingosrc/opcodes \
 	lingosrc/parse \
+	palettes \
 	bitd \
 	cas \
 	cast \
@@ -109,6 +111,8 @@ clean:
 	rm -f lingosrc/opcodes/*.map
 	rm -f lingosrc/parse/*.js
 	rm -f lingosrc/parse/*.map
+	rm -f palettes/*.js
+	rm -f palettes/*.map
 	rm -f bitd/*.js
 	rm -f bitd/*.map
 	rm -f cas/*.js
