@@ -138,3 +138,6 @@ DIR_SHAPE_NAMES: Dict[int, str] = {
     3: 'oval',
     4: 'line'
 }
+
+__all__ = ['DIR_SPRITE_TYPES', 'DIR_INK_NAMES', 'DIR_TRANSITION_NAMES', 
+    'DIR_PALETTE_NAMES', 'DIR4_PALETTE_NAMES', 'DIR_SHAPE_NAMES']

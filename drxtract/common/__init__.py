@@ -37,3 +37,5 @@ def get_shape_name(value: int) -> str:
         return DIR_SHAPE_NAMES[value]
     
     return str(value)
+
+__all__ = ['get_palette_name', 'get_transition_name', 'get_shape_name']
