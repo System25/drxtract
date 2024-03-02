@@ -28,7 +28,7 @@ class Decoder8b(Decoder):
             bw = width
         
         data = bytearray(bw * h)
-        logging.info("w=%d, h=%d, width=%d, padding_w=%d, bw=%d",
+        logging.debug("w=%d, h=%d, width=%d, padding_w=%d, bw=%d",
                      w, h-padding_h, width, padding_w, bw)
         x = 0
         y = h - 1 - padding_h
