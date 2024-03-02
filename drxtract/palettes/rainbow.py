@@ -258,3 +258,5 @@ RAINBOW_256COLORS_PALETTE = (
      0x10, 0x10, 0x10, 0x00, # 254
      0x00, 0x00, 0x00, 0x00, # 255
 )
+
+__all__ = ['RAINBOW_256COLORS_PALETTE']

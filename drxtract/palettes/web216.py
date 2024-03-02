@@ -258,3 +258,5 @@ WEB_256COLORS_PALETTE = (
      0x00, 0x00, 0x80, 0x00, # 254
      0x00, 0x00, 0x00, 0x00, # 255
 )
+
+__all__ = ['WEB_256COLORS_PALETTE']
