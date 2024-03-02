@@ -111,8 +111,7 @@ class Decoder:
                   0, # Reserved
                   offset # Data offset
                  )
-        s = struct.Struct('<ihhi')
-        packed_data = s.pack(*values)
+        packed_data = struct.pack('<ihhi', *values)
         self.bytesIo.write(packed_data)
         
     def writeBitmapInfoHeader(self, width:int, height:int, bpp: int):
@@ -141,18 +140,17 @@ class Decoder:
                   # is important; generally ignored
                   self.ncolors  
                  )
-        s = struct.Struct('<iiihhiiiiii')
-        packed_data = s.pack(*values)
+        packed_data = struct.pack('<iiihhiiiiii', *values)
         self.bytesIo.write(packed_data)
         
     def writeColorPalette(self, palette_name: str, palette_data: bytes):
         length = self.ncolors*4
-        s = struct.Struct(repeat_string('B', length))
+        fmt: str = repeat_string('B', length)
         packed_data = bytes()
         if len(palette_data) > 0:
             # Custom palette
             logging.debug('Using custom palette')
-            packed_data = s.pack(*palette_data[0:length])
+            packed_data = struct.pack(fmt, *palette_data[0:length])
         
         else:
             # System palette
@@ -161,11 +159,11 @@ class Decoder:
                 if palette_name in get_keys(PALETTES[nb]):
                     logging.debug('Using %s palette', palette_name)
                     palette = PALETTES[nb][palette_name]
-                    packed_data = s.pack(*palette)
+                    packed_data = struct.pack(fmt, *palette)
                 else:
                     logging.warning("Using default windows color palette!")
                     palette = PALETTES[nb]['default']
-                    packed_data = s.pack(*palette)  
+                    packed_data = struct.pack(fmt, *palette)  
         
         self.bytesIo.write(packed_data)
         

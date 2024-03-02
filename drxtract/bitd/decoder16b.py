@@ -144,8 +144,7 @@ class Decoder16b(Decoder):
                   0, # Green Gamma
                   0, # Blue Gamma
                  )
-        s = struct.Struct('<iiihhIIIIIIIIIIIIIIIIIIIIIIIIIII')
-        packed_data = s.pack(*values)
+        packed_data = struct.pack('<iiihhIIIIIIIIIIIIIIIIIIIIIIIIIII', *values)
         self.writeData(packed_data)
 
     def decode(self, fdata:bytes, bmp_width: int, bmp_height: int,

@@ -61,16 +61,15 @@ def save_4bit_bmp(bmp_width, bmp_height, file, fdata, bmp_padding_h):
               0, # Reserved
               ((16*4)+40+14) # Data offset
              )
-    s = struct.Struct('<ihhi')
-    packed_data = s.pack(*values)
+    packed_data = struct.pack('<ihhi', *values)
     file.write(packed_data)
 
     ncolors = 16
 
     width = bmp_width
     if (width%4) > 0:
-      # The image width must be divisible by four
-      width = width + 4 - (width%4)    
+        # The image width must be divisible by four
+        width = width + 4 - (width%4)    
     
     # Write BITMAPINFOHEADER
     values = (40, # the size of this header (40 bytes)
@@ -85,15 +84,11 @@ def save_4bit_bmp(bmp_width, bmp_height, file, fdata, bmp_padding_h):
               ncolors, # the number of colors in the color palette, or 0 to default to 2n
               ncolors  # the number of important colors used, or 0 when every color is important; generally ignored
              )
-    s = struct.Struct('<iiihhiiiiii')
-    packed_data = s.pack(*values)
+    packed_data = struct.pack('<iiihhiiiiii', *values)
     file.write(packed_data)
 
     # Use a black and white color palette
-    s = struct.Struct('B'*(ncolors*4))
-    packed_data = s.pack(*BW_PALETTE)
-
-
+    packed_data = struct.pack('B'*(ncolors*4), *BW_PALETTE)
     file.write(packed_data)
         
         
