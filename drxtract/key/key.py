@@ -17,7 +17,9 @@ class FileReference(Dictionary):
     Director File Memory MAP Resource"""
     
     def __init__(self, chunkID: str, index: int):
-        super().__init__(chunkID=chunkID, index=index)
+        super().__init__()
+        self['chunkID'] = chunkID
+        self['index'] = index
 
 #
 # Reads from KEY data the relationship between casting elements and data files

@@ -14,7 +14,9 @@ class FontInfo(Dictionary):
     """This class represents a font in the fontmap"""
     
     def __init__(self, name: str, font_id: int):
-        super().__init__(name=name, id=font_id)
+        super().__init__()
+        self['name'] = name
+        self['id'] = font_id
 
 #
 # Reads from Fmap file the fonts information

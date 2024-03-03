@@ -14,7 +14,9 @@ class Marker(Dictionary):
     """This class represents a marker in the score"""
     
     def __init__(self, name: str, frame: int):
-        super().__init__(name=name, frame=frame)
+        super().__init__()
+        self['name'] = name
+        self['frame'] = frame
 
 #
 # Reads from VWLB file the markers channel of the score and its frame
