@@ -5,15 +5,16 @@
 from typing import List
 import struct
 import logging
+from ..lingosrc.util import Dictionary
 
 #
 # Marker class.
 # 
-class Marker(dict):
+class Marker(Dictionary):
     """This class represents a marker in the score"""
     
     def __init__(self, name: str, frame: int):
-        dict.__init__(self, name=name, frame=frame)
+        super().__init__(name=name, frame=frame)
 
 #
 # Reads from VWLB file the markers channel of the score and its frame

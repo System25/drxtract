@@ -6,18 +6,18 @@ from typing import List, Dict
 import struct
 import logging
 from ..riff import parse_chunk_id
-from ..lingosrc.util import get_keys
+from ..lingosrc.util import get_keys, Dictionary
 
 #
 # File reference class
 # 
 # =============================================================================
-class FileReference(dict):
+class FileReference(Dictionary):
     """This class represents a reference to a
     Director File Memory MAP Resource"""
     
     def __init__(self, chunkID: str, index: int):
-        dict.__init__(self, chunkID=chunkID, index=index)
+        super().__init__(chunkID=chunkID, index=index)
 
 #
 # Reads from KEY data the relationship between casting elements and data files

@@ -5,29 +5,29 @@
 from typing import List
 import struct
 import logging
-from ..lingosrc.util import vsprintf
+from ..lingosrc.util import vsprintf, Dictionary
 from ..fmap import FontInfo
 
 #
 # TextFormat class.
 # 
-class TextFormat(dict):
+class TextFormat(Dictionary):
     """This class represents a text format"""
     
     def __init__(self, color: str, start: int, bold: bool, italic: bool,
                  underline: bool, font_size: int, font_family: str):
-        dict.__init__(self, color=color, start=start, bold=bold, italic=italic,
+        super().__init__(color=color, start=start, bold=bold, italic=italic,
                       underline=underline, font_size=font_size,
                       font_family=font_family)
 
 #
 # TextData class.
 # 
-class TextData(dict):
+class TextData(Dictionary):
     """This class represents the text data in a STXT file"""
     
     def __init__(self, text: str, txt_format: List[TextFormat]):
-        dict.__init__(self, text=text, txt_format=txt_format)
+        super().__init__(text=text, txt_format=txt_format)
 
 #
 # Reads text from a STXT file

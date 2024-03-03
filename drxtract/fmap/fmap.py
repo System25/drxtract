@@ -5,16 +5,16 @@
 from typing import List
 import struct
 import logging
-from ..lingosrc.util import vsprintf
+from ..lingosrc.util import vsprintf, Dictionary
 
 #
 # FontInfo class.
 # 
-class FontInfo(dict):
+class FontInfo(Dictionary):
     """This class represents a font in the fontmap"""
     
     def __init__(self, name: str, font_id: int):
-        dict.__init__(self, name=name, id=font_id)
+        super().__init__(name=name, id=font_id)
 
 #
 # Reads from Fmap file the fonts information

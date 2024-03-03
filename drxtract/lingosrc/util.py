@@ -156,3 +156,10 @@ def repeat_string(word:str, n:int) -> str:
     """
 
     return word * n
+
+# =============================================================================
+class Dictionary(dict):
+    """This class is a wrapper for dict"""
+    
+    def __init__(self, **kwargs):
+        super().__init__(self, **kwargs)
