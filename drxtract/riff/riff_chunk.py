@@ -54,13 +54,16 @@ def parse_chunk_id(riff_data: bytes, position: int, byte_order: str) -> str:
         stop = -1
         step = -1
         
-    for i in range(start, stop, step):
+    i = start
+    while i != stop:
         c = block_type[i].decode('ascii')
         if c >= ' ' and c <= 'z':
             identifier = identifier + c
         else:
             identifier = identifier + '_'
-            
+        
+        i += step
+        
     return identifier
 
 #
