@@ -27,13 +27,13 @@ class TestScript(unittest.TestCase):
         
     ])
     def test_key(self, byte_order: str, dir_name: str):
-        cas_file = os.path.join(dir_name, dir_name + ".KEY_")
+        key_file = os.path.join(dir_name, dir_name + ".KEY_")
         json_file = os.path.join(dir_name, "data.json")
         
         with open(json_file, mode='rb') as file:
             json_data = file.read().decode('utf-8')
         
-        with open(cas_file, mode='rb') as file:
+        with open(key_file, mode='rb') as file:
             fdata = file.read()
             
             # Read the key file data

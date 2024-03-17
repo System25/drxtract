@@ -7,7 +7,7 @@ import struct
 import logging
 import base64
 import re
-from ..lingosrc.util import vsprintf, get_keys
+from ..lingosrc.util import vsprintf, get_keys, to_ascii_string
 from .castparser import CastParser, DIR_CLUT_TYPE, DIR_IMAGE_TYPE, \
     DIR_LSCR_TYPE, DIR_PUSH_BUTTON_TYPE, DIR_SHAPE_TYPE, DIR_SND_TYPE, \
     DIR_TEXT_INPUT_TYPE, DIR_TEXT_TYPE, DIR_TRAN_TYPE
@@ -248,7 +248,7 @@ def parse_basic_cast_data(basic_data: bytes) -> Dict[str, Any]:
                 idx += stlen
                 
                 encodedBytes = base64.b64encode(stdata)
-                encodedStr = encodedBytes.decode('ascii')
+                encodedStr = to_ascii_string(encodedBytes)
                 
                 content['extra'].append(encodedStr)
             else:

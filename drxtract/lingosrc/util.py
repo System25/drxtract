@@ -3,7 +3,7 @@
 # License: GNU GPL v2 (see LICENSE file for details).
 
 import struct
-from typing import Dict, KeysView, Any
+from typing import Dict, KeysView, Any, List
 
 #
 # Utility functions.
@@ -163,3 +163,22 @@ class Dictionary(dict):
     
     def __init__(self, **kwargs):
         super().__init__(self, **kwargs)
+
+# =============================================================================
+def to_ascii_string(b: bytes) -> str:
+    """
+    Converts an array of bytes into a string.
+    
+    Parameters
+    ----------
+    b : bytes
+        The array of bytes.
+        
+    Returns
+    -------
+    str
+        The character.
+        
+    """
+
+    return b.decode('ascii')

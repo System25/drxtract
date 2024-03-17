@@ -4,6 +4,7 @@
 
 import struct
 import logging
+from ..lingosrc.util import to_ascii_string
 
 #
 # RIFF chunk class
@@ -54,11 +55,10 @@ def parse_chunk_id(riff_data: bytes, position: int, byte_order: str) -> str:
         stop = -1
         step = -1
         
-    for c in range(start, stop, step):
-        if (block_type[c].decode('ascii') > '\0' and
-            block_type[c].decode('ascii') >= ' ' and
-            block_type[c].decode('ascii') <= 'z'):
-            identifier = identifier + block_type[c].decode('ascii')
+    for i in range(start, stop, step):
+        c = to_ascii_string(block_type[i])
+        if (c >= ' ' and c <= 'z'):
+            identifier = identifier + c
         else:
             identifier = identifier + '_'
             
