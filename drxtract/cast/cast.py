@@ -226,7 +226,7 @@ def parse_basic_cast_data(basic_data: bytes) -> Dict[str, Any]:
 
     nstruct =  struct.unpack(">h", basic_data[idx:idx+2])[0]
     idx += 2
-    logging.debug("number of structures contained = %d"%(nstruct))
+    logging.debug("number of structures contained = %d", nstruct)
 
     if nstruct > 0:
         content['extra'] = []

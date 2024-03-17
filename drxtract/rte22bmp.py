@@ -114,7 +114,7 @@ def save_4bit_bmp(bmp_width, bmp_height, file, fdata, bmp_padding_h):
         
         for i in range(0, run_length):
             if x >= width:
-                logging.error("Painting out of image! (x=%s y=%s col=%s)"%(x-1, y, run_value))
+                logging.error("Painting out of image! (x=%s y=%s col=%s)", x-1, y, run_value)
                 break
             castData[y*width + x] = run_value
             x += 1
@@ -124,7 +124,7 @@ def save_4bit_bmp(bmp_width, bmp_height, file, fdata, bmp_padding_h):
             y -= 1
 
     if idx != len(fdata):
-        logging.warning("there is more data to decode. Probably the image is not properly generated. (%s != %s)"%(idx, len(fdata)))
+        logging.warning("there is more data to decode. Probably the image is not properly generated. (%s != %s)", idx, len(fdata))
         
     # Write the pixel information
     file.write(struct.pack("B"*(width*bmp_height), *castData))
@@ -143,23 +143,23 @@ def rte22bmp(rte2_file):
         idx = 0
         width =  struct.unpack(bit_order+"h", fdata[idx:idx+2])[0]
         idx += 2                
-        logging.debug("width = %s"%(width))         
+        logging.debug("width = %s", width)         
 
         height =  struct.unpack(bit_order+"h", fdata[idx:idx+2])[0]
         idx += 2                
-        logging.debug("height = %s"%(height))       
+        logging.debug("height = %s", height)       
         
         unknown0 = int(fdata[idx])
         idx += 1                
-        logging.debug("unknown0 = %s"%(unknown0)) 
+        logging.debug("unknown0 = %s", unknown0) 
         
         bpp = int(fdata[idx])
         idx += 1                
-        logging.debug("bpp = %s"%(bpp))         
+        logging.debug("bpp = %s", bpp) 
                 
         unknown1 = int(fdata[idx])
         idx += 1                
-        logging.debug("unknown1 = %s"%(unknown1)) 
+        logging.debug("unknown1 = %s", unknown1) 
         
         fdata = fdata[idx:]
         
@@ -184,15 +184,15 @@ def main():
 
     else:
         if not os.path.isdir(sys.argv[1]):
-            logging.error(" '%s' is not a directory"%(sys.argv[1]))
+            logging.error(" '%s' is not a directory", sys.argv[1])
             sys.exit(-1)
 
         if not os.path.isfile(os.path.join(sys.argv[1], sys.argv[2])):
-            logging.error(" '%s' is not a file"%(os.path.join(sys.argv[1], sys.argv[2])))
+            logging.error(" '%s' is not a file", os.path.join(sys.argv[1], sys.argv[2]))
             sys.exit(-1)
         
         if not sys.argv[2].endswith('.RTE2'):
-            logging.error(" '%s' does not end in .RTE2"%(sys.argv[2]))
+            logging.error(" '%s' does not end in .RTE2", sys.argv[2])
             sys.exit(-1)
         
         # Generate BMP image

@@ -27,16 +27,16 @@ def main():
     else:
 
         if not os.path.isdir(sys.argv[1]):
-            logging.error(" '%s' is not a directory"%(sys.argv[1]))
+            logging.error(" '%s' is not a directory", sys.argv[1])
             sys.exit(-1)
 
         if not os.path.isfile(os.path.join(sys.argv[1], sys.argv[2])):
-            logging.error(" '%s' is not a file"%(os.path.join(sys.argv[1],
-                                                              sys.argv[2])))
+            logging.error(" '%s' is not a file", os.path.join(sys.argv[1],
+                                                              sys.argv[2]))
             sys.exit(-1)
         
         if not sys.argv[2].endswith('.snd_'):
-            logging.error(" '%s' does not end in '.snd_'"%(sys.argv[2]))
+            logging.error(" '%s' does not end in '.snd_'", sys.argv[2])
             sys.exit(-1)
             
         # Generate the WAV file

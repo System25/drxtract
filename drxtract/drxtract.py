@@ -30,11 +30,11 @@ def main():
             basepath = ('%s/'%(os.path.dirname(sys.argv[0])))
 
         if not os.path.isfile(sys.argv[2]):
-            logging.error("'%s' is not a file"%(sys.argv[2]))
+            logging.error("'%s' is not a file", sys.argv[2])
             sys.exit(-1)
         
         if not os.path.isdir(sys.argv[3]):
-            logging.error("'%s' is not a directory"%(sys.argv[3]))
+            logging.error("'%s' is not a directory", sys.argv[3])
             sys.exit(-1)
 
         # Extract RIFF file content

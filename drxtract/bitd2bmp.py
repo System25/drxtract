@@ -66,12 +66,12 @@ def bitd_file2bmp(castData, bitd_file):
                 cData = cfile.read()
                 clutData = clut2palette(cData)
            
-            logging.debug('Using a custom palette: %s'%(bmp_palette))
+            logging.debug('Using a custom palette: %s', bmp_palette)
             
         else:
-            logging.debug('Using a default palette: %s'%(bmp_palette))
+            logging.debug('Using a default palette: %s', bmp_palette)
 
-        logging.info(u"Saving file content to: %s"%(file_name))
+        logging.info(u"Saving file content to: %s", file_name)
 
 
         bmp = bitd2bmp(castData, clutData, fdata)
@@ -85,7 +85,7 @@ def main():
 
     else:
         if not os.path.isdir(sys.argv[1]):
-            logging.error(" '%s' is not a directory"%(sys.argv[1]))
+            logging.error(" '%s' is not a directory", sys.argv[1])
             sys.exit(-1)
 
         if not os.path.isfile(os.path.join(sys.argv[1], sys.argv[2])):

@@ -53,7 +53,7 @@ def replace_ext(filename, new_extension):
 
 # ==============================================================================
 def parse_key_file(byte_order, key_file):
-    logging.debug("Parsing key file: %s ---------------------------"%(key_file))
+    logging.debug("Parsing key file: %s ---------------------------", key_file)
 
     with open(key_file, mode='rb') as file:
         fdata = file.read()
@@ -63,7 +63,7 @@ def parse_key_file(byte_order, key_file):
 
 # ==============================================================================
 def parse_cas_file(cas_file):
-    logging.debug("Parsing cas file: %s ---------------------------"%(cas_file))
+    logging.debug("Parsing cas file: %s ---------------------------", cas_file)
 
     with open(cas_file, mode='rb') as file:
         fdata = file.read()
@@ -75,7 +75,7 @@ def parse_cas_file(cas_file):
 
 # ==============================================================================
 def parse_vwcf_file(vwcf_file):
-    logging.debug("Parsing vwcf file: %s -------------------------"%(vwcf_file))
+    logging.debug("Parsing vwcf file: %s -------------------------", vwcf_file)
     with open(vwcf_file, mode='rb') as file:
         fdata = file.read()
 
@@ -85,7 +85,7 @@ def parse_vwcf_file(vwcf_file):
 
 # ==============================================================================
 def parse_lctx_file(lctx_file):
-    logging.debug("Parsing lctx file: %s -------------------------"%(lctx_file))
+    logging.debug("Parsing lctx file: %s -------------------------", lctx_file)
 
     with open(lctx_file, mode='rb') as file:
         fdata = file.read()
@@ -95,7 +95,7 @@ def parse_lctx_file(lctx_file):
     return []
 # ==============================================================================
 def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
-    logging.debug("Parsing cast file: %s -------------------------"%(cast_file))
+    logging.debug("Parsing cast file: %s -------------------------", cast_file)
 
     with open(cast_file, mode='rb') as file:
         fdata = file.read()
@@ -148,7 +148,7 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
                     
                     codefile = os.path.join(dest_dir, replace_ext(script_file, 'lingo'))
                     if os.path.isfile(codefile):
-                        logging.debug("Decompiled code file: %s"%(codefile))
+                        logging.debug("Decompiled code file: %s", codefile)
                         with open(codefile, mode='rb') as cfile:
                             castData['code'] = base64.b64encode(cfile.read()).decode()
 
@@ -166,7 +166,7 @@ def parse_cast_file(cast_file, kelm, dest_dir, lctx_elements, lnam_file):
                     
                     codefile = os.path.join(dest_dir, replace_ext(script_file, 'js'))
                     if os.path.isfile(codefile):
-                        logging.debug("Decompiled code file: %s"%(codefile))
+                        logging.debug("Decompiled code file: %s", codefile)
                         with open(codefile, mode='rb') as cfile:
                             castData['jscode'] = base64.b64encode(cfile.read()).decode()
         

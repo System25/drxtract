@@ -6,7 +6,7 @@ from typing import List, Dict
 import struct
 import logging
 from ..riff import parse_chunk_id
-from ..lingosrc.util import get_keys, Dictionary
+from ..lingosrc.util import get_keys, Dictionary, vsprintf
 
 #
 # File reference class
@@ -78,7 +78,8 @@ def parse_key_file_data(byte_order: str,
 
             key_data[cas_index].append(FileReference(chunkId, nfile))
 
-            key_value = "KEY['%08x'] = '%s.%s'"%(cas_index, nfile, chunkId)
+            key_value = vsprintf("KEY['%08x'] = '%s.%s'",
+                                 cas_index, nfile, chunkId)
             logging.debug(key_value)
 
     return key_data

@@ -41,16 +41,16 @@ def main():
 
     else:
         if not os.path.isdir(sys.argv[1]):
-            logging.error(" '%s' is not a directory"%(sys.argv[1]))
+            logging.error(" '%s' is not a directory", sys.argv[1])
             sys.exit(-1)
 
         if not os.path.isfile(os.path.join(sys.argv[1], sys.argv[2])):
-            logging.error(" '%s' is not a file"%(os.path.join(sys.argv[1],
-                                                              sys.argv[2])))
+            logging.error(" '%s' is not a file", os.path.join(sys.argv[1],
+                                                              sys.argv[2]))
             sys.exit(-1)
 
         if not sys.argv[2].endswith('.STXT'):
-            logging.error(" '%s' does not end in '.STXT'"%(sys.argv[2]))
+            logging.error(" '%s' does not end in '.STXT'", sys.argv[2])
             sys.exit(-1)
 
         # Get the font map
@@ -62,7 +62,7 @@ def main():
                 text = file.read()
                 fontmap = json.loads(text)
         else:
-            logging.warning("Fonts map not found in: %s"%(fontfile))
+            logging.warning("Fonts map not found in: %s", fontfile)
             
             
         # Get cast file data

@@ -27,7 +27,7 @@ class ImageParser(CastParser):
         
         flags =  int(header_data[idx])
         idx += 1
-        logging.debug("flags = %s"%(flags))
+        logging.debug("flags = %s", flags)
 
         bmp_bpp_val =  int(header_data[idx])
         idx += 1

@@ -60,7 +60,7 @@ class TextParser(CastParser):
             antialias = False
         else:
             antialias = True                
-        logging.debug("antiAlias = %s"%(antialias))
+        logging.debug("antiAlias = %s", antialias)
         
         boxType =  int(header_data[idx])
         idx += 1            

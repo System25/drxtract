@@ -69,7 +69,7 @@ def parse_riff(fdata: bytes, offset: int, byte_order: str) -> RiffData:
         
     """
     file_format: str = parse_chunk_id(fdata, offset, byte_order)
-    logging.info(" File format: %s"%(file_format))
+    logging.info(" File format: %s", file_format)
     if RIFX_FILE_FORMAT != file_format:
         err : str = vsprintf("File format is not %s", RIFX_FILE_FORMAT);
         logging.error(err)

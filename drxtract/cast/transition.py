@@ -40,7 +40,7 @@ class TransitionParser(CastParser):
         # Duration in millisenconds
         duration =  struct.unpack(">h", header_data[idx:idx+2])[0]
         idx += 2
-        logging.debug("duration = %s"%(duration))
+        logging.debug("duration = %s", duration)
         
         castData['transition'] = {}
         castData['transition']['type'] = get_transition_name(transition)
