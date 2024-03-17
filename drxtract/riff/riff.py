@@ -125,7 +125,7 @@ def find_riff_in_exe(content: bytes) -> int:
     while index >= 0 and not found:
         rifx_offset += index
         content = content[index:]
-        if content[8:12] == MV93_LE_HEADER.encode('ascii'):
+        if content[8:12].decode('ascii', errors="replace") == MV93_LE_HEADER:
             found = True
         else:
             content = content[4:]
