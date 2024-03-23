@@ -26,6 +26,7 @@ sources = \
 	$(wildcard lctx/[^_]*.py) \
 	$(wildcard riff/[^_]*.py) \
 	$(wildcard snd/[^_]*.py) \
+	$(wildcard snd/command/[^_]*.py) \
 	$(wildcard stxt/[^_]*.py) \
 	$(wildcard vwcf/[^_]*.py) \
 	$(wildcard vwlb/[^_]*.py) \
@@ -52,6 +53,7 @@ py_packages = lingosrc \
 	lctx \
 	riff \
 	snd \
+	snd/command \
 	stxt \
 	vwcf \
 	vwlb \
@@ -135,6 +137,8 @@ clean:
 	rm -f riff/*.map
 	rm -f snd/*.js
 	rm -f snd/*.map
+	rm -f snd/command/*.js
+	rm -f snd/command/*.map
 	rm -f stxt/*.js
 	rm -f stxt/*.map
 	rm -f vwcf/*.js
