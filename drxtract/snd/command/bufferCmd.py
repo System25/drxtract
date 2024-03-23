@@ -170,8 +170,12 @@ class BufferCmd(SoundCmd):
             data = bytearray(length * 2)
 
             for i in range(0, length*2, 2):
-                data[i] = fdata[idx + i + 1]
-                data[i+1] = fdata[idx + i]
+                index_l = idx + i
+                index_h = idx + i + 1
+                l = i
+                h = i + 1
+                data[l] = fdata[index_h]
+                data[h] = fdata[index_l]
 
             return bytes(data)
             
