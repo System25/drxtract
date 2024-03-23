@@ -8,7 +8,7 @@
 
 import io
 from ..lingosrc.util import vsprintf, get_keys
-from .snd import parse_snd_fmt, SndFormat
+from .format import parse_snd_fmt, SndFormat
 from .command import SOUND_COMMANDS, SoundCmd
 from .sampled import SampledSound
 import logging
