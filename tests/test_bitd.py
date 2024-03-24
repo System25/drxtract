@@ -3,7 +3,7 @@
 # License: GNU GPL v2 (see LICENSE file for details).
 
 #
-# Unit test for RIFF extraction
+# Unit test for BITD extraction
 #
 
 import unittest
