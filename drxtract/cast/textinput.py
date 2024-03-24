@@ -149,7 +149,7 @@ class TextInputParser(CastParser):
         castData['margin'] = margin 
         castData['boxDropShadow'] = boxDropShadow 
         castData['dropShadow'] = dropShadow 
-        castData['backgroundColor'] = vsprintf('#%0.2X%0.2X%0.2X',
+        castData['backgroundColor'] = vsprintf('#%02X%02X%02X',
             bgcolor_red, bgcolor_green, bgcolor_blue)
         castData['height'] = bottom - top 
         castData['width'] = right - left

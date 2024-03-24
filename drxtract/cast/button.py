@@ -106,7 +106,7 @@ class ButtonParser(CastParser):
         
         logging.debug("buttonType = %s", buttonType)              
         
-        castData['backgroundColor'] = vsprintf('#%0.2X%0.2X%0.2X',
+        castData['backgroundColor'] = vsprintf('#%02X%02X%02X',
             bgcolor_red, bgcolor_green, bgcolor_blue)
         castData['buttonType'] = buttonType
         
