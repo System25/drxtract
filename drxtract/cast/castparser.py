@@ -31,3 +31,7 @@ class CastParser:
     def parse(self, header_data: bytes,
               basic_data: Dict[str, Any]) -> Dict[str, Any]:
         pass
+
+__all__ = ['DIR_IMAGE_TYPE', 'DIR_TEXT_INPUT_TYPE', 'DIR_CLUT_TYPE',
+           'DIR_SND_TYPE', 'DIR_PUSH_BUTTON_TYPE', 'DIR_SHAPE_TYPE',
+           'DIR_LSCR_TYPE', 'DIR_TEXT_TYPE', 'DIR_TRAN_TYPE']
