@@ -162,7 +162,7 @@ def parse_stxt_data(fdata: bytes, fontmap: List[FontInfo]) -> TextData:
         idx += 1    
         logging.debug("unknown11 = %s", unknown11)              
         
-        color = vsprintf('#%0.2X%0.2X%0.2X', fg_color_red, fg_color_green,
+        color = vsprintf('#%02X%02X%02X', fg_color_red, fg_color_green,
                          fg_color_blue)
         tformat = TextFormat(color, start, bold, italic, underline,
                              font_size, font_family)
