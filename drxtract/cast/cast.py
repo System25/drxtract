@@ -218,10 +218,10 @@ def parse_basic_cast_data(basic_data: bytes) -> Dict[str, Any]:
     idx += 4
     logging.debug("script_index: %08x", script_index)
     
-    content['basic']['script_key'] = (script_key & 0xFFFFFFFF)
-    content['basic']['basic_data1'] = (basic_data01 & 0xFFFFFFFF)
-    content['basic']['basic_data2'] = (basic_data02 & 0xFFFFFFFF)
-    content['basic']['script_index'] = (script_index & 0xFFFFFFFF)
+    content['basic']['script_key'] = script_key
+    content['basic']['basic_data1'] = basic_data01
+    content['basic']['basic_data2'] = basic_data02
+    content['basic']['script_index'] = script_index
     
 
     nstruct =  struct.unpack(">h", basic_data[idx:idx+2])[0]
