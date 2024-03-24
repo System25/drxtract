@@ -123,5 +123,5 @@ class VwscChannelParser:
     def read_sprite_channel_info(self, frameData: bytes, i: int):
         pass
     
-__all__ = ['VwscChannelParser', 'DEBUG_SPRITE_INFO',
-           'DEBUG_PALETTE_CHANNEL_INFO', 'DEBUG_MAIN_CHANNEL_INFO']
+__all__ = ['DEBUG_SPRITE_INFO', 'DEBUG_PALETTE_CHANNEL_INFO',
+           'DEBUG_MAIN_CHANNEL_INFO']
