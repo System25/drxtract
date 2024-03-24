@@ -18,8 +18,9 @@ from ..fmap import parse_fmap_data, FontInfo
 from ..snd import snd_to_sampled, SampledSound
 from ..bitd import bitd2bmp
 from ..clut import clut2palette
+from ..lingosrc.ast import Script
 from ..lingosrc.parse.lnam import parse_lnam_file_data
-from ..lingosrc.parse.lscr import parse_lrcr_file_data, Script
+from ..lingosrc.parse.lscr import parse_lrcr_file_data
 from ..lingosrc.codegen.lingo import generate_lingo_code
 from ..lingosrc.codegen.js import generate_js_code
 
