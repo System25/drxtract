@@ -124,5 +124,5 @@ class Factory__makeStack extends FactoryBase {
 }
 
 function makeStack(methodName, ...args) {
-    factoryCall('makeStack', methodName, args...);
+    factoryCall('makeStack', methodName, args);
 }

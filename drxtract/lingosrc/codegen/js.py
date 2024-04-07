@@ -86,7 +86,7 @@ def generate_factory_js_code(script: Script) -> str:
     code += "}\n\n"
     code += "function " + script.factory_name + "(methodName, ...args) {\n"
     code += code_indentation(1) + "factoryCall('" + script.factory_name  \
-        + "', methodName, args...);\n" 
+        + "', methodName, args);\n" 
     code += "}\n"
     
     return code
