@@ -45,7 +45,7 @@ class GlobalVariable(Node):
             return self.name == other.name
         return False
 
-    def generate_js(self, indentation: int) -> str: 
+    def generate_js(self, indentation: int, factory_method: bool) -> str: 
         return vsprintf("_global.%s", self.name)
 #
 # Property name class.
@@ -63,8 +63,11 @@ class PropertyName(Node):
         else:
             return vsprintf("the %s", self.name)
 
-    def generate_js(self, indentation: int) -> str: 
+    def generate_js(self, indentation: int, factory_method: bool) -> str: 
         obj_name: str = 'me'
+        if factory_method:
+            obj_name = 'this'
+        
         propName = self.name
         if self.name in get_keys(KNOWN_PROPERTIES):
             obj_name = KNOWN_PROPERTIES[propName]
@@ -101,7 +104,7 @@ class DateTimeFunction(Node):
     def generate_lingo(self, indentation: int) -> str: 
         return vsprintf("the %s", self.name)
 
-    def generate_js(self, indentation: int) -> str: 
+    def generate_js(self, indentation: int, factory_method: bool) -> str: 
         return vsprintf("_system.date('%s')", self.name)
 
 #
@@ -116,7 +119,7 @@ class Menu(Node):
     def generate_lingo(self, indentation: int) -> str: 
         return vsprintf("menu %s", self.name)
 
-    def generate_js(self, indentation: int) -> str: 
+    def generate_js(self, indentation: int, factory_method: bool) -> str: 
         return vsprintf("_menuBar.menu[%s]", self.name)
     
 #
@@ -131,7 +134,7 @@ class MenuItem(Node):
     def generate_lingo(self, indentation: int) -> str: 
         return vsprintf("menuItem %s", self.name)
 
-    def generate_js(self, indentation: int) -> str: 
+    def generate_js(self, indentation: int, factory_method: bool) -> str: 
         return vsprintf("item[%s]", self.name)    
 
 #
@@ -146,7 +149,7 @@ class SoundChannel(Node):
     def generate_lingo(self, indentation: int) -> str: 
         return vsprintf("sound %s", self.name)
 
-    def generate_js(self, indentation: int) -> str: 
+    def generate_js(self, indentation: int, factory_method: bool) -> str: 
         return vsprintf("sound(%s)", self.name)
 
 #
@@ -161,7 +164,7 @@ class Sprite(Node):
     def generate_lingo(self, indentation: int) -> str: 
         return vsprintf("sprite %s", self.name)
 
-    def generate_js(self, indentation: int) -> str: 
+    def generate_js(self, indentation: int, factory_method: bool) -> str: 
         return vsprintf("sprite(%s)", self.name)
 
 
@@ -186,5 +189,5 @@ class Cast(Node):
     def generate_lingo(self, indentation: int) -> str: 
         return vsprintf("cast %s", self.name)
 
-    def generate_js(self, indentation: int) -> str: 
+    def generate_js(self, indentation: int, factory_method: bool) -> str: 
         return vsprintf("member(%s)", self.name)

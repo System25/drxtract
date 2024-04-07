@@ -24,10 +24,10 @@ class LoadListOperation(Node):
         oplist.reverse()
         return ', '.join(oplist)
 
-    def generate_js(self, indentation: int) -> str:
+    def generate_js(self, indentation: int, factory_method: bool) -> str:
         oplist: List[str] = []
         for s in self.operands:
-            oplist.append(str(s.generate_js(indentation)))
+            oplist.append(str(s.generate_js(indentation, factory_method)))
 
         oplist.reverse()
         return ', '.join(oplist)
@@ -51,10 +51,10 @@ class ToListOperation(Node):
         oplist.reverse()
         return '[' + ', '.join(oplist) +  ']'
     
-    def generate_js(self, indentation: int) -> str:
+    def generate_js(self, indentation: int, factory_method: bool) -> str:
         oplist: List[str] = []
         for s in self.operand.operands:
-            oplist.append(str(s.generate_js(indentation)))
+            oplist.append(str(s.generate_js(indentation, factory_method)))
 
         oplist.reverse()
         return 'list(' + ', '.join(oplist) +  ')'
@@ -85,10 +85,10 @@ class ToDictionaryOperation(Node):
         
         return '[' + ', '.join(oplist) +  ']'
     
-    def generate_js(self, indentation: int) -> str:
+    def generate_js(self, indentation: int, factory_method: bool) -> str:
         oplist: List[str] = []
         for s in self.operand.operands:
-            oplist.append(str(s.generate_js(indentation)))
+            oplist.append(str(s.generate_js(indentation, factory_method)))
 
         oplist.reverse()
         return 'propList(' + ', '.join(oplist) +  ')'

@@ -53,5 +53,5 @@ class Symbol(Node):
             return '#' + self.name
         return self.name
 
-    def generate_js(self, indentation: int) -> str:      
+    def generate_js(self, indentation: int, factory_method: bool) -> str:
         return 'symbol(\'' + self.name + '\')'

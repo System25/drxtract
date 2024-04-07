@@ -47,9 +47,9 @@ class RepeatOperation(Node):
         code = code + code_indentation(indentation) + 'end repeat'
         return code
 
-    def generate_js(self, indentation: int) -> str: 
+    def generate_js(self, indentation: int, factory_method: bool) -> str: 
         cond = cast(Node, self.condition)
-        str_cond: str = cond.generate_js(0)
+        str_cond: str = cond.generate_js(0, factory_method)
         if not str_cond.startswith('('):
             str_cond = vsprintf("(%s)", str_cond)
 
@@ -57,16 +57,16 @@ class RepeatOperation(Node):
             code = vsprintf("while %s {\n", str_cond)
         elif self.type == 'for':
             code = vsprintf("for(%s = %s; %s; %s%s) {\n", self.varname,
-                    cast(Node, self.start).generate_js(0),
+                    cast(Node, self.start).generate_js(0, factory_method),
                     str_cond[1:-1],
                     self.varname,
                     '++' if self.sign == '+' else '--')
         else:
             code = vsprintf("for(%s of %s) {\n", self.varname,
-                        cast(Node, self.start).generate_js(0))
+                        cast(Node, self.start).generate_js(0, factory_method))
         
         for st in self.statements_list:
-            code = code + st.generate_js(indentation + 1)           
+            code = code + st.generate_js(indentation + 1, factory_method)
         
         code = code + code_indentation(indentation) + '}'
         return code
@@ -98,20 +98,20 @@ class IfThenOperation(Node):
         code = code + code_indentation(indentation) + 'end if'
         return code
 
-    def generate_js(self, indentation: int) -> str: 
+    def generate_js(self, indentation: int, factory_method: bool) -> str: 
         cond = cast(Node, self.condition)
-        str_cond: str = cond.generate_js(0)
+        str_cond: str = cond.generate_js(0, factory_method)
         if not str_cond.startswith('('):
             str_cond = vsprintf("(%s)", str_cond)
 
         code = vsprintf("if %s {\n", str_cond)
         for st in self.if_statements_list:
-            code = code + st.generate_js(indentation + 1)
+            code = code + st.generate_js(indentation + 1, factory_method)
         
         if len(self.else_statements_list) > 0:
             code = code + code_indentation(indentation) + '} else {\n'
             for st in self.else_statements_list:
-                code = code + st.generate_js(indentation + 1)            
+                code = code + st.generate_js(indentation + 1, factory_method)            
         
         code = code + code_indentation(indentation) + '}'
         return code
@@ -147,5 +147,5 @@ class ExitRepeat(Node):
     def __init__(self, position: int):
         super().__init__('exit repeat', position)
 
-    def generate_js(self, indentation: int) -> str: 
+    def generate_js(self, indentation: int, factory_method: bool) -> str: 
         return 'break'
