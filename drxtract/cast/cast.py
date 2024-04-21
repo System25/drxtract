@@ -193,12 +193,12 @@ def parse_basic_cast_data(basic_data: bytes) -> Dict[str, Any]:
     
     # Parse main data
     idx = 0
-    contentMarker =  struct.unpack(">i", basic_data[idx:idx+4])[0]
+    numbers_size =  struct.unpack(">i", basic_data[idx:idx+4])[0]
     idx += 4
-    logging.debug("contentMarker? = %08x", contentMarker)
+    logging.debug("Numbers buffer size = %08x", numbers_size)
     
-    if contentMarker != 0x00000014:
-        msg = vsprintf("Bad content marker %08x", contentMarker)
+    if numbers_size < 0x00000014:
+        msg = vsprintf("Bad numbers size %08x", numbers_size)
         raise ValueError(msg)
     
     # Content found!
@@ -228,6 +228,11 @@ def parse_basic_cast_data(basic_data: bytes) -> Dict[str, Any]:
     content['basic']['purge_priority'] = PURGE_PRIORITY[(basic_data02 >> 2) & 3]
     content['basic']['script_index'] = script_index
     
+    nelems: int =  int((numbers_size - 0x00000014) / 4)
+    for i in range(0, nelems):
+        unknown =  struct.unpack(">i", basic_data[idx:idx+4])[0]
+        idx += 4
+        logging.debug("unknown[%d]: %08x", i, unknown)        
 
     nstruct =  struct.unpack(">h", basic_data[idx:idx+2])[0]
     idx += 2
