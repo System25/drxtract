@@ -28,7 +28,7 @@ tests = [
 "Bug Tracker" = "https://github.com/System25/drxtract/issues"
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling>=1.22.2"]
 build-backend = "hatchling.build"
 
 [project.scripts]
