@@ -1,0 +1,50 @@
+{
+    "alignment": "left",
+    "autoTab": false,
+    "backgroundColor": "#FFFFFF",
+    "border": 0,
+    "boxDropShadow": 0,
+    "boxType": "adjust",
+    "content": {
+        "basic": {
+            "basic_data1": 0,
+            "basic_data2": 0,
+            "purge_priority": "Normal",
+            "script_index": 0,
+            "script_key": 0
+        },
+        "extra": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "AEAAMgDWAZAAAAADAAAAAwAUZy4="
+        ],
+        "name": ""
+    },
+    "dropShadow": 0,
+    "editable": false,
+    "height": 16,
+    "margin": 0,
+    "pageHeight": 16,
+    "scrollHeight": 16,
+    "scrollTop": 0,
+    "text": "Lorem ipsum",
+    "txt_format": [
+        {
+            "bold": false,
+            "color": "#000000",
+            "font_family": "Arial",
+            "font_size": 12,
+            "italic": false,
+            "start": 0,
+            "underline": false
+        }
+    ],
+    "type": "field",
+    "width": 120,
+    "wordWrap": true
+}

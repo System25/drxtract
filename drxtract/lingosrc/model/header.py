@@ -9,6 +9,15 @@ class Header:
     """This class represents the content of the Lingo script header"""
     
     def __init__(self):
+        self.scr_num: int = -1
+        """Script number"""
+        
+        self.cont_scr_num: int = -1
+        """Continues script number"""
+        
+        self.factory_name_idx: int = -1
+        """Factory name index"""
+        
         self.prb_offset: int = -1
         """Offset to the properties records block"""
         

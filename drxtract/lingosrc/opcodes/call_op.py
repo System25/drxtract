@@ -4,9 +4,11 @@
 
 from .opcode import Param1Opcode
 from ..ast import CallMethod, CallFunction, Statement, Node, \
-    ToListOperation, FunctionDef, Symbol, LoadListOperation, GlobalVariable
+    ToListOperation, FunctionDef, Symbol, LoadListOperation, GlobalVariable, \
+    ConstantValue
 from ..model import Context
 from typing import List, cast
+from ..util import vsprintf
 
 
 #
@@ -50,42 +52,69 @@ class CallExternalOpcode(Param1Opcode):
             fn.statements.append(Statement(op, index))
 
 
+def findVarName(varType: int, context: Context, stack: List[Node], \
+                fn: FunctionDef):
+    if (varType == 1 or varType == 2 or varType == 3):
+        # Global or local variable
+        obj = cast(Node, stack.pop())
+        return obj.generate_lingo(0)
+    
+    elif varType == 4:
+        # Argument
+        argNum = cast(ConstantValue, stack.pop()).name
+        num = int(argNum)
+        if (num % context.bytes_per_constant) > 0:
+            context.bytes_per_constant = (num % context.bytes_per_constant)
+        
+        idx = int(num / context.bytes_per_constant)
+        return fn.parameters[idx].name
+        
+    elif varType == 5:
+        # local variable
+        lvNum = cast(ConstantValue, stack.pop()).name
+        num = int(lvNum)
+        if (num % context.bytes_per_constant) > 0:
+            context.bytes_per_constant = (num % context.bytes_per_constant)
+        
+        idx = int(num / context.bytes_per_constant)
+        return fn.local_vars[idx].name
+
+    elif varType == 6:
+        # field
+        raise Exception("Missing example with field!")
+    
+    else:
+        message = vsprintf("Unknown vartype: %s", varType)
+        raise Exception(message)
+
+
 #
-# Call a function with an external global var parameter.
+# Call an object method.
 #
-# For example:
-#   -- First cast element
-#   on startMovie
-#     global myList <-- DEFINE myList AS GLOBAL AS MOVIE LEVEL
-#     set myList = [#the_70s: 1970, #the_80s: 1980, #the_90: 1990]
-#   end
-#
-#   -- Second cast element
-#   on exitFrame
-#     put "90s: ", findPos(myList, 1990) <-- USE myList WITHOUT DEFINING IT
-#   end
-#
-class CallFuncWithExtGlobalOpcode(Param1Opcode):
+class CallObjectMethodOpcode(Param1Opcode):
     def __init__(self):
         super().__init__(0x58)
     
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
-        op1 = self.param1
-        ext_global_name = context.name_list[op1]
-        
-        fname = cast(Node, stack.pop()).generate_lingo(0)
-        
+        var_type = self.param1
+        fname = findVarName(var_type, context, stack, fn)
+                    
         params: LoadListOperation = cast(LoadListOperation, stack.pop())
         op = CallFunction(fname, index)
         op.parameters = params
         operands = params.operands
         op.parameters.operands = []
         
+        first_op = None
         for p in operands:
-            if isinstance(p, Symbol) and p.name == ext_global_name:
-                p = GlobalVariable(p.name, p.position)
             op.parameters.operands.append(p)
+            first_op = p
+        
+        if first_op is not None and isinstance(first_op, Symbol):
+            # Avoid writing the hash symbol in the first operand
+            sym: Symbol = first_op
+            sym.use_hash = False        
         
         if op.parameters.name.startswith('<'):
             stack.append(op)

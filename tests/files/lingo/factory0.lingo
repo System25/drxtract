@@ -1,0 +1,23 @@
+on startMovie
+    set myStack = makeStack(mnew, 1, myStack)
+    myStack mReset
+    set myName = myStack(mname)
+    put "name: ", myName
+    myStack mPush, "one"
+    myStack mPush, "two"
+    myStack mPush, "three"
+    put myStack(mShow)
+    put "length", myStack(mGetLength)
+    put "1", myStack(mPull)
+    put "2", myStack(mPull)
+    put "3", myStack(mPull)
+    put "length", myStack(mGetLength)
+end
+
+on dumpObject whichObject
+    if objectp(whichObject) then
+        whichObject mRelease
+        whichObject mdispose
+    end if
+    return whichObject
+end

@@ -1,0 +1,33 @@
+{
+    "bottom": 208,
+    "content": {
+        "basic": [
+            "0x00000000",
+            "0x00000000",
+            "0x00000000",
+            "0x00000000"
+        ],
+        "extra": [
+            "",
+            "BUFwcGxl",
+            "",
+            "",
+            ""
+        ]
+    },
+    "depth": 8,
+    "fileName": "32.png",
+    "h_padding": 136,
+    "height": 156,
+    "left": 29,
+    "locH": 49,
+    "locV": 156,
+    "name": "Apple",
+    "palette": 0,
+    "palette_txt": "systemMac",
+    "right": 113,
+    "top": 124,
+    "type": "bitmap",
+    "w_padding": 41,
+    "width": 59
+}

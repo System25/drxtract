@@ -28,15 +28,15 @@ class WindowTellOperation(Node):
         code = code + code_indentation(indentation) + 'end tell'
         return code
 
-    def generate_js(self, indentation: int) -> str: 
+    def generate_js(self, indentation: int, factory_method: bool) -> str: 
         op = cast(Node, self.operand)
-        str_op: str = op.generate_js(0)
+        str_op: str = op.generate_js(0, factory_method)
         if not str_op.startswith('('):
             str_op = vsprintf("(%s)", str_op)
 
         code = vsprintf("with %s {\n", str_op)
         for st in self.statements:
-            code = code + st.generate_js(indentation + 1)        
+            code = code + st.generate_js(indentation + 1, factory_method)
         
         code = code + code_indentation(indentation) + '}'
         return code

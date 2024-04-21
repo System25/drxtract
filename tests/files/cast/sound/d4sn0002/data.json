@@ -1,0 +1,10 @@
+{
+    "channelCount": 1,
+    "content": {
+        "name": "YEAH.WAV"
+    },
+    "loop": true,
+    "sampleRate": 22254,
+    "sampleSize": 8,
+    "type": "sound"
+}

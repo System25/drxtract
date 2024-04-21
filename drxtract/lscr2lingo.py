@@ -27,24 +27,24 @@ def main():
 
     else:
         if not os.path.isdir(sys.argv[1]):
-            logging.error(" '%s' is not a directory"%(sys.argv[1]))
+            logging.error(" '%s' is not a directory", sys.argv[1])
             sys.exit(-1)
 
         if not os.path.isfile(os.path.join(sys.argv[1], sys.argv[2])):
-            logging.error(" '%s' is not a file"%(os.path.join(sys.argv[1],
-                sys.argv[2])))
+            logging.error(" '%s' is not a file", os.path.join(sys.argv[1],
+                sys.argv[2]))
             sys.exit(-1)
 
         if not sys.argv[2].endswith('.Lscr'):
-            logging.error(" '%s' does not end in .Lscr"%(sys.argv[2]))
+            logging.error(" '%s' does not end in .Lscr", sys.argv[2])
             sys.exit(-1)
 
         if not os.path.isfile(sys.argv[3]):
-            logging.error(" '%s' is not a file"%(sys.argv[3]))
+            logging.error(" '%s' is not a file", sys.argv[3])
             sys.exit(-1)
 
         if not sys.argv[3].endswith('.Lnam'):
-            logging.error(" '%s' does not end in .Lnam"%(sys.argv[3]))
+            logging.error(" '%s' does not end in .Lnam", sys.argv[3])
             sys.exit(-1)
 
         # Parse the LNAM and LSCR files into an AST
@@ -66,4 +66,8 @@ def main():
         file_name = "%s.%s"%(nfiles, file_ext)
         with open(file_name, 'wb') as file:
             file.write(lingo.encode('utf-8'))
+            
+if __name__ == '__main__':
+    main()
+
         

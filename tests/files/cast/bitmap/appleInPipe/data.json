@@ -1,0 +1,19 @@
+{
+    "bottom": 93,
+    "content": {
+        "name": "APPLPIPE.BMP"
+    },
+    "depth": 8,
+    "h_padding": 62,
+    "height": 81,
+    "left": 7,
+    "locH": 25,
+    "locV": 71,
+    "palette": "0",
+    "palette_txt": "systemMac",
+    "right": 44,
+    "top": 50,
+    "type": "bitmap",
+    "w_padding": 19,
+    "width": 32
+}

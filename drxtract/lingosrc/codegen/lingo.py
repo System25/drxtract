@@ -6,7 +6,7 @@
 # Lingo code generation functions.
 #
 
-from ..ast import Script
+from ..ast import Script, FunctionDef
 from ..util import code_indentation, vsprintf
 from typing import List
 from builtins import sorted
@@ -28,9 +28,12 @@ def generate_lingo_code(script: Script) -> str:
         
     """
     code: str = ''
-    if len(script.properties) > 0:
+    if len(script.properties) > 0 and len(script.factory_name) == 0:
         code = code + vsprintf("property %s\n", ', '.join(script.properties))
-        
+    
+    if len(script.factory_name) > 0:
+        code = code + vsprintf("factory %s\n\n", script.factory_name)
+    
     if len(script.global_vars) > 0:
         for gvh in script.global_vars:
             code = code + vsprintf("global %s\n", gvh)
@@ -41,14 +44,25 @@ def generate_lingo_code(script: Script) -> str:
         if not first_function:
             code += "\n"
         
-        code = code + vsprintf("on %s", f.name)
+        if f.is_method:
+            code = code + vsprintf("method %s", f.name)
+        else:
+            code = code + vsprintf("on %s", f.name)
         if len(f.parameters) > 0:
             params: List[str] = []
             for n in f.parameters:
                 params.append(n.name)
             
-            code = code + vsprintf(" %s", ', '.join(params))
+            if f.is_method:
+                # Remove the first parameter (called 'me')
+                params.remove(params[0])
+            code = code + vsprintf(" %s", ', '.join(params)).rstrip()
         code += "\n"
+        
+        if (f.name.lower() == 'mnew' and f.is_method
+            and len(script.properties) > 3):
+            code = code  + code_indentation(1) + vsprintf("instance %s\n\n",
+                    ', '.join(script.properties[3:]))
         
         f.global_vars = sorted(f.global_vars, key = lambda x: x.name)
         gv_count: int = 0

@@ -28,8 +28,8 @@ class Statement(Node):
         return (code_indentation(indentation) + 
             self.code.generate_lingo(indentation) + '\n')
 
-    def generate_js(self, indentation: int) -> str:
-        js_code:str = self.code.generate_js(indentation);
+    def generate_js(self, indentation: int, factory_method: bool) -> str:
+        js_code:str = self.code.generate_js(indentation, factory_method);
         if ('getPropRef' in js_code and not js_code.startswith('delete(')
             and not '=' in js_code[js_code.rindex('getPropRef'):]):
             li = js_code.rsplit('getPropRef', 1)
@@ -52,6 +52,7 @@ class FunctionDef(Node):
         self.local_vars: List[LocalVariable] = []
         self.global_vars: List[GlobalVariable] = []
         self.statements: List[Statement] = []
+        self.is_method: bool = False
 
 #
 # Call function operation class.
@@ -89,8 +90,8 @@ class CallFunction(Node):
             
             params: LoadListOperation = cast(LoadListOperation, self.parameters)
             if 'sound' == self.name:
-                sym: Node = params.operands.pop()
-                return vsprintf("sound %s %s", sym.name,
+                modif: Node = params.operands.pop()
+                return vsprintf("sound %s %s", modif.name,
                                       params.generate_lingo(indentation))
             
             if self.use_parenthesis:
@@ -100,7 +101,7 @@ class CallFunction(Node):
         else:
             return self.name
 
-    def generate_js(self, indentation: int) -> str:
+    def generate_js(self, indentation: int, factory_method: bool) -> str:
         self.gv_as_sym()
 
         nm = self.name
@@ -110,7 +111,7 @@ class CallFunction(Node):
         params_str: str = ''
         if self.parameters is not None:
             params: Node = cast(Node, self.parameters)
-            params_str = params.generate_js(indentation)
+            params_str = params.generate_js(indentation, factory_method)
             
         if nm == 'new':
             if params_str.startswith('symbol('):
@@ -131,6 +132,17 @@ class CallFunction(Node):
         
         if nm == 'cast':
             nm = 'member'
+        
+        if factory_method and nm == 'me':
+            pars: LoadListOperation = cast(LoadListOperation, self.parameters)
+            oplist: List[str] = []
+            for s in pars.operands:
+                oplist.append(str(s.generate_js(indentation, factory_method)))
+                nm = 'this.' + s.name
+    
+            oplist.pop()
+            oplist.reverse()
+            params_str = ', '.join(oplist)
         
         return self.generate_js_code(nm, params_str)
 
@@ -161,9 +173,10 @@ class CallMethod(Node):
                             self.name,
                             params.generate_lingo(indentation))
 
-    def generate_js(self, indentation: int) -> str:
+    def generate_js(self, indentation: int, factory_method: bool) -> str:
         obj: Node = cast(Node, self.object)
         params: Node = cast(Node, self.parameters)
-        return vsprintf("%s.%s(%s)", obj.generate_js(indentation),
+        return vsprintf("%s.%s(%s)",
+                            obj.generate_js(indentation, factory_method),
                             self.name,
-                            params.generate_js(indentation))
+                            params.generate_js(indentation, factory_method))

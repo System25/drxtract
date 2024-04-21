@@ -1,0 +1,50 @@
+{
+    "alignment": "center",
+    "autoTab": false,
+    "backgroundColor": "#FFFFFF",
+    "border": 1,
+    "boxDropShadow": 0,
+    "boxType": "scroll",
+    "content": {
+        "basic": {
+            "basic_data1": 0,
+            "basic_data2": 8,
+            "purge_priority": "Last",
+            "script_index": 0,
+            "script_key": 0
+        },
+        "extra": [
+            "",
+            "Dk15IHRleHQgbWVtYmVy",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "AEAAMgDWAZAAAACWAAAAlgAUZy4="
+        ],
+        "name": "My text member"
+    },
+    "dropShadow": 0,
+    "editable": false,
+    "height": 128,
+    "margin": 0,
+    "pageHeight": 31,
+    "scrollHeight": 128,
+    "scrollTop": 16,
+    "text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin fermentum ac ligula vel pretium. Sed lacinia turpls libero, id posuere dui henderit eu.",
+    "txt_format": [
+        {
+            "bold": false,
+            "color": "#000000",
+            "font_family": "Arial",
+            "font_size": 12,
+            "italic": false,
+            "start": 0,
+            "underline": false
+        }
+    ],
+    "type": "field",
+    "width": 120,
+    "wordWrap": true
+}

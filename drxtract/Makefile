@@ -13,7 +13,25 @@ sources = \
 	$(wildcard lingosrc/codegen/[^_]*.py) \
 	$(wildcard lingosrc/model/[^_]*.py) \
 	$(wildcard lingosrc/opcodes/[^_]*.py) \
-	$(wildcard lingosrc/parse/[^_f]*.py)
+	$(wildcard lingosrc/parse/[^_f]*.py) \
+	$(wildcard palettes/[^_]*.py) \
+	$(wildcard bitd/[^_]*.py) \
+	$(wildcard cas/[^_]*.py) \
+	$(wildcard cast/[^_]*.py) \
+	$(wildcard clut/[^_]*.py) \
+	$(wildcard common/[^_]*.py) \
+	$(wildcard dir/[^_]*.py) \
+	$(wildcard fmap/[^_]*.py) \
+	$(wildcard key/[^_]*.py) \
+	$(wildcard lctx/[^_]*.py) \
+	$(wildcard riff/[^_]*.py) \
+	$(wildcard snd/[^_]*.py) \
+	$(wildcard snd/command/[^_]*.py) \
+	$(wildcard stxt/[^_]*.py) \
+	$(wildcard vwcf/[^_]*.py) \
+	$(wildcard vwlb/[^_]*.py) \
+	$(wildcard vwsc/[^_]*.py)
+	
 stripped = $(sources:.py=.pys)
 jsclasses = $(stripped:.pys=.js)
 
@@ -22,7 +40,24 @@ py_packages = lingosrc \
 	lingosrc/codegen \
 	lingosrc/model \
 	lingosrc/opcodes \
-	lingosrc/parse
+	lingosrc/parse \
+	palettes \
+	bitd \
+	cas \
+	cast \
+	clut \
+	common \
+	dir \
+	fmap \
+	key \
+	lctx \
+	riff \
+	snd \
+	snd/command \
+	stxt \
+	vwcf \
+	vwlb \
+	vwsc
 
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 current_dir := $(dir $(mkfile_path))
@@ -78,5 +113,39 @@ clean:
 	rm -f lingosrc/opcodes/*.map
 	rm -f lingosrc/parse/*.js
 	rm -f lingosrc/parse/*.map
+	rm -f palettes/*.js
+	rm -f palettes/*.map
+	rm -f bitd/*.js
+	rm -f bitd/*.map
+	rm -f cas/*.js
+	rm -f cas/*.map
+	rm -f cast/*.js
+	rm -f cast/*.map
+	rm -f clut/*.js
+	rm -f clut/*.map
+	rm -f common/*.js
+	rm -f common/*.map
+	rm -f dir/*.js
+	rm -f dir/*.map
+	rm -f fmap/*.js
+	rm -f fmap/*.map
+	rm -f key/*.js
+	rm -f key/*.map
+	rm -f lctx/*.js
+	rm -f lctx/*.map
+	rm -f riff/*.js
+	rm -f riff/*.map
+	rm -f snd/*.js
+	rm -f snd/*.map
+	rm -f snd/command/*.js
+	rm -f snd/command/*.map
+	rm -f stxt/*.js
+	rm -f stxt/*.map
+	rm -f vwcf/*.js
+	rm -f vwcf/*.map
+	rm -f vwlb/*.js
+	rm -f vwlb/*.map
+	rm -f vwsc/*.js
+	rm -f vwsc/*.map
 	rm -rf $(OUTPUT)/*
 

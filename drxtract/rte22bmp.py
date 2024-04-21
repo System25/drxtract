@@ -8,6 +8,8 @@
 # Script to extract Macromedia Director RTE bimap files.
 # 
 
+# TODO! This is still a WIP
+
 import sys
 import os
 import struct
@@ -59,16 +61,15 @@ def save_4bit_bmp(bmp_width, bmp_height, file, fdata, bmp_padding_h):
               0, # Reserved
               ((16*4)+40+14) # Data offset
              )
-    s = struct.Struct('<ihhi')
-    packed_data = s.pack(*values)
+    packed_data = struct.pack('<ihhi', *values)
     file.write(packed_data)
 
     ncolors = 16
 
     width = bmp_width
     if (width%4) > 0:
-      # The image width must be divisible by four
-      width = width + 4 - (width%4)    
+        # The image width must be divisible by four
+        width = width + 4 - (width%4)    
     
     # Write BITMAPINFOHEADER
     values = (40, # the size of this header (40 bytes)
@@ -83,15 +84,11 @@ def save_4bit_bmp(bmp_width, bmp_height, file, fdata, bmp_padding_h):
               ncolors, # the number of colors in the color palette, or 0 to default to 2n
               ncolors  # the number of important colors used, or 0 when every color is important; generally ignored
              )
-    s = struct.Struct('<iiihhiiiiii')
-    packed_data = s.pack(*values)
+    packed_data = struct.pack('<iiihhiiiiii', *values)
     file.write(packed_data)
 
     # Use a black and white color palette
-    s = struct.Struct('B'*(ncolors*4))
-    packed_data = s.pack(*BW_PALETTE)
-
-
+    packed_data = struct.pack('B'*(ncolors*4), *BW_PALETTE)
     file.write(packed_data)
         
         
@@ -117,7 +114,7 @@ def save_4bit_bmp(bmp_width, bmp_height, file, fdata, bmp_padding_h):
         
         for i in range(0, run_length):
             if x >= width:
-                logging.error("Painting out of image! (x=%s y=%s col=%s)"%(x-1, y, run_value))
+                logging.error("Painting out of image! (x=%s y=%s col=%s)", x-1, y, run_value)
                 break
             castData[y*width + x] = run_value
             x += 1
@@ -127,7 +124,7 @@ def save_4bit_bmp(bmp_width, bmp_height, file, fdata, bmp_padding_h):
             y -= 1
 
     if idx != len(fdata):
-        logging.warn("there is more data to decode. Probably the image is not properly generated. (%s != %s)"%(idx, len(fdata)))
+        logging.warning("there is more data to decode. Probably the image is not properly generated. (%s != %s)", idx, len(fdata))
         
     # Write the pixel information
     file.write(struct.pack("B"*(width*bmp_height), *castData))
@@ -146,23 +143,23 @@ def rte22bmp(rte2_file):
         idx = 0
         width =  struct.unpack(bit_order+"h", fdata[idx:idx+2])[0]
         idx += 2                
-        logging.debug("width = %s"%(width))         
+        logging.debug("width = %s", width)         
 
         height =  struct.unpack(bit_order+"h", fdata[idx:idx+2])[0]
         idx += 2                
-        logging.debug("height = %s"%(height))       
+        logging.debug("height = %s", height)       
         
         unknown0 = int(fdata[idx])
         idx += 1                
-        logging.debug("unknown0 = %s"%(unknown0)) 
+        logging.debug("unknown0 = %s", unknown0) 
         
         bpp = int(fdata[idx])
         idx += 1                
-        logging.debug("bpp = %s"%(bpp))         
+        logging.debug("bpp = %s", bpp) 
                 
         unknown1 = int(fdata[idx])
         idx += 1                
-        logging.debug("unknown1 = %s"%(unknown1)) 
+        logging.debug("unknown1 = %s", unknown1) 
         
         fdata = fdata[idx:]
         
@@ -187,15 +184,15 @@ def main():
 
     else:
         if not os.path.isdir(sys.argv[1]):
-            logging.error(" '%s' is not a directory"%(sys.argv[1]))
+            logging.error(" '%s' is not a directory", sys.argv[1])
             sys.exit(-1)
 
         if not os.path.isfile(os.path.join(sys.argv[1], sys.argv[2])):
-            logging.error(" '%s' is not a file"%(os.path.join(sys.argv[1], sys.argv[2])))
+            logging.error(" '%s' is not a file", os.path.join(sys.argv[1], sys.argv[2]))
             sys.exit(-1)
         
         if not sys.argv[2].endswith('.RTE2'):
-            logging.error(" '%s' does not end in .RTE2"%(sys.argv[2]))
+            logging.error(" '%s' does not end in .RTE2", sys.argv[2])
             sys.exit(-1)
         
         # Generate BMP image
@@ -212,3 +209,5 @@ def main():
             out_name #output file
         ))
         
+if __name__ == '__main__':
+    main()

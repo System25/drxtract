@@ -1,7 +1,7 @@
 [project]
 name = "drxtract"
 description = "Macromedia/Adobe DIR and DRX extraction package"
-version = "0.1.3"
+version = "0.1.4"
 authors = [
     { name = "Abraham Macias Paredes", email = "system252001@yahoo.es" }
 ]
@@ -28,7 +28,7 @@ tests = [
 "Bug Tracker" = "https://github.com/System25/drxtract/issues"
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling>=1.22.2"]
 build-backend = "hatchling.build"
 
 [project.scripts]
@@ -42,5 +42,6 @@ lscr2lingo = "drxtract.lscr2lingo:main"
 riffxtract = "drxtract.riffxtract:main"
 rte22bmp = "drxtract.rte22bmp:main"
 snd2wav = "drxtract.snd2wav:main"
+stxt2json = "drxtract.stxt2json:main"
 vwlbxtract = "drxtract.vwlbxtract:main"
 vwscxtract = "drxtract.vwscxtract:main"

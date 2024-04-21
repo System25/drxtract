@@ -43,12 +43,15 @@ class Symbol(Node):
     """This class represents a symbol in the AST"""
     def __init__(self, name:str, position: int):
         super().__init__(name, position)
+        self.use_hash = True
 
     def generate_lingo(self, indentation: int) -> str:
         if self.name in KNOWN_SYMBOLS:
-            return self.name
+            self.use_hash = False
         
-        return '#' + self.name
+        if self.use_hash:
+            return '#' + self.name
+        return self.name
 
-    def generate_js(self, indentation: int) -> str:      
+    def generate_js(self, indentation: int, factory_method: bool) -> str:
         return 'symbol(\'' + self.name + '\')'

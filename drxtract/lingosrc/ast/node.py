@@ -26,5 +26,8 @@ class Node:
     def generate_lingo(self, indentation: int) -> str: 
         return self.name
 
-    def generate_js(self, indentation: int) -> str: 
+    def generate_js(self, indentation: int, factory_method: bool) -> str:
+        if factory_method and self.name == 'me':
+            return 'this'
+        
         return self.name

@@ -1,0 +1,30 @@
+{
+    "bottom": 99,
+    "content": {
+        "basic": [
+            "0x00000000",
+            "0x00000000",
+            "0x00000000",
+            "0x00000000"
+        ],
+        "extra": [
+            "",
+            "DFJFQ1RBTn4xLkJNUA=="
+        ]
+    },
+    "depth": 8,
+    "fileName": "22.png",
+    "h_padding": 24,
+    "height": 87,
+    "left": 7,
+    "locH": 76,
+    "locV": 55,
+    "name": "RECTAN_1.BMP",
+    "palette": 1,
+    "palette_txt": 1,
+    "right": 146,
+    "top": 12,
+    "type": "bitmap",
+    "w_padding": 19,
+    "width": 134
+}

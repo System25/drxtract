@@ -1,0 +1,19 @@
+{
+    "bottom": 312,
+    "content": {
+        "name": "BARS.BMP"
+    },
+    "depth": 8,
+    "h_padding": 0,
+    "height": 300,
+    "left": -11,
+    "locH": 200,
+    "locV": 150,
+    "palette": "1",
+    "palette_txt": "1",
+    "right": 412,
+    "top": -12,
+    "type": "bitmap",
+    "w_padding": 1,
+    "width": 400
+}
