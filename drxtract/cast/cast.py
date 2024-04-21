@@ -2,7 +2,7 @@
 # E-mail: system252001@yahoo.es
 # License: GNU GPL v2 (see LICENSE file for details).
 
-from typing import Dict, Any
+from typing import Dict, Any, List
 import struct
 import logging
 import base64
@@ -33,6 +33,8 @@ PARSERS: Dict[int, CastParser] = {
     DIR_TEXT_TYPE: TextParser(),
     DIR_TRAN_TYPE: TransitionParser()
 }
+
+PURGE_PRIORITY: List[str] = ['Normal', 'Never', 'Last', 'Next']
 
 #
 # Cast data structure class
@@ -210,6 +212,8 @@ def parse_basic_cast_data(basic_data: bytes) -> Dict[str, Any]:
     idx += 4
     logging.debug("basic_data01 = %08x", basic_data01)
 
+    # The two higher bits are the purge priority
+    # The two lower bits are other things
     basic_data02 =  struct.unpack(">i", basic_data[idx:idx+4])[0]
     idx += 4
     logging.debug("basic_data02 = %08x", basic_data02)
@@ -221,6 +225,7 @@ def parse_basic_cast_data(basic_data: bytes) -> Dict[str, Any]:
     content['basic']['script_key'] = script_key
     content['basic']['basic_data1'] = basic_data01
     content['basic']['basic_data2'] = basic_data02
+    content['basic']['purge_priority'] = PURGE_PRIORITY[(basic_data02 >> 2) & 3]
     content['basic']['script_index'] = script_index
     
 

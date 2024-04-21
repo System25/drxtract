@@ -39,6 +39,9 @@ class TestScript(unittest.TestCase):
         ['<', 'd4tf0013'],
         ['<', 'd4tf0014'],
         ['<', 'd4tf0015'],
+        ['<', 'd4tf0016'],
+        ['<', 'd4tf0017'],
+        ['<', 'd4tf0018'],
     ])
     def test_text_fields(self, byte_order: str, dir_name: str):
         dir_file = os.path.join('text', dir_name, dir_name + ".DIR")

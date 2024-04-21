@@ -9,6 +9,7 @@
         "basic": {
             "basic_data1": 0,
             "basic_data2": 0,
+            "purge_priority": "Normal",
             "script_index": 0,
             "script_key": 0
         },
