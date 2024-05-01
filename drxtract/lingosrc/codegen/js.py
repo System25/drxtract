@@ -86,6 +86,13 @@ def generate_class_js_code(script: Script) -> str:
     
     code += "}\n\n"
     
+    for f in script.functions:
+        if f.name not in ('birth'):
+            code += "function " + f.name + "(obj, ...args) {\n"
+            code += code_indentation(1) + "return obj." + f.name \
+                + "(...args);\n" 
+            code += "}\n"
+    
     return code
 
 

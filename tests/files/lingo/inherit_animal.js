@@ -9,3 +9,6 @@ class Object__2 extends ObjectBase {
     }
 }
 
+function countLegs(obj, ...args) {
+    return obj.countLegs(...args);
+}
