@@ -74,8 +74,8 @@ $(OUTPUT)/index.js: $(jsclasses)
 		sed -i -E "s/^import \{([^}]+)\} from '([^']+)'/import {\1} from '\2.js'/"  $(pack)/__init__.js ; \
 		mv $(pack)/__init__.js $(OUTPUT)/$(pack)/index.js ; \
 	)
-	touch $(OUTPUT)/index.js
 	cd $(JSSRC); find . -name "*.js" -exec cp \{\} ../drxtract/\{\} \;
+	cp $(JSSRC)/package.json $(OUTPUT)/package.json
 
 %.pys: %.py
 	$(STRIP) -o $@ $<
