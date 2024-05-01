@@ -1,5 +1,8 @@
-function birth(me, wings) {
-    me.wingCount = wings;
-    me.ancestor = _movie.newScript(script("Animal"), 6);
-    return me;
+class Object__3 extends ObjectBase {
+    birth(wings) {
+        this.wingCount = wings;
+        this.ancestor = _movie.newScript(script("Animal"), 6);
+        return this;
+    }
 }
+

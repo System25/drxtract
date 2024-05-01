@@ -1,8 +1,11 @@
-function birth(me, legs) {
-    me.legCount = legs;
-    return me;
+class Object__2 extends ObjectBase {
+    birth(legs) {
+        this.legCount = legs;
+        return this;
+    }
+
+    countLegs() {
+        return this.legCount;
+    }
 }
 
-function countLegs(me) {
-    return me.legCount;
-}

@@ -67,3 +67,5 @@ def main():
         with open(file_name, 'wb') as file:
             file.write(jscode.encode('utf-8'))
         
+if __name__ == '__main__':
+    main()

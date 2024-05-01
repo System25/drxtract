@@ -94,3 +94,6 @@ def main():
         logging.debug(cmd)
         logging.debug("------------------------------------------------------")
         os.system(cmd)
+
+if __name__ == '__main__':
+    main()
