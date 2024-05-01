@@ -225,7 +225,8 @@ def parse_basic_cast_data(basic_data: bytes) -> Dict[str, Any]:
     content['basic']['script_key'] = script_key
     content['basic']['basic_data1'] = basic_data01
     content['basic']['basic_data2'] = basic_data02
-    content['basic']['purge_priority'] = PURGE_PRIORITY[(basic_data02 >> 2) & 3]
+    pp_idx:int = (basic_data02 >> 2) & 3
+    content['basic']['purge_priority'] = PURGE_PRIORITY[pp_idx]
     content['basic']['script_index'] = script_index
     
     nelems: int =  int((numbers_size - 0x00000014) / 4)
