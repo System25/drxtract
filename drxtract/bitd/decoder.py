@@ -182,3 +182,5 @@ class Decoder:
                bmp_padding_w: int, bmp_padding_h: int,
                palette_name: str, palette_data: bytes) -> bytes:
         pass
+    
+__all__ = ['PALETTES']
