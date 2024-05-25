@@ -64,8 +64,8 @@ JS_BIN_OP: Dict[str,str] = {
     
     'concat': '+',
     'concats': '+ " " +',
-    'contains': '.includes',
-    'start': '.startsWith',
+    'contains': '.contains',
+    'start': '.start',
     
     'and': '&&',
     'or': '||',
@@ -77,8 +77,8 @@ JS_BIN_OP: Dict[str,str] = {
     'eq': '==',
     'ne': '!=',
     
-    'intersects': '.intersects', 
-    'within': '.within'
+    'intersects': 'sprite(%s).intersects(sprite(%s))', 
+    'within': 'sprite(%s).within(sprite(%s))'
 }
 
 
@@ -211,8 +211,12 @@ class BinaryOperation(Node):
                               r.generate_js(indentation, factory_method))            
         
         op: str = JS_BIN_OP[operation]
-        if op.startswith('.'):
-            return vsprintf("sprite(%s)%s(sprite(%s))",
+        if op.startswith('sprite('):
+            return vsprintf(op,
+                            l.generate_js(indentation, factory_method),
+                            r.generate_js(indentation, factory_method))
+        elif op.startswith('.'):
+            return vsprintf("%s%s(%s)",
                             l.generate_js(indentation, factory_method), op,
                             r.generate_js(indentation, factory_method))
         else:  

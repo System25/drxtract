@@ -80,6 +80,7 @@ class TestScript(unittest.TestCase):
         ['sound_fn.Lnam', 'sound_fn.Lscr', 'sound_fn.lingo'],
         ['factory.Lnam', 'factory0.Lscr', 'factory0.lingo'],
         ['factory.Lnam', 'factory1.Lscr', 'factory1.lingo'],
+        ['string_op.Lnam', 'string_op.Lscr', 'string_op.lingo'],
         
     ])
     def test_script(self, lnam_file: str, lsrc_file: str, lingo_file: str):
