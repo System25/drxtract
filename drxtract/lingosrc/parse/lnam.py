@@ -5,7 +5,7 @@
 from typing import List
 import struct
 import logging
-from ..util import vsprintf
+from ..util import get_encoding
 
 #
 # Parse LNAM file data
@@ -74,7 +74,7 @@ def parse_lnam_file_data(fdata: bytes) -> List[str]:
         nbytes = int(fdata[indx])
         indx = indx + 1
 
-        name = fdata[indx:(indx + nbytes)].decode('ISO-8859-1')
+        name = fdata[indx:(indx + nbytes)].decode(get_encoding())
         indx = indx + nbytes
 
         name_list.append(name)

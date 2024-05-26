@@ -6,7 +6,7 @@ from typing import List, cast
 from ..ast import Script, FunctionDef, Node, LocalVariable, ParameterName
 from ..model import Context, Header
 from ..util import escape_string, unpack_float80, get_keys, get_class_name, \
-    vsprintf
+    vsprintf, get_encoding
 from ..opcodes import OPCODES, Opcode, BiOpcode, TriOpcode, \
     Param1Opcode, Param2Opcode, BI_OPCODES, TRI_OPCODES
 from .loop_detection import condition_detect, loop_detect
@@ -536,7 +536,7 @@ def parse_lrcr_crb(fdata: bytes, header: Header) -> List[str]:
             idxc += 4
             #logging.debug("strlength = %s", strlength) 
 
-            strval = fdata[idxc:idxc+strlength].decode('ISO-8859-1')
+            strval = fdata[idxc:idxc+strlength].decode(get_encoding())
             constants.append(escape_string(strval))
 
 

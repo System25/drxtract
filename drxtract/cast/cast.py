@@ -7,7 +7,7 @@ import struct
 import logging
 import base64
 import re
-from ..lingosrc.util import vsprintf, get_keys
+from ..lingosrc.util import vsprintf, get_keys, get_encoding
 from .castparser import CastParser, DIR_CLUT_TYPE, DIR_IMAGE_TYPE, \
     DIR_LSCR_TYPE, DIR_PUSH_BUTTON_TYPE, DIR_SHAPE_TYPE, DIR_SND_TYPE, \
     DIR_TEXT_INPUT_TYPE, DIR_TEXT_TYPE, DIR_TRAN_TYPE
@@ -269,7 +269,7 @@ def parse_basic_cast_data(basic_data: bytes) -> Dict[str, Any]:
         if len(content['extra']) > 1 and content['extra'][1] != '':
             stdata = base64.b64decode(content['extra'][1])
             nchars = int(stdata[0])
-            cast_elm_name = stdata[1:nchars+1].decode('ISO-8859-1')
+            cast_elm_name = stdata[1:nchars+1].decode(get_encoding())
             cast_elm_name = re.sub(r"[^A-Za-z0-9\-_\. ]", "_", cast_elm_name)
             content['name'] = cast_elm_name
             logging.debug("Cast member name: '%s'", cast_elm_name)

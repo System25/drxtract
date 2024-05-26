@@ -4,16 +4,16 @@ on startMovie
     put ("Hey man!" contains "man")
     put ("Hey man!" contains "woman")
     put ("Hey man!" contains "!")
-    put ("Hey m\x81n!" contains "man")
+    put ("Hey m\xc5n!" contains "man")
     put "starts operator examples"
     put ("Man and woman" start "MAN")
     put ("Man and woman" start "man")
     put ("Man and woman " start "woman")
-    put ("m\x81n and woman" start "man")
+    put ("m\xc5n and woman" start "man")
     put "offset operator examples"
     put offset("man", "My WOMAN")
     put offset("dog", "My cat")
-    put offset("m\x81n", "My WOMAN")
+    put offset("m\xc5n", "My WOMAN")
     put "length function examples"
     put length(empty)
     put length("a")

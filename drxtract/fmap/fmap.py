@@ -5,7 +5,7 @@
 from typing import List
 import struct
 import logging
-from ..lingosrc.util import vsprintf, Dictionary
+from ..lingosrc.util import vsprintf, Dictionary, get_encoding
 
 #
 # FontInfo class.
@@ -146,7 +146,7 @@ def parse_fmap_data(fdata: bytes) -> List[FontInfo]:
         idx += 4
         logging.debug("nchars = %s", nchars)   
         
-        font_name = basic_data[idx:idx+nchars].decode('ISO-8859-1')
+        font_name = basic_data[idx:idx+nchars].decode(get_encoding())
         idx = idx+nchars       
         logging.debug("font_name = %s", font_name)
         

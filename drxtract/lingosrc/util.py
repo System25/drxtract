@@ -3,6 +3,7 @@
 # License: GNU GPL v2 (see LICENSE file for details).
 
 import struct
+import os
 from typing import Dict, KeysView, Any
 
 #
@@ -116,6 +117,15 @@ def unpack_float80(b: bytes) -> str:
     value = '%s'%(m*pow(2, e - 16383))
     
     return value
+
+# =============================================================================
+def get_encoding() -> str:
+    """
+    Returns the string encoding.
+        
+    """
+
+    return os.environ.get('DRX_ENCODING', 'mac_roman')
 
 # =============================================================================
 def escape_string(strval: str) -> str:

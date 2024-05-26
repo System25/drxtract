@@ -5,7 +5,7 @@
 from typing import List
 import struct
 import logging
-from ..lingosrc.util import vsprintf, Dictionary
+from ..lingosrc.util import vsprintf, Dictionary, get_encoding
 from ..fmap import FontInfo
 
 #
@@ -79,7 +79,7 @@ def parse_stxt_data(fdata: bytes, fontmap: List[FontInfo]) -> TextData:
     logging.debug("font_data_size = %08x", font_data_size)
     
     
-    txt_data = fdata[idxb:idxb+nchars].decode('ISO-8859-1')
+    txt_data = fdata[idxb:idxb+nchars].decode(get_encoding())
     idx = idxb+nchars
     
 
