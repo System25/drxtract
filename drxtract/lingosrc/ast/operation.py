@@ -247,7 +247,7 @@ class SpAssignOperation(Node):
         l = cast(Node, self.left)
         r = cast(Node, self.right)
         left: str = l.generate_js(indentation, factory_method);
-        if left.startswith('field(') and left.endswith(')'):
+        if re.search('field\\([^\\)]+\\)', left):
             left = re.sub('(field\\([^\\)]+\\))', '\\1.text', left)
         
         if self.mode == 'after':
@@ -285,12 +285,12 @@ class StringOperation(Node):
     
     def generate_js(self, indentation: int, factory_method: bool) -> str:
         if self.end is None:
-            return vsprintf('%s.getPropRef("%s", %s)',
+            return vsprintf('%s.%s[%s]',
                 cast(Node, self.of).generate_js(0, factory_method),
                 self.name,
                 cast(Node, self.start).generate_js(0, factory_method))
             
-        return vsprintf('%s.getPropRef("%s", %s, %s)',
+        return vsprintf('%s.%s[range(%s, %s)]',
             cast(Node, self.of).generate_js(0, factory_method),
             self.name,
             cast(Node, self.start).generate_js(0, factory_method),
@@ -327,7 +327,7 @@ class UnaryStringOperation(Node):
         if self.type is not None:
             op_type = cast(StringOperationNames, self.type).value
             if self.name == UnaryOperationNames.LAST.value:
-                return vsprintf("%s.getProp(\"%s\", \"%s\")",
+                return vsprintf("%s.%s[\"%s\"]",
                             operand.generate_js(indentation, factory_method),
                             op_type, operation)
             else:

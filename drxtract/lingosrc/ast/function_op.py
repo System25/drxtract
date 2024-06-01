@@ -30,10 +30,6 @@ class Statement(Node):
 
     def generate_js(self, indentation: int, factory_method: bool) -> str:
         js_code:str = self.code.generate_js(indentation, factory_method);
-        if ('getPropRef' in js_code and not js_code.startswith('delete(')
-            and not '=' in js_code[js_code.rindex('getPropRef'):]):
-            li = js_code.rsplit('getPropRef', 1)
-            js_code = 'getProp'.join(li)
         if js_code.endswith('}'):
             return code_indentation(indentation) + js_code + '\n'
         else:       

@@ -1,3 +1,3 @@
 function exitFrame() {
-    hilite(field(1).getProp("word", 2));
+    hilite(field(1).word[2]);
 }
