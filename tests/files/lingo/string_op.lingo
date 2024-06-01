@@ -15,7 +15,7 @@ on startMovie
     put offset("dog", "My cat")
     put offset("m\xc5n", "My WOMAN")
     put "length function examples"
-    put length(empty)
+    put length(EMPTY)
     put length("a")
     put length("hey man!")
 end

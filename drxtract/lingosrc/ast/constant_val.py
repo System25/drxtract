@@ -11,12 +11,12 @@ KNOWN_SYMBOLS: List[str] = [
 ]
 
 PREDEFINED_CONSTANTS: Dict[str, str] =  {
-    '""': 'empty',
-    '"\\x08"': 'backspace',
-    '"\\x03"': 'enter',
-    '"\""': 'quote',
-    '"\\r"': 'return',
-    '"\\t"': 'tab'
+    '""': 'EMPTY',
+    '"\\x08"': 'BACKSPACE',
+    '"\\x03"': 'ENTER',
+    '"\""': 'QUOTE',
+    '"\\r"': 'RETURN',
+    '"\\t"': 'TAB'
     
 }
 
