@@ -7,9 +7,9 @@ function exitFrame() {
     put(new LingoString("num of items:"), myStr.item.length);
     _player.itemDelimiter = new LingoString(",");
     put(new LingoString("again:"), myStr.item.length);
-    myStr.item[1] = new LingoString("hey") + myStr.item[1];
+    myStr.item[1] = new LingoString(new LingoString("hey") + myStr.item[1]);
     put(myStr);
-    myStr.item[1] = myStr.item[1] + new LingoString("you");
+    myStr.item[1] = new LingoString(myStr.item[1] + new LingoString("you"));
     put(myStr);
     myStr.item[2] = new LingoString("me");
     put(myStr);

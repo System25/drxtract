@@ -62,8 +62,8 @@ JS_BIN_OP: Dict[str,str] = {
     'div': '/',
     'mod': '%',
     
-    'concat': '+',
-    'concats': '+ " " +',
+    'concat': '.concat',
+    'concats': '.concats',
     'contains': '.contains',
     'start': '.start',
     
@@ -251,10 +251,10 @@ class SpAssignOperation(Node):
             left = re.sub('(field\\([^\\)]+\\))', '\\1.text', left)
         
         if self.mode == 'after':
-            return vsprintf("%s = %s + %s", left, left,
+            return vsprintf("%s = new LingoString(%s + %s)", left, left,
                             r.generate_js(indentation, factory_method))
         elif self.mode == 'before':
-            return vsprintf("%s = %s + %s", left,
+            return vsprintf("%s = new LingoString(%s + %s)", left,
                             r.generate_js(indentation, factory_method),
                             left)
         else:

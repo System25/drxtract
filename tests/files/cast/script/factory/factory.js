@@ -99,13 +99,13 @@ class Factory__makeStack extends FactoryBase {
         var value;
 
         put(new LingoString("** makeStack: mShow"));
-        put((new LingoString("Stack length:") + " " + this.myLength));
+        put(new LingoString("Stack length:").concats(this.myLength));
         for(i = 1; i <= this.myLength; i++) {
             value = this.mget(i);
             if (objectp(value)) {
                 value = value(symbol('mname'));
             }
-            put((((new LingoString("Stack position") + " " + i) + " " + new LingoString(":")) + " " + value));
+            put(new LingoString("Stack position").concats(i).concats(new LingoString(":")).concats(value));
         }
     }
 
