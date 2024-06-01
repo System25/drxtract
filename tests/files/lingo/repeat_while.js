@@ -3,8 +3,8 @@ function exitFrame() {
 
     val = random(10);
     while (val != 3) {
-        put("val = ", val);
+        put(new LingoString("val = "), val);
         val = random(10);
     }
-    put("end ;)");
+    put(new LingoString("end ;)"));
 }

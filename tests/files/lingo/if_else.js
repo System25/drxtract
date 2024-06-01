@@ -1,42 +1,42 @@
 function exitFrame() {
-    put("------------");
+    put(new LingoString("------------"));
     singleIfTest();
     singleIfElseTest();
     anidatedIfTest();
-    put("------------");
+    put(new LingoString("------------"));
 }
 
 function singleIfTest() {
-    put("Single if test");
+    put(new LingoString("Single if test"));
     if ((random(10) % 2) == 0) {
-        put("Even number!");
+        put(new LingoString("Even number!"));
     }
-    put("Single if test END");
+    put(new LingoString("Single if test END"));
 }
 
 function singleIfElseTest() {
-    put("Single if-else test");
+    put(new LingoString("Single if-else test"));
     if ((random(10) % 2) == 0) {
-        put("Even number!");
+        put(new LingoString("Even number!"));
     } else {
-        put("Odd number");
+        put(new LingoString("Odd number"));
     }
-    put("Single if-else test END");
+    put(new LingoString("Single if-else test END"));
 }
 
 function anidatedIfTest() {
-    put("Anidated if test");
+    put(new LingoString("Anidated if test"));
     if ((random(10) % 2) == 0) {
         if ((random(10) % 2) == 0) {
-            put("First even then even");
+            put(new LingoString("First even then even"));
         } else {
-            put("First even then odd");
+            put(new LingoString("First even then odd"));
         }
     } else {
-        put("First odd");
+        put(new LingoString("First odd"));
         if ((random(10) % 2) == 0) {
-            put("Second even");
+            put(new LingoString("Second even"));
         }
     }
-    put("Anidated if test end");
+    put(new LingoString("Anidated if test end"));
 }

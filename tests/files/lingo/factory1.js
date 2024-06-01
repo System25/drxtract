@@ -16,7 +16,7 @@ class Factory__makeStack extends FactoryBase {
     }
 
     mname() {
-        return "Stack:Factory";
+        return new LingoString("Stack:Factory");
     }
 
     mPush(value) {
@@ -71,14 +71,14 @@ class Factory__makeStack extends FactoryBase {
         var i;
         var value;
 
-        put("** makeStack: mShow");
-        put(("Stack length:" + " " + this.myLength));
+        put(new LingoString("** makeStack: mShow"));
+        put((new LingoString("Stack length:") + " " + this.myLength));
         for(i = 1; i <= this.myLength; i++) {
             value = this.mget(i);
             if (objectp(value)) {
                 value = value(symbol('mname'));
             }
-            put(((("Stack position" + " " + i) + " " + ":") + " " + value));
+            put((((new LingoString("Stack position") + " " + i) + " " + new LingoString(":")) + " " + value));
         }
     }
 

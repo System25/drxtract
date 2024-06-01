@@ -35,6 +35,13 @@ class ConstantValue(Node):
             return PREDEFINED_CONSTANTS[n]
         
         return n
+    
+    def generate_js(self, indentation: int, factory_method: bool) -> str:
+        n: str = self.name
+        if isinstance(n, str) and n.startswith('"'):
+            return "new LingoString(" + n + ")"
+        
+        return n
 
 #
 # Symbol class.

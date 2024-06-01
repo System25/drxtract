@@ -1,22 +1,22 @@
 function exitFrame() {
     var i;
 
-    put("first loop");
+    put(new LingoString("first loop"));
     for(i = 1; i <= 10; i++) {
-        put("i=", i);
+        put(new LingoString("i="), i);
         if ((i % 2) == 0) {
-            put("i is even");
+            put(new LingoString("i is even"));
         } else {
-            put("i is odd");
+            put(new LingoString("i is odd"));
         }
     }
-    put("Second loop");
+    put(new LingoString("Second loop"));
     for(i = 1; i <= 10; i++) {
-        put("i=", i);
+        put(new LingoString("i="), i);
         if (i == 9) {
             break;
         } else {
-            put("do not exit yet");
+            put(new LingoString("do not exit yet"));
         }
     }
 }

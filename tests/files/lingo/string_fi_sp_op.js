@@ -1,15 +1,15 @@
 function exitFrame() {
-    put("base item delimiter", _player.itemDelimiter);
-    _player.itemDelimiter = ":";
-    field(2).text = "a:b:c";
-    put("num of items:", field(2).item.length);
-    _player.itemDelimiter = ",";
-    put("again:", field(2).item.length);
-    field(2).text.getPropRef("item", 1) = "hey" + field(2).text.getProp("item", 1);
+    put(new LingoString("base item delimiter"), _player.itemDelimiter);
+    _player.itemDelimiter = new LingoString(":");
+    field(2).text = new LingoString("a:b:c");
+    put(new LingoString("num of items:"), field(2).item.length);
+    _player.itemDelimiter = new LingoString(",");
+    put(new LingoString("again:"), field(2).item.length);
+    field(2).text.getPropRef("item", 1) = new LingoString("hey") + field(2).text.getProp("item", 1);
     put(field(2));
-    field(2).text.getPropRef("item", 1) = field(2).text.getProp("item", 1) + "you";
+    field(2).text.getPropRef("item", 1) = field(2).text.getProp("item", 1) + new LingoString("you");
     put(field(2));
-    field(2).text.getPropRef("item", 2) = "me";
+    field(2).text.getPropRef("item", 2) = new LingoString("me");
     put(field(2));
     delete(field(2).getPropRef("item", 1));
     put(field(2));

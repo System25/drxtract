@@ -1,6 +1,6 @@
 function exitFrame() {
-    put("Name pos:", findPos(_global.myList, symbol('name')));
-    put("Surname pos:", findPos(_global.myList, symbol('surname')));
-    put("Nothing pos:", findPos(_global.myList, symbol('nothing')));
-    put("Nothing pos near:", findPosNear(_global.myList, symbol('nothing')));
+    put(new LingoString("Name pos:"), findPos(_global.myList, symbol('name')));
+    put(new LingoString("Surname pos:"), findPos(_global.myList, symbol('surname')));
+    put(new LingoString("Nothing pos:"), findPos(_global.myList, symbol('nothing')));
+    put(new LingoString("Nothing pos near:"), findPosNear(_global.myList, symbol('nothing')));
 }

@@ -1,13 +1,13 @@
 function exitFrame() {
     var i;
 
-    put("Start!");
+    put(new LingoString("Start!"));
     for(i = 1; i <= 10; i++) {
-        put("i=", i);
+        put(new LingoString("i="), i);
         if (i == 5) {
-            put("Exit repeat!");
+            put(new LingoString("Exit repeat!"));
             break;
         }
     }
-    put("End!");
+    put(new LingoString("End!"));
 }

@@ -1,10 +1,10 @@
 function exitFrame() {
     var myName;
 
-    myName = "John";
-    myName = myName + " Doe";
+    myName = new LingoString("John");
+    myName = myName + new LingoString(" Doe");
     put(myName);
-    myName = "Doe";
-    myName = "Janet " + myName;
+    myName = new LingoString("Doe");
+    myName = new LingoString("Janet ") + myName;
     put(myName);
 }

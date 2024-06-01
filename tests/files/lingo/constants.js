@@ -1,5 +1,5 @@
 function exitFrame() {
-    put("String constant");
+    put(new LingoString("String constant"));
     put(70000);
     put(3.001);
 }

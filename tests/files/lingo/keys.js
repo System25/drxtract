@@ -1,15 +1,15 @@
 function exitFrame() {
     if (_key.commandDown) {
-        put("COMMAND");
+        put(new LingoString("COMMAND"));
     }
     if (_key.shiftDown) {
-        put("SHIFT");
+        put(new LingoString("SHIFT"));
     }
     if (_key.controlDown) {
-        put("CONTROL");
+        put(new LingoString("CONTROL"));
     }
     if (_key.optionDown) {
-        put("OPTION");
+        put(new LingoString("OPTION"));
     }
-    put("last key: ", _key.key, " code:", _key.keyCode);
+    put(new LingoString("last key: "), _key.key, new LingoString(" code:"), _key.keyCode);
 }

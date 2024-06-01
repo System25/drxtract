@@ -1,9 +1,9 @@
 function mouseUp() {
-    open(window("tour"));
-    with (window("tour")) {
+    open(window(new LingoString("tour")));
+    with (window(new LingoString("tour"))) {
         puppetTempo(5);
     }
-    with (window("tour")) {
+    with (window(new LingoString("tour"))) {
         go(1);
         stageColor = 0;
         updateStage();

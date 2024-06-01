@@ -1,8 +1,8 @@
 function exitFrame() {
     var glist;
 
-    glist = propList(symbol('name'), "Jhon", symbol('surname'), "Doe");
-    put("glist=", glist);
-    put("name: ", getProp(glist, symbol('name')));
-    put("surname:", getProp(glist, symbol('surname')));
+    glist = propList(symbol('name'), new LingoString("Jhon"), symbol('surname'), new LingoString("Doe"));
+    put(new LingoString("glist="), glist);
+    put(new LingoString("name: "), getProp(glist, symbol('name')));
+    put(new LingoString("surname:"), getProp(glist, symbol('surname')));
 }
