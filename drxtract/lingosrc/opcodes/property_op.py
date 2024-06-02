@@ -32,7 +32,7 @@ MENUITEM_PROPERTIES = ['UNKNOWN0', 'name', 'checkMark', 'enabled', 'script']
 NUM_OF_TYPES = ['UNKNOWN0', 'perFrameHook', 'castMembers', 'menus']
 
 SPRITE_PROPERTIES = ['UNKNOWN0', 'type', 'backColor', 'bottom', 'castNum',
-                     'constraint', 'cursor', 'foreColor', 'height', 'UNKNOWN1',
+                     'constraint', 'cursor', 'foreColor', 'height', 'immediate',
                      'ink', 'left', 'lineSize', 'locH', 'locV', 'movieRate',
                      'movieTime', 'UNKNOWN2', 'puppet', 'right',
                      'startTime', 'stopTime', 'stretch', 'top', 'trails',

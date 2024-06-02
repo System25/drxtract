@@ -1,0 +1,3 @@
+on startMovie
+    put "immediate:", the immediate of sprite 1
+end
