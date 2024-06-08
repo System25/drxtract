@@ -18,6 +18,7 @@ KNOWN_PROPERTIES = {
     'lastEvent': '_player',
     'lastKey': '_player',
     'lastRoll': '_player',
+    'machineType': '_player',
 }
 
 

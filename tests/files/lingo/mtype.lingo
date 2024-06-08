@@ -1,0 +1,3 @@
+on startMovie
+    put "machineType:", the machineType
+end
