@@ -13,7 +13,8 @@ from typing import List
 
 
 KNOWN_PROPERTIES = {
-    'updateMovieEnabled': '_movie'
+    'updateMovieEnabled': '_movie',
+    'frameLabel': '_movie'
 }
 
 #

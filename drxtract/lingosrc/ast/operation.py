@@ -386,7 +386,9 @@ class KeyPropertyAccessorOperation(Node):
     def generate_js(self, indentation: int, factory_method: bool) -> str:
         if self.prop in ('date', 'time'):
             return vsprintf("_system.date('%s')", self.prop)
-        
+        if self.prop in ('labelList'):
+            return vsprintf("_movie.%s", self.prop)
+                    
         return vsprintf("_key.%s", self.prop)
     
 #

@@ -1,0 +1,24 @@
+on startMovie
+    put "Labels list:", the labelList
+    put "frameLabel: ", the frameLabel
+    set nlabels = the number of lines of the labelList
+    put "Number of labels: ", nlabels
+    repeat with l = 1 to nlabels
+        set thisLabel = line l of the labelList
+        put "line: ", l, "label:", thisLabel
+        put "frame number:", label(thisLabel)
+    end repeat
+    put "marker(-1):", marker(-1)
+    put "marker(0):", marker(0)
+    put "marker(1):", marker(1)
+    put "go square"
+    go "square"
+    put "marker(-1):", marker(-1)
+    put "marker(0):", marker(0)
+    put "marker(1):", marker(1)
+    put "go rounded square"
+    go "rounded square"
+    put "marker(-1):", marker(-1)
+    put "marker(0):", marker(0)
+    put "marker(1):", marker(1)
+end
