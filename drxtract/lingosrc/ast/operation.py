@@ -6,8 +6,20 @@ from .node import Node
 from .variable import Menu, MenuItem
 from enum import Enum
 from typing import Optional, cast, Dict
-from ..util import vsprintf
+from ..util import vsprintf, get_keys
 import re
+
+
+KNOWN_PROPERTIES = {
+    'updateMovieEnabled': '_movie',
+    'frameLabel': '_movie',
+    'labelList': '_movie',
+    'lastClick': '_player',
+    'lastEvent': '_player',
+    'lastKey': '_player',
+    'lastRoll': '_player',
+}
+
 
 #
 # Unary Operation names in Javascript.
@@ -386,8 +398,9 @@ class KeyPropertyAccessorOperation(Node):
     def generate_js(self, indentation: int, factory_method: bool) -> str:
         if self.prop in ('date', 'time'):
             return vsprintf("_system.date('%s')", self.prop)
-        if self.prop in ('labelList'):
-            return vsprintf("_movie.%s", self.prop)
+        
+        if self.prop in get_keys(KNOWN_PROPERTIES):
+            return vsprintf("%s.%s", KNOWN_PROPERTIES[self.prop], self.prop)
                     
         return vsprintf("_key.%s", self.prop)
     

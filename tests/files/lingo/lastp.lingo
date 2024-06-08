@@ -1,0 +1,6 @@
+on startMovie
+    put "the lastClick:", the lastClick
+    put "the lastEvent:", the lastEvent
+    put "the lastKey:", the lastKey
+    put "the lastRoll:", the lastRoll
+end

@@ -83,6 +83,7 @@ class TestScript(unittest.TestCase):
         ['string_op.Lnam', 'string_op.Lscr', 'string_op.lingo'],
         ['immediate.Lnam', 'immediate.Lscr', 'immediate.lingo'],
         ['labels.Lnam', 'labels.Lscr', 'labels.lingo'],
+        ['lastp.Lnam', 'lastp.Lscr', 'lastp.lingo'],
         
     ])
     def test_script(self, lnam_file: str, lsrc_file: str, lingo_file: str):
