@@ -399,8 +399,9 @@ class KeyPropertyAccessorOperation(Node):
         if self.prop in ('date', 'time'):
             return vsprintf("_system.date('%s')", self.prop)
         
-        if self.prop in get_keys(KNOWN_PROPERTIES):
-            return vsprintf("%s.%s", KNOWN_PROPERTIES[self.prop], self.prop)
+        prop_name = self.prop
+        if prop_name in get_keys(KNOWN_PROPERTIES):
+            return vsprintf("%s.%s", KNOWN_PROPERTIES[prop_name], prop_name)
                     
         return vsprintf("_key.%s", self.prop)
     
