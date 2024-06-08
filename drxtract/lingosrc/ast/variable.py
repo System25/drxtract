@@ -19,7 +19,9 @@ KNOWN_PROPERTIES = {
     'keyDownScript': '_system',
     'keyUpScript': '_system',
     'timeoutScript': '_system',
-    'itemDelimiter': '_player'
+    'itemDelimiter': '_player',
+    'movieName': '_movie',
+    'moviePath': '_movie',
 }
 
 #

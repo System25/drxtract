@@ -27,8 +27,11 @@ KNOWN_PROPERTIES = {
     'mouseLine': '_mouse',
     'mouseUp': '_mouse',
     'mouseV': '_mouse',
-    'mouseWord': '_mouse',    
-    
+    'mouseWord': '_mouse',
+    'movie': '_movie',
+    'pathName': '_movie',
+    'movieFileSize': '_movie',
+    'movieFileFreeSize': '_movie',  
 }
 
 

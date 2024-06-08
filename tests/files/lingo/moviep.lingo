@@ -1,0 +1,8 @@
+on startMovie
+    put "the movie:", the movie
+    put "the pathName:", the pathName
+    put "the movieName:", the movieName
+    put "the moviePath:", the moviePath
+    put "the movieFileSize:", the movieFileSize
+    put "the movieFileFreeSize:", the movieFileFreeSize
+end
