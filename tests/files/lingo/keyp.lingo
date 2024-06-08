@@ -1,0 +1,10 @@
+on startMovie
+    put "the commandDown:", the commandDown
+    put "the controlDown:", the controlDown
+    put "the key:", the key
+    put "the keyCode:", the keyCode
+    put "the optionDown:", the optionDown
+    put "the shiftDown:", the shiftDown
+    put "the keyDownScript:", the keyDownScript
+    put "the keyUpScript:", the keyUpScript
+end
