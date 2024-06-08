@@ -19,6 +19,16 @@ KNOWN_PROPERTIES = {
     'lastKey': '_player',
     'lastRoll': '_player',
     'machineType': '_player',
+    'mouseCast': '_mouse',
+    'mouseChar': '_mouse',
+    'mouseDown': '_mouse',
+    'mouseH': '_mouse',
+    'mouseItem': '_mouse',
+    'mouseLine': '_mouse',
+    'mouseUp': '_mouse',
+    'mouseV': '_mouse',
+    'mouseWord': '_mouse',    
+    
 }
 
 

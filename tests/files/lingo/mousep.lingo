@@ -1,0 +1,13 @@
+on startMovie
+    put "the mouseCast:", the mouseCast
+    put "the mouseChar:", the mouseChar
+    put "the mouseDown:", the mouseDown
+    put "the mouseDownScript:", the mouseDownScript
+    put "the mouseH:", the mouseH
+    put "the mouseItem:", the mouseItem
+    put "the mouseLine:", the mouseLine
+    put "the mouseUp:", the mouseUp
+    put "the mouseUpScript:", the mouseUpScript
+    put "the mouseV:", the mouseV
+    put "the mouseWord:", the mouseWord
+end
