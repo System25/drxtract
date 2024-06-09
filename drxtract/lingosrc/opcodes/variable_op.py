@@ -108,7 +108,7 @@ class TellPropertyOpcode(Param1Opcode):
                 fn: FunctionDef, index: int):
         op1 = self.param1
 
-        op = CallFunction(context.name_list[op1], index)
+        op = CallFunction(context.name_list[op1], index, False)
         op.parameters = stack.pop()
         op.in_tell_operation = True
         fn.statements.append(Statement(op, index)) 

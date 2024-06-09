@@ -1,0 +1,26 @@
+on startMovie
+    put "before start"
+    put the result
+    put "call myfunc"
+    myfunc
+    put "two:", (1 + 1)
+    myOtherFunc
+    put the result
+    set three = threefunc
+    put "three:", three
+    put the result
+    threefunc
+    put "three:", the result
+end
+
+on threefunc
+    return 3
+end
+
+on myfunc
+    return "my result"
+end
+
+on myOtherFunc
+    put "inside myOtherFunc"
+end

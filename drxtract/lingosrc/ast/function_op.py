@@ -30,6 +30,11 @@ class Statement(Node):
 
     def generate_js(self, indentation: int, factory_method: bool) -> str:
         js_code:str = self.code.generate_js(indentation, factory_method);
+        
+        if (isinstance(self.code, CallFunction) and
+            cast(CallFunction, self.code).with_result):
+            js_code = 'fn_call(' + js_code + ')'
+        
         if js_code.endswith('}'):
             return code_indentation(indentation) + js_code + '\n'
         else:       
@@ -56,11 +61,12 @@ class FunctionDef(Node):
 class CallFunction(Node):
     """This class represents a function call in the AST"""
     
-    def __init__(self, name: str, position: int):
+    def __init__(self, name: str, position: int, with_result: bool):
         super().__init__(name, position)
         self.parameters: Optional[Node] = None
         self.use_parenthesis: bool = True
         self.in_tell_operation: bool = False
+        self.with_result = with_result
         
     def gv_as_sym(self):
         # Sometimes Macromedia Director creates symbols instead of

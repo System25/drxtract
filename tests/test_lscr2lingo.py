@@ -91,6 +91,7 @@ class TestScript(unittest.TestCase):
         ['nothing.Lnam', 'nothing.Lscr', 'nothing.lingo'],
         ['castnum.Lnam', 'castnum.Lscr', 'castnum.lingo'],
         ['pause.Lnam', 'pause.Lscr', 'pause.lingo'],
+        ['result.Lnam', 'result.Lscr', 'result.lingo'],
         
     ])
     def test_script(self, lnam_file: str, lsrc_file: str, lingo_file: str):

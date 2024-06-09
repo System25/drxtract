@@ -2,9 +2,9 @@ function exitFrame() {
     _global.myOtherGlobal = 2;
     _global.myGlobalVar = 1;
     put(new LingoString("Begin: "), _global.myGlobalVar);
-    func1();
+    fn_call(func1());
     put(new LingoString("After func1: "), _global.myGlobalVar);
-    func2();
+    fn_call(func2());
     put(new LingoString("After func2: "), _global.myGlobalVar);
 }
 

@@ -1,8 +1,8 @@
 function exitFrame() {
     put(new LingoString("------------"));
-    singleIfTest();
-    singleIfElseTest();
-    anidatedIfTest();
+    fn_call(singleIfTest());
+    fn_call(singleIfElseTest());
+    fn_call(anidatedIfTest());
     put(new LingoString("------------"));
 }
 

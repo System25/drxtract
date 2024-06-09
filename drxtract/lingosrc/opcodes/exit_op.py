@@ -16,7 +16,7 @@ class ExitOpcode(Opcode):
 
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
-        op = CallFunction('exit', index)
+        op = CallFunction('exit', index, False)
         fn.statements.append(Statement(op, index))
 
 #
@@ -28,5 +28,5 @@ class ExitFactoryMethodOpcode(Opcode):
 
     def process(self, context: Context, stack: List[Node], \
                 fn: FunctionDef, index: int):
-        op = CallFunction('exit', index)
+        op = CallFunction('exit', index, False)
         fn.statements.append(Statement(op, index))

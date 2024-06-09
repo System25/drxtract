@@ -23,7 +23,7 @@ class CallLocalOpcode(Param1Opcode):
         op1 = self.param1
         fname = context.local_func_names[op1]
         
-        op = CallFunction(fname, index)
+        op = CallFunction(fname, index, True)
         op.parameters = stack.pop()
         
         if op.parameters is not None and op.parameters.name.startswith('<'):
@@ -43,7 +43,7 @@ class CallExternalOpcode(Param1Opcode):
         op1 = self.param1
         fname = context.name_list[op1]
         
-        op = CallFunction(fname, index)
+        op = CallFunction(fname, index, False)
         op.parameters = stack.pop()
         
         if op.parameters is not None and op.parameters.name.startswith('<'):
@@ -101,7 +101,7 @@ class CallObjectMethodOpcode(Param1Opcode):
         fname = findVarName(var_type, context, stack, fn)
                     
         params: LoadListOperation = cast(LoadListOperation, stack.pop())
-        op = CallFunction(fname, index)
+        op = CallFunction(fname, index, False)
         op.parameters = params
         operands = params.operands
         op.parameters.operands = []
