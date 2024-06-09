@@ -1,0 +1,13 @@
+on startMovie
+    set var1 = 1
+    set var2 = 1
+    if (var1 = 1) then
+        if (var2 = 1) then
+            put "var 1 and var 2 OK"
+        else
+            nothing
+        end if
+    else
+        put "var 1 KO"
+    end if
+end

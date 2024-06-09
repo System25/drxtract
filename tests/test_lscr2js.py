@@ -81,6 +81,7 @@ class TestScript(unittest.TestCase):
         ['mousep.Lnam', 'mousep.Lscr', 'mousep.js'],
         ['keyp.Lnam', 'keyp.Lscr', 'keyp.js'],
         ['moviep.Lnam', 'moviep.Lscr', 'moviep.js'],
+        ['nothing.Lnam', 'nothing.Lscr', 'nothing.js'],
         
     ])
     def test_script(self, lnam_file: str, lsrc_file: str, lingo_file: str):
