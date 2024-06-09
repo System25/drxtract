@@ -1,0 +1,8 @@
+on startMovie
+    put "pause the movie"
+    pause
+    if (the pauseState = 1) then
+        put "the movie was paused"
+        continue
+    end if
+end

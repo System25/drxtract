@@ -128,6 +128,9 @@ class CallFunction(Node):
         
         if nm == 'cast':
             nm = 'member'
+            
+        if nm == 'continue':
+            nm = 'resume'
         
         if factory_method and nm == 'me':
             pars: LoadListOperation = cast(LoadListOperation, self.parameters)

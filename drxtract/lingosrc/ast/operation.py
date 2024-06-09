@@ -32,6 +32,7 @@ KNOWN_PROPERTIES = {
     'pathName': '_movie',
     'movieFileSize': '_movie',
     'movieFileFreeSize': '_movie',  
+    'pauseState': '_movie',
 }
 
 

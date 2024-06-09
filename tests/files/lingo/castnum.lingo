@@ -1,0 +1,3 @@
+on startMovie
+    put "number of castmembers:", the number of castMembers
+end
