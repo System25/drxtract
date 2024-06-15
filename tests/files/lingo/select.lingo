@@ -1,0 +1,11 @@
+on startMovie
+    put "Default selection:", the selection
+    put "start:", the selStart
+    put "end:", the selEnd
+    put "select something:"
+    set the selStart = 6
+    set the selEnd = 11
+    put "selected:", the selection
+    put "start:", the selStart
+    put "end:", the selEnd
+end

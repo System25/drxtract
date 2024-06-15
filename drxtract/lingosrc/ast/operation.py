@@ -34,6 +34,7 @@ KNOWN_PROPERTIES = {
     'movieFileFreeSize': '_movie',  
     'pauseState': '_movie',
     'result': '_player',
+    'selection': '_movie',
 }
 
 
