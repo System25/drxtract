@@ -1,0 +1,8 @@
+on startMovie
+    put "Stage props:"
+    put "stageColor:", the stageColor
+    put "bottom:", the stageBottom
+    put "top:", the stageTop
+    put "left:", the stageLeft
+    put "right:", the stageRight
+end

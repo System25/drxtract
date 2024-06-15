@@ -35,6 +35,10 @@ KNOWN_PROPERTIES = {
     'pauseState': '_movie',
     'result': '_player',
     'selection': '_movie',
+    'stageBottom': '_movie',
+    'stageLeft': '_movie',
+    'stageRight': '_movie',
+    'stageTop': '_movie',
 }
 
 
