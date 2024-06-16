@@ -39,6 +39,7 @@ KNOWN_PROPERTIES = {
     'stageLeft': '_movie',
     'stageRight': '_movie',
     'stageTop': '_movie',
+    'ticks': '_system',
 }
 
 

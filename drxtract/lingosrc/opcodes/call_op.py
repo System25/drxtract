@@ -4,7 +4,7 @@
 
 from .opcode import Param1Opcode
 from ..ast import CallMethod, CallFunction, Statement, Node, \
-    ToListOperation, FunctionDef, Symbol, LoadListOperation, GlobalVariable, \
+    ToListOperation, FunctionDef, Symbol, LoadListOperation, \
     ConstantValue
 from ..model import Context
 from typing import List, cast
