@@ -88,7 +88,7 @@ class TestScript(unittest.TestCase):
         ['select.Lnam', 'select.Lscr', 'select.js'],
         ['stagep.Lnam', 'stagep.Lscr', 'stagep.js'],
         ['ticks.Lnam', 'ticks.Lscr', 'ticks.js'],
-        
+        ['timeout.Lnam', 'timeout.Lscr', 'timeout.js'],
     ])
     def test_script(self, lnam_file: str, lsrc_file: str, lingo_file: str):
         

@@ -1,0 +1,8 @@
+on startMovie
+    put "timeoutKeydown:", the timeoutKeyDown
+    put "timeoutMouse:", the timeoutMouse
+    put "timeoutPlay:", the timeoutPlay
+    put "timeoutLength:", the timeoutLength
+    put "timeoutLapsed:", the timeoutLapsed
+    set the timeoutScript = " put " & QUOTE & "Timeout reached!" & QUOTE & RETURN
+end

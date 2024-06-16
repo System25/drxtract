@@ -20,6 +20,14 @@ PREDEFINED_CONSTANTS: Dict[str, str] =  {
     
 }
 
+REPLACEMENT_CONSTANTS: Dict[str, str] =  {
+    'BACKSPACE': "\\x08",
+    'ENTER': "\\x03",
+    'QUOTE': "\"",
+    'RETURN': "\\r",
+    'TAB': "\\t"
+}
+
 #
 # Constant value class.
 # 
@@ -29,17 +37,56 @@ class ConstantValue(Node):
     def __init__(self, name: str, position: int):
         super().__init__(name, position)
 
+    def replace_chars_with_lingo_constants(self, n: str) -> str:
+        for k in get_keys(REPLACEMENT_CONSTANTS):
+            v: str = REPLACEMENT_CONSTANTS[k]
+            idx = 1
+            l: int = (len(n) - 1)
+            pos: int = n.find(v, idx, l)
+            while pos > 0:
+                start = n[0:pos]
+                e0: int = pos + len(v)
+                el: int = len(n)
+                end = n[e0:el]
+    
+                idx = len(start)
+                if not start.endswith('& "'):
+                    start = start + '" & '
+                    idx = idx + 4
+                else:
+                    idx = idx - 1
+                    start = start[0:idx]
+    
+                idx = idx + len(k)
+                if end != '"':
+                    end = ' & "' + end
+                    idx = idx + 4
+                else:
+                    end = ''
+    
+                n = start + k + end
+                    
+                l = (len(n) -1)
+                pos = n.find(v, idx, l)
+        
+        return n
+
     def generate_lingo(self, indentation: int) -> str:
         n: str = self.name
         if n in get_keys(PREDEFINED_CONSTANTS):
             return PREDEFINED_CONSTANTS[n]
-        
-        return n
     
+        if (isinstance(n, str) and n.startswith('"')):
+            n = self.replace_chars_with_lingo_constants(n)
+
+        return n
+        
     def generate_js(self, indentation: int, factory_method: bool) -> str:
         n: str = self.name
         if isinstance(n, str) and n.startswith('"'):
-            return "new LingoString(" + n + ")"
+            l: int = len(n) - 1;
+            n = n[1:l]
+            return 'new LingoString("' + n.replace('"', '\\"') + '")'
         
         return n
 
