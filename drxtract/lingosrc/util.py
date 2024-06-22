@@ -168,6 +168,31 @@ def repeat_string(word:str, n:int) -> str:
     return word * n
 
 # =============================================================================
+def replace(haystack:str, needle:str, replacement:str) -> str:
+    """
+    Returns a string with the needle phrase replaced by the replacement
+    phrase.
+    
+    Parameters
+    ----------
+    haystack : str
+        The string where the ocurrences of 'needle' will be replaced.
+    needle: str
+        The phrase to be replaced.
+    replacement: str
+        The replacement phrase .
+        
+    Returns
+    -------
+    str
+        The haystack string with the needle phrase replaced by the replacement
+        phrase.
+        
+    """
+
+    return haystack.replace(needle, replacement)
+
+# =============================================================================
 class Dictionary(dict):
     """This class is a wrapper for dict"""
     

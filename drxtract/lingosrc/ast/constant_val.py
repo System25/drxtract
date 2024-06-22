@@ -3,7 +3,7 @@
 # License: GNU GPL v2 (see LICENSE file for details).
 
 from .node import Node
-from ..util import get_keys
+from ..util import get_keys, replace
 from typing import List, Dict
 
 KNOWN_SYMBOLS: List[str] = [
@@ -86,7 +86,7 @@ class ConstantValue(Node):
         if isinstance(n, str) and n.startswith('"'):
             l: int = len(n) - 1;
             n = n[1:l]
-            return 'new LingoString("' + n.replace('"', '\\"') + '")'
+            return 'new LingoString("' + replace(n, '"', '\\"') + '")'
         
         return n
 
