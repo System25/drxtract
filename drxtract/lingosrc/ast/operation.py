@@ -28,6 +28,8 @@ KNOWN_PROPERTIES = {
     'mouseUp': '_mouse',
     'mouseV': '_mouse',
     'mouseWord': '_mouse',
+    'doubleClick': '_mouse',
+    'clickOn': '_mouse',
     'movie': '_movie',
     'pathName': '_movie',
     'movieFileSize': '_movie',

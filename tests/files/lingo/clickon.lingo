@@ -1,0 +1,5 @@
+on startMovie
+    put "clickOn:", the clickOn
+    put "doubleClick:", the doubleClick
+    put "perFrameHook:", the perFrameHook
+end

@@ -96,6 +96,7 @@ class TestScript(unittest.TestCase):
         ['stagep.Lnam', 'stagep.Lscr', 'stagep.lingo'],
         ['ticks.Lnam', 'ticks.Lscr', 'ticks.lingo'],
         ['timeout.Lnam', 'timeout.Lscr', 'timeout.lingo'],
+        ['clickon.Lnam', 'clickon.Lscr', 'clickon.lingo'],
         
     ])
     def test_script(self, lnam_file: str, lsrc_file: str, lingo_file: str):

@@ -357,9 +357,14 @@ class NumberOfCastElementsOpcode(BiOpcode):
         param: ConstantValue = cast(ConstantValue, stack.pop())
         optype = int(param.name)
 
-        op = UnaryStringOperation(UnaryOperationNames.NUMBER, index)
-        op.of = LocalVariable(NUM_OF_TYPES[optype], index)
-        stack.append(op)
+        if NUM_OF_TYPES[optype] == 'perFrameHook':
+            obj: Node = LocalVariable('_system', index)
+            op: Node = PropertyAccessorOperation(obj, 'perFrameHook', index)
+            stack.append(op)
+        else:
+            op = UnaryStringOperation(UnaryOperationNames.NUMBER, index)
+            op.of = LocalVariable(NUM_OF_TYPES[optype], index)
+            stack.append(op)
     
 #
 # Cast properties Opcode.
