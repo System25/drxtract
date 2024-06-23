@@ -1,0 +1,6 @@
+on startMovie
+    put "fullColorPermit:", the fullColorPermit
+    put "imageDirect:", the imageDirect
+    put "maxInteger:", the maxinteger
+    put "romanLingo:", the romanLingo
+end

@@ -42,6 +42,8 @@ KNOWN_PROPERTIES = {
     'stageRight': '_movie',
     'stageTop': '_movie',
     'ticks': '_system',
+    'maxinteger': '_system',
+    'multiSound': '_system',
 }
 
 

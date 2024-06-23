@@ -64,6 +64,8 @@ class TestScript(unittest.TestCase):
         ['cast_props.Lnam', 'cast_props.Lscr', 'cast_props.js'],
         ['hilite_op.Lnam', 'hilite_op.Lscr', 'hilite_op.js'],
         ['system_props.Lnam', 'system_props.Lscr', 'system_props.js'],
+        ['system_props2.Lnam', 'system_props2.Lscr', 'system_props2.js'],
+        ['system_props3.Lnam', 'system_props3.Lscr', 'system_props3.js'],
         ['date_time.Lnam', 'date_time.Lscr', 'date_time.js'],
         ['prop_list_init.Lnam', 'prop_list_init.Lscr', 'prop_list_init.js'],
         ['exit_repeat.Lnam', 'exit_repeat.Lscr', 'exit_repeat.js'],
@@ -90,6 +92,7 @@ class TestScript(unittest.TestCase):
         ['ticks.Lnam', 'ticks.Lscr', 'ticks.js'],
         ['timeout.Lnam', 'timeout.Lscr', 'timeout.js'],
         ['clickon.Lnam', 'clickon.Lscr', 'clickon.js'],
+        ['sprite_pattern.Lnam', 'sprite_pattern.Lscr', 'sprite_pattern.js'],
     ])
     def test_script(self, lnam_file: str, lsrc_file: str, lingo_file: str):
         

@@ -1,0 +1,6 @@
+on startMovie
+    put "cpuHogTicks:", the cpuHogTicks
+    put "multiSound:", the multiSound
+    put "traceLoad:", the traceLoad
+    put "traceLogFile:", the traceLogFile
+end

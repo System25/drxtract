@@ -22,6 +22,10 @@ KNOWN_PROPERTIES = {
     'itemDelimiter': '_player',
     'movieName': '_movie',
     'moviePath': '_movie',
+    'romanLingo': '_system',
+    'cpuHogTicks': '_system',
+    'traceLoad': '_system',
+    'traceLogFile': '_system',
 }
 
 #
