@@ -76,10 +76,10 @@ def generate_lingo_code(script: Script) -> str:
             code = code + "\n"
         
         last = len(f.statements)-1
-        if f.statements[last].code.name == 'exit':
-            f.statements.pop()
-        
-        for st in f.statements:
+        for i in range(0, len(f.statements)):
+            st = f.statements[i]
+            if i == last and f.statements[last].code.name == 'exit':
+                break
             code = code + st.generate_lingo(1)
         
         code += "end\n"

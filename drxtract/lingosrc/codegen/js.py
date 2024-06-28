@@ -76,10 +76,10 @@ def generate_class_js_code(script: Script) -> str:
             code = code + "\n"
         
         last = len(f.statements)-1
-        if f.statements[last].code.name == 'exit':
-            f.statements.pop()
-        
-        for st in f.statements:
+        for i in range(0, len(f.statements)):
+            st = f.statements[i]
+            if i == last and f.statements[last].code.name == 'exit':
+                break
             code = code + st.generate_js(2, True)
         
         code += code_indentation(1) + "}\n"
@@ -139,10 +139,10 @@ def generate_factory_js_code(script: Script) -> str:
             code = code + "\n"
         
         last = len(f.statements)-1
-        if f.statements[last].code.name == 'exit':
-            f.statements.pop()
-        
-        for st in f.statements:
+        for i in range(0, len(f.statements)):
+            st = f.statements[i]
+            if i == last and f.statements[last].code.name == 'exit':
+                break
             code = code + st.generate_js(2, True)
         
         code += code_indentation(1) + "}\n"
@@ -197,13 +197,13 @@ def generate_common_js_code(script: Script) -> str:
             
         if len(f.local_vars) > 0:
             code = code + "\n"
-        
+            
         last = len(f.statements)-1
-        if f.statements[last].code.name == 'exit':
-            f.statements.pop()
-        
-        for st in f.statements:
-            code = code + st.generate_js(1, False)
+        for i in range(0, len(f.statements)):
+            st = f.statements[i]
+            if i == last and f.statements[last].code.name == 'exit':
+                break
+            code = code + st.generate_js(1, True)
         
         code += "}\n"
         first_function = False
