@@ -238,6 +238,11 @@ def parse_dir_file_data(byte_order: str, rifx_offset, \
     # Read the casting elements
     cast: List[Dict[str, Any]] = []
     for cas_index in cas_elements:
+        if cas_index == 0:
+            logging.debug('Empty CAST element!')
+            cast.append({})
+            continue
+            
         # Parse CASt chunk data
         res = mmap.resources[cas_index]
         chunk = riffData.get_by_offset(res.offset - rifx_offset)

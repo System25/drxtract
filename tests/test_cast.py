@@ -250,3 +250,23 @@ class TestScript(unittest.TestCase):
             self.assertEqual(expected_lingo, dirFile.lingoScr[lscr_idx])
             
             self.assertEqual(expected_js, dirFile.jsScr[lscr_idx])
+            
+
+    def test_some_files_contains_empty_cast_data(self):
+        dir_file = os.path.join('..', 'riff', 'AppleGame', "AppleGame.dir")
+
+        with open(dir_file, mode='rb') as file:
+            fdata = file.read()
+            
+            # Parse the director file
+            dirFile: DirectorFile = parse_dir_file_data('>', 0, fdata)
+            
+            # The 19th element of the casting sould be a sound
+            self.assertEqual(dirFile.cast[18]['type'], 'sound')
+            
+            # Get the 18th element of the casting
+            cast17 = dirFile.cast[17]
+
+            # It should be empty            
+            self.assertFalse(cast17)
+
