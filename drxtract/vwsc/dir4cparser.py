@@ -205,7 +205,7 @@ class D4VwscChannelParser(VwscChannelParser):
         if DEBUG_SPRITE_INFO:
             logging.debug("Sprite[%d] flags: %x", i, flags)
     
-        ink_type = int(frameData[indx])
+        ink_type = (int(frameData[indx]) % 64)
         
         # The first two bits of ink_type is also a flag bit
         unknown_flag = ((ink_type >> 7) & 1)
