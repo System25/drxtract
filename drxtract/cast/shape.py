@@ -9,6 +9,11 @@ from typing import Dict, Any
 
 from ..common import get_shape_name
 
+# Similar to DIR_SPRITE_TYPES
+DIRECTIONS: Dict[int, str] = {
+    5: 'lt_br',
+    6: 'bl_tr' 
+}
 
 #
 # Shape header data parser class.
@@ -73,9 +78,9 @@ class ShapeParser(CastParser):
         idx += 1                
         logging.debug("line_width = %s", line_width)                 
         
-        unknown08 =  int(header_data[idx])
+        direction =  DIRECTIONS[int(header_data[idx])]
         idx += 1                
-        logging.debug("unknown08 = %s", unknown08)   
+        logging.debug("direction = %s", direction)   
         
         castData['shapeType'] = shape_type            
         castData['top'] = top            
@@ -87,6 +92,7 @@ class ShapeParser(CastParser):
         castData['backColor'] = bgColor     
         castData['filled'] = filled
         castData['lineSize'] = line_width
+        castData['direction'] = direction
         
         return castData
                     

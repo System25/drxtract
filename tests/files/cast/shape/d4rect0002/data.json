@@ -2,6 +2,7 @@
     "backColor": 0,
     "bottom": 108,
     "content": {},
+    "direction": "lt_br",
     "filled": 1,
     "foreColor": 254,
     "left": 39,
