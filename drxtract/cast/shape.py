@@ -78,7 +78,8 @@ class ShapeParser(CastParser):
         idx += 1                
         logging.debug("line_width = %s", line_width)                 
         
-        direction =  DIRECTIONS[int(header_data[idx])]
+        dir_val = int(header_data[idx])
+        direction =  DIRECTIONS[dir_val]
         idx += 1                
         logging.debug("direction = %s", direction)   
         
