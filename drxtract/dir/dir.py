@@ -38,13 +38,15 @@ class DirectorFile:
     
     def __init__(self, info: Dict[str, Any], cast: List[Dict[str, Any]],
                  lingoScr: Dict[int, str], jsScr: Dict[int, str],
-                 markers: List[Marker], score: Dict[str, Any]):
+                 markers: List[Marker], score: Dict[str, Any],
+                 fontmap: List[FontInfo]):
         self.info = info
         self.cast = cast
         self.lingoScr = lingoScr
         self.jsScr = jsScr
         self.markers = markers
         self.score = score
+        self.fontmap = fontmap
 
 #
 # Check if a chunk exists in the MMap resources list by its chunk ID.
@@ -293,5 +295,5 @@ def parse_dir_file_data(byte_order: str, rifx_offset, \
     
     
     # Return the DirectorFile structure
-    return DirectorFile(info, cast, lingoScr, jsScr, markers, score)
+    return DirectorFile(info, cast, lingoScr, jsScr, markers, score, fontmap)
     
