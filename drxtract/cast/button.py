@@ -35,9 +35,19 @@ class ButtonParser(CastParser):
         idx += 2
         logging.debug("unknown2 = %s", unknown2)             
         
-        unknown3 =  struct.unpack(">h", header_data[idx:idx+2])[0]
+        alignment =  struct.unpack(">h", header_data[idx:idx+2])[0]
         idx += 2
-        logging.debug("unknown3 = %s", unknown3)      
+        
+        if alignment == 0:
+            alignment = 'left'
+        elif alignment == 1:
+            alignment = 'center'
+        elif alignment == -1:
+            alignment = 'right'
+        else:
+            logging.warning("Unknown text alignment = %s", alignment)  
+        
+        logging.debug("alignment = %s", alignment)
         
         bgcolor_red =  int(header_data[idx])
         idx += 1            
@@ -106,6 +116,7 @@ class ButtonParser(CastParser):
         
         logging.debug("buttonType = %s", buttonType)              
         
+        castData['alignment'] = alignment
         castData['backgroundColor'] = vsprintf('#%02X%02X%02X',
             bgcolor_red, bgcolor_green, bgcolor_blue)
         castData['buttonType'] = buttonType
