@@ -66,7 +66,7 @@ class Decoder24b(Decoder):
                     y -= 1
     
         if y!=-1 or x!=0:
-            logging.warning("Not enought data to decode. Probably the image is "
+            logging.warning("Not enough data to decode. Probably the image is "
                          + "not properly generated. (y=%s, x=%s)", y, x)
     
         if idx != len(fdata):

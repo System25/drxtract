@@ -65,7 +65,7 @@ SYSTEM_WINDOWS_16COLORS_PALETTE = (
 
 
 PALETTES: Dict[int, Dict[str, tuple]] = {
-    2: {
+    1: {
         'black and white': BW_PALETTE
     },
     4: {

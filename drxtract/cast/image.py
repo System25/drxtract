@@ -58,8 +58,8 @@ class ImageParser(CastParser):
             bmp_bpp = 24
 
         elif bmp_bpp_val == 0x0:
-            # 2 bit per pixel image (Black and White)
-            bmp_bpp = 2               
+            # 1 bit per pixel image (Black and White)
+            bmp_bpp = 1               
             
         else:
             logging.warning("Unknown BPP value: %s", bmp_bpp_val)

@@ -6,14 +6,14 @@ from typing import Any, Dict
 import logging
 from ..lingosrc.util import vsprintf, get_keys
 from .decoder import Decoder
-from .decoder2b import Decoder2b
+from .decoder1b import Decoder1b
 from .decoder4b import Decoder4b
 from .decoder8b import Decoder8b
 from .decoder16b import Decoder16b
 from .decoder24b import Decoder24b
 
 DECODERS: Dict[int, Decoder] = {
-    2: Decoder2b(),
+    1: Decoder1b(),
     4: Decoder4b(),
     8: Decoder8b(),
     16: Decoder16b(),
@@ -59,7 +59,7 @@ def bitd2bmp(castData: Dict[str, Any], clutData: bytes,
     bmp_palette: str = 'none'
     if bmp_bpp == 8:
         bmp_palette = str(castData['palette_txt'])
-    elif bmp_bpp == 2:
+    elif bmp_bpp == 1:
         bmp_palette = 'black and white'          
 
     # Check if the palette is a casting member number (custom palette)

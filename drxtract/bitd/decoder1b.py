@@ -8,11 +8,11 @@ import logging
 #
 # Black and White BITD decoder class.
 # 
-class Decoder2b(Decoder):
-    """This class represents a 2 colors BITD image decoder"""
+class Decoder1b(Decoder):
+    """This class represents a 2 colors (1 bit) BITD image decoder"""
     
     def __init__(self):
-        super().__init__(2, 2)
+        super().__init__(1, 2)
 
     def decode_compressed_data(self, fdata: bytes,
                         w:int, h:int,
@@ -100,7 +100,7 @@ class Decoder2b(Decoder):
                         break
     
         if y!=-1 or x!=0:
-            logging.warning("Not enought data to decode. Probably the image"
+            logging.warning("Not enough data to decode. Probably the image"
                             + " is not properly generated. (y=%s, x=%s)", y, x)
     
         if idx != len(fdata):
