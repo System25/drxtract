@@ -351,6 +351,7 @@ def vwsc_to_score(vwsc_elements: List[Any]) -> Dict[str, Any]:
                 sprite['editable'] = score[j]['editable']
                 sprite['moveable'] = score[j]['moveable']
                 sprite['trails'] = score[j]['trails']
+                sprite['blend'] = score[j]['blend']
                 
                 prev = {}
                 if len(data['sprite'][j]) > 0:

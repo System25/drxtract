@@ -253,11 +253,15 @@ class D4VwscChannelParser(VwscChannelParser):
         if DEBUG_SPRITE_INFO:
             logging.debug("Sprite[%d] flag1: %04x", i, flag1)
         
-        flag2 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
-        flag2 = (flag2 & 0xFFFF)
-        indx = indx + 2
+        flag2 = int(frameData[indx])
+        indx += 1
         if DEBUG_SPRITE_INFO:
-            logging.debug("Sprite[%d] flag2: %04x", i, flag2)
+            logging.debug("Sprite[%d] flag2: %02x", i, flag2)
+    
+        blend = int(frameData[indx])
+        indx += 1
+        if DEBUG_SPRITE_INFO:
+            logging.debug("Sprite[%d] blend: %d", i, blend)
         
         if castId > 0:
             sprite_data = {}
@@ -274,6 +278,7 @@ class D4VwscChannelParser(VwscChannelParser):
             sprite_data['trails'] = trails
             sprite_data['moveable'] = (((flag2 >> 15) & 1) != 0)
             sprite_data['editable'] = (((flag2 >> 14) & 1) != 0)
+            sprite_data['blend'] = (255 - blend)
             return sprite_data
         
         else:
