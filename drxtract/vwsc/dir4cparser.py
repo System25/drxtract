@@ -278,7 +278,7 @@ class D4VwscChannelParser(VwscChannelParser):
             sprite_data['trails'] = trails
             sprite_data['moveable'] = (((flag2 >> 15) & 1) != 0)
             sprite_data['editable'] = (((flag2 >> 14) & 1) != 0)
-            sprite_data['blend'] = (255 - blend)
+            sprite_data['blend'] = int((255 - blend)*100/255)
             return sprite_data
         
         else:
