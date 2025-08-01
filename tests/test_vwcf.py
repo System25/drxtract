@@ -24,7 +24,10 @@ class TestScript(unittest.TestCase):
 
     @parameterized.expand([
         ['AppleGame'],
-        
+        ['T01FPS'],
+        ['T15FPS'],
+        ['T20FPS'],
+        ['T60FPS']
     ])
     def test_vwcf(self, dir_name: str):
         cas_file = os.path.join(dir_name, dir_name + ".VWCF")

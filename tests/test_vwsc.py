@@ -24,6 +24,8 @@ class TestScript(unittest.TestCase):
 
     @parameterized.expand([
         ['AppleGame'],
+        ['d4TempoTypes'],
+        ['d4TempoValues'],
         
     ])
     def test_exe(self, dir_name: str):

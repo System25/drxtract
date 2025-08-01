@@ -5,6 +5,7 @@
 
 from .cmd import SoundCmd
 from ..sampled import SampledSound
+from ...lingosrc.util import unpack_float80
 import logging
 import struct
 
@@ -117,9 +118,9 @@ class BufferCmd(SoundCmd):
             
             length = int(num_frames * sound.num_channels)
             
-            aiff_sample_rate = fdata[idx:idx+10]
+            aiff_sample_rate = unpack_float80(fdata[idx:idx+10])
             idx += 10
-            logging.debug("aiff_sample_rate = %d", aiff_sample_rate)         
+            logging.debug("aiff_sample_rate = %s", aiff_sample_rate)         
             
             marker_chunk = int(struct.unpack('>i', fdata[idx:idx+4])[0])
             idx += 4

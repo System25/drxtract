@@ -6,6 +6,7 @@ from typing import Dict, List, Any
 import struct
 import math
 import logging
+from ..common import get_tempo_type_name
 from ..lingosrc.util import vsprintf
 from .cparser import VwscChannelParser
 from .dir4cparser import D4VwscChannelParser
@@ -322,11 +323,13 @@ def vwsc_to_score(vwsc_elements: List[Any]) -> Dict[str, Any]:
             scr['castId'] = main['script']
             data['script'].append(scr)
         
-        if ('fps' in main and main['fps'] > 0):
-            fps = {}
-            fps['frame'] = i+1
-            fps['fps'] = main['fps']
-            data['tempo'].append(fps)
+        if ('tempo' in main and main['tempo'] > 0):
+            tempoData: Dict[str, Any] = {}
+            tempoData['frame'] = i+1
+            tempoData['tempoType'] = get_tempo_type_name(
+                (main['tempo'] >> 8) % 256)
+            tempoData['tempoValue'] = (main['tempo'] % 256)
+            data['tempo'].append(tempoData)
         
         if 'palette_id' in vwsc_elements[i]['palette']:
             pal = {}

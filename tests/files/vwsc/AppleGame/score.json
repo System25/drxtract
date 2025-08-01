@@ -8383,8 +8383,9 @@
     ],
     "tempo": [
         {
-            "fps": 255,
-            "frame": 65
+            "frame": 65,
+            "tempoType": "wait_for_time",
+            "tempoValue": 1
         }
     ],
     "transition": [

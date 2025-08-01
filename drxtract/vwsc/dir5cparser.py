@@ -70,10 +70,10 @@ class D5VwscChannelParser(VwscChannelParser):
         if DEBUG_MAIN_CHANNEL_INFO:
             logging.debug("unknown09: %04x", unknown09)
     
-        fps = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+        tempo = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
         indx = indx + 2
         if DEBUG_MAIN_CHANNEL_INFO:
-            logging.debug("fps: %d", fps)
+            logging.debug("tempo: %d", tempo)
     
         unknown10 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
         indx = indx + 2
@@ -81,8 +81,8 @@ class D5VwscChannelParser(VwscChannelParser):
             logging.debug("unknown10: %04x", unknown10)
     
         main_data = {}
-        if fps != 0 or sound1_cast != 0 or sound2_cast != 0 or script != 0:
-            main_data['fps'] = fps
+        if tempo != 0 or sound1_cast != 0 or sound2_cast != 0 or script != 0:
+            main_data['tempo'] = tempo
             main_data['transition_cast_id'] = transition_cast_id
             main_data['sound1_cast'] = sound1_cast
             main_data['sound2_cast'] = sound2_cast

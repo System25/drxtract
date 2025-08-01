@@ -6,7 +6,7 @@ from typing import Dict, Any
 import struct
 import logging
 
-from ..common import get_palette_name
+from ..common import get_palette_name, get_tempo_type_name
 
 #
 # Reads from VWCF data the basic information
@@ -54,11 +54,9 @@ def parse_vwcf_file_data(fdata: bytes) -> Dict[str, Any]:
     indx = indx + 2
     logging.debug("Stage left: %d", stageLeft)
     
-    
     stageBottom = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
     indx = indx + 2
     logging.debug("Stage bottom: %d", stageBottom)
-    
     
     stageRight = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
     indx = indx + 2
@@ -72,15 +70,89 @@ def parse_vwcf_file_data(fdata: bytes) -> Dict[str, Any]:
     indx = indx + 2
     logging.debug("Cast array end: %d", castArrayEnd)
     
-    currentFrameRate = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
-    indx = indx + 2
-    logging.debug("Current frame rate?: %d", currentFrameRate)
-    
-    indx += 9
-    stageColor = int(fdata[indx])
+    d3FrameRate = int(fdata[indx])
     indx += 1
+    logging.debug("d3FrameRate?: %d", d3FrameRate)
     
+    lightSwitch = int(fdata[indx])
+    indx += 1
+    logging.debug("lightSwitch?: %d", lightSwitch)
+    
+    unknown01 = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+    indx = indx + 2
+    logging.debug("unknown01: %d", unknown01)
+    
+    commentFont = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+    indx = indx + 2
+    logging.debug("commentFont?: %d", commentFont)
+    
+    commentSize = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+    indx = indx + 2
+    logging.debug("commentSize?: %d", commentSize)  
+    
+    commentStyle = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+    indx = indx + 2
+    logging.debug("commentStyle?: %d", commentStyle)
+      
+    stageColor = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+    indx = indx + 2
     logging.debug("Stage color: %d", stageColor)
+    
+    bitDepth = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+    indx = indx + 2
+    logging.debug("Bit depth?: %d", bitDepth)
+
+    unknown02 = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+    indx = indx + 2
+    logging.debug("unknown02: %d", unknown02)
+    
+    unknown03 = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+    indx = indx + 2
+    logging.debug("unknown03: %d", unknown03)
+    
+    unknown04 = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+    indx = indx + 2
+    logging.debug("unknown04: %d", unknown04)
+
+    unknown05 = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+    indx = indx + 2
+    logging.debug("unknown05: %d", unknown05)
+
+    unknown06 = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+    indx = indx + 2
+    logging.debug("unknown06: %d", unknown06)
+
+    unknown07 = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+    indx = indx + 2
+    logging.debug("unknown07: %d", unknown07)
+
+    unknown08 = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+    indx = indx + 2
+    logging.debug("unknown08: %d", unknown08)
+
+    unknown09 = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+    indx = indx + 2
+    logging.debug("unknown09: %d", unknown09)
+
+    unknown10 = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+    indx = indx + 2
+    logging.debug("unknown10: %d", unknown10)
+
+    unknown11 = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+    indx = indx + 2
+    logging.debug("unknown11: %d", unknown11)
+
+    unknown12 = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+    indx = indx + 2
+    logging.debug("unknown12: %d", unknown12)
+
+    unknown13 = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+    indx = indx + 2
+    logging.debug("unknown13: %d", unknown13)
+
+    tempoValue = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+    indx = indx + 2
+    logging.debug("tempoValue: %d", tempoValue)
 
     version_major = ((version >> 8) & 0xFF)
     version_minor = ( version       & 0xFF)
@@ -144,7 +216,8 @@ def parse_vwcf_file_data(fdata: bytes) -> Dict[str, Any]:
     config['stageRight'] = stageRight
     config['castArrayStart'] = castArrayStart
     config['castArrayEnd'] = castArrayEnd
-    config['currentFrameRate'] = currentFrameRate
+    config['tempoType'] = "fps"
+    config['tempoValue'] = tempoValue
     config['stageColor'] = stageColor
     config['palette'] = palette
     

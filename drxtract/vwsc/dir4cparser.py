@@ -10,6 +10,35 @@ import struct
 from typing import Dict, Any
 
 
+def standarize_tempo_values(tempo):
+    tempoType = 0 # FPS
+    tempoValue = tempo
+    
+    if tempo >= 196: # Time in seconds
+        tempoType = 1
+        tempoValue = 256 - tempo
+    
+    if tempo == 128: # Wait for click
+        tempoType = 2
+        tempoValue = 0
+    
+    if tempo == 135: # Wait for sound #1
+        tempoType = 3
+        tempoValue = 0 
+    
+    if tempo == 134: # Wait for sound #2
+        tempoType = 4
+        tempoValue = 0 
+    
+    if tempo >= 136 and tempo < 196: # Wait for video
+        tempoType = 5
+        tempoValue = tempo - 135
+    
+    if DEBUG_PALETTE_CHANNEL_INFO or DEBUG_MAIN_CHANNEL_INFO:
+        logging.debug("tempoType: %d", tempoType)
+        logging.debug("tempoValue: %d", tempoValue)
+    tempo = ((tempoType << 8) | tempoValue)
+    return tempo
 
 #
 # Director 4 VWSC Channel parser class.
@@ -45,10 +74,12 @@ class D4VwscChannelParser(VwscChannelParser):
             logging.debug("transition_chunk_size: %d", 
                           transition_chunk_size)
     
-        fps = int(frameData[indx])
+        tempo = int(frameData[indx])
         indx += 1
         if DEBUG_MAIN_CHANNEL_INFO:
-            logging.debug("Frames per second: %d", fps)
+            logging.debug("tempo: %d", tempo)
+            
+        tempo = standarize_tempo_values(tempo)
         
         transition_id = self.get_transition_name(int(frameData[indx]))
         indx += 1
@@ -91,8 +122,8 @@ class D4VwscChannelParser(VwscChannelParser):
             logging.debug("unknown3: %04x", unknown3)
     
         main_data: Dict[str, Any] = {}
-        if fps != 0 or sound1_cast != 0 or sound2_cast != 0 or script != 0:
-            main_data['fps'] = fps
+        if tempo != 0 or sound1_cast != 0 or sound2_cast != 0 or script != 0:
+            main_data['tempo'] = tempo
             main_data['transition_id'] = transition_id
             main_data['sound1_cast'] = sound1_cast
             main_data['sound2_cast'] = sound2_cast
@@ -129,10 +160,12 @@ class D4VwscChannelParser(VwscChannelParser):
         if DEBUG_PALETTE_CHANNEL_INFO:
             logging.debug("operation: %s", operation)
     
-        fps = int(frameData[indx])
+        tempo = int(frameData[indx])
         indx += 1
         if DEBUG_PALETTE_CHANNEL_INFO:
-            logging.debug("fps: %d", fps)
+            logging.debug("tempo: %d", tempo)
+            
+        tempo = standarize_tempo_values(tempo)
     
         unknown4 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
         indx = indx + 2
@@ -166,7 +199,7 @@ class D4VwscChannelParser(VwscChannelParser):
             
         palette_data: Dict[str, Any] = {}
         if palette_id != 0:
-            palette_data['fps'] = fps
+            palette_data['tempo'] = tempo
             palette_data['operation'] = operation
             palette_data['palette_id'] = palette_id
             palette_data['cycles'] = cycles

@@ -1,0 +1,263 @@
+{
+    "lastChannel": 48,
+    "lastFrame": 5,
+    "palette": [],
+    "script": [],
+    "sound1": [
+        {
+            "castId": 4,
+            "endFrame": 3,
+            "startFrame": 3
+        }
+    ],
+    "sound2": [
+        {
+            "castId": 5,
+            "endFrame": 4,
+            "startFrame": 4
+        }
+    ],
+    "sprite": [
+        [
+            {
+                "backColor": 0,
+                "blend": 100,
+                "bottom": 49,
+                "castId": 1,
+                "editable": false,
+                "endFrame": 1,
+                "foreColor": 0,
+                "height": 10,
+                "ink": 0,
+                "left": -69,
+                "locH": 74,
+                "locV": 44,
+                "locZ": 1,
+                "moveable": false,
+                "right": 217,
+                "startFrame": 1,
+                "top": 39,
+                "trails": 0,
+                "type": 7,
+                "width": 286
+            },
+            {
+                "backColor": 0,
+                "blend": 100,
+                "bottom": 65,
+                "castId": 2,
+                "editable": false,
+                "endFrame": 2,
+                "foreColor": 0,
+                "height": 10,
+                "ink": 0,
+                "left": -15,
+                "locH": 45,
+                "locV": 60,
+                "locZ": 1,
+                "moveable": false,
+                "right": 105,
+                "startFrame": 2,
+                "top": 55,
+                "trails": 0,
+                "type": 7,
+                "width": 120
+            },
+            {
+                "backColor": 0,
+                "blend": 100,
+                "bottom": 78,
+                "castId": 3,
+                "editable": false,
+                "endFrame": 3,
+                "foreColor": 0,
+                "height": 10,
+                "ink": 0,
+                "left": -25,
+                "locH": 35,
+                "locV": 73,
+                "locZ": 1,
+                "moveable": false,
+                "right": 95,
+                "startFrame": 3,
+                "top": 68,
+                "trails": 0,
+                "type": 7,
+                "width": 120
+            },
+            {
+                "backColor": 0,
+                "blend": 100,
+                "bottom": 51,
+                "castId": 6,
+                "editable": false,
+                "endFrame": 4,
+                "foreColor": 0,
+                "height": 10,
+                "ink": 0,
+                "left": -180,
+                "locH": 35,
+                "locV": 46,
+                "locZ": 1,
+                "moveable": false,
+                "right": 251,
+                "startFrame": 4,
+                "top": 41,
+                "trails": 0,
+                "type": 7,
+                "width": 431
+            },
+            {
+                "backColor": 0,
+                "blend": 100,
+                "bottom": 36,
+                "castId": 7,
+                "editable": false,
+                "endFrame": 5,
+                "foreColor": 0,
+                "height": 10,
+                "ink": 0,
+                "left": -244,
+                "locH": 42,
+                "locV": 31,
+                "locZ": 1,
+                "moveable": false,
+                "right": 328,
+                "startFrame": 5,
+                "top": 26,
+                "trails": 0,
+                "type": 7,
+                "width": 572
+            }
+        ],
+        [
+            {
+                "backColor": 0,
+                "blend": 100,
+                "bottom": 246,
+                "castId": 8,
+                "editable": false,
+                "endFrame": 5,
+                "foreColor": 255,
+                "height": 120,
+                "ink": 0,
+                "left": 29,
+                "locH": 109,
+                "locV": 186,
+                "locZ": 2,
+                "moveable": false,
+                "right": 189,
+                "startFrame": 5,
+                "top": 126,
+                "trails": 0,
+                "type": 16,
+                "width": 160
+            }
+        ],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+    ],
+    "tempo": [
+        {
+            "frame": 1,
+            "tempoType": "wait_for_time",
+            "tempoValue": 60
+        },
+        {
+            "frame": 2,
+            "tempoType": "wait_for_click",
+            "tempoValue": 0
+        },
+        {
+            "frame": 3,
+            "tempoType": "wait_for_sound1",
+            "tempoValue": 0
+        },
+        {
+            "frame": 4,
+            "tempoType": "wait_for_sound2",
+            "tempoValue": 0
+        },
+        {
+            "frame": 5,
+            "tempoType": "wait_for_video",
+            "tempoValue": 2
+        }
+    ],
+    "transition": [
+        {
+            "frame": 1,
+            "transition_chunk_size": 0,
+            "transition_duration": 0,
+            "transition_id": "0"
+        },
+        {
+            "frame": 2,
+            "transition_chunk_size": 0,
+            "transition_duration": 0,
+            "transition_id": "0"
+        },
+        {
+            "frame": 3,
+            "transition_chunk_size": 0,
+            "transition_duration": 0,
+            "transition_id": "0"
+        },
+        {
+            "frame": 4,
+            "transition_chunk_size": 0,
+            "transition_duration": 0,
+            "transition_id": "0"
+        },
+        {
+            "frame": 5,
+            "transition_chunk_size": 0,
+            "transition_duration": 0,
+            "transition_id": "0"
+        }
+    ]
+}
