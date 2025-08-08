@@ -355,6 +355,7 @@ def vwsc_to_score(vwsc_elements: List[Any]) -> Dict[str, Any]:
                 sprite['moveable'] = score[j]['moveable']
                 sprite['trails'] = score[j]['trails']
                 sprite['blend'] = score[j]['blend']
+                sprite['scriptId'] = score[j]['scriptId']
                 
                 prev = {}
                 if len(data['sprite'][j]) > 0:
@@ -374,7 +375,9 @@ def vwsc_to_score(vwsc_elements: List[Any]) -> Dict[str, Any]:
                     prev['locV'] == sprite['locV'] and
                     prev['editable'] == sprite['editable'] and
                     prev['moveable'] == sprite['moveable'] and
-                    prev['trails'] == sprite['trails']):
+                    prev['trails'] == sprite['trails'] and
+                    prev['blend'] == sprite['blend'] and
+                    prev['scriptId'] == sprite['scriptId']):
                     
                     # This is the same as previous sprite
                     prev['endFrame'] = i+1

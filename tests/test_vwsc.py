@@ -26,6 +26,7 @@ class TestScript(unittest.TestCase):
         ['AppleGame'],
         ['d4TempoTypes'],
         ['d4TempoValues'],
+        ['d4SpriteEvents'],
         
     ])
     def test_exe(self, dir_name: str):
