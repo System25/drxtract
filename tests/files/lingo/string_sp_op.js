@@ -2,7 +2,7 @@ function exitFrame() {
     var myLocalVar;
     var myAbcs;
 
-    myLocalVar = field(2).text;
+    myLocalVar = field(2);
     put(new LingoString("Number of chars: "), myLocalVar.char.length);
     put(new LingoString("First char: "), myLocalVar.char[1]);
     put(new LingoString("Last char: "), myLocalVar.char[62]);

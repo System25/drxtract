@@ -286,7 +286,7 @@ class SpAssignOperation(Node):
         r = cast(Node, self.right)
         left: str = l.generate_js(indentation, factory_method);
         if re.search('field\\([^\\)]+\\)', left):
-            left = re.sub('(field\\([^\\)]+\\))', '\\1.text', left)
+            left = re.sub('field\\(([^\\)]+)\\)', 'member(\\1).text', left)
         
         if self.mode == 'after':
             return vsprintf("%s = new LingoString(%s + %s)", left, left,
@@ -403,6 +403,13 @@ class PropertyAccessorOperation(Node):
         obj_str = self.obj.generate_js(indentation, factory_method)
         if obj_str == 'tell_obj':
             return vsprintf('%s', self.prop)
+        elif 'field' == self.obj.name:
+            obj_js = self.obj.generate_js(indentation, factory_method)
+            if self.prop == 'text':
+                return obj_js
+            else:
+                obj_js = obj_js.replace('field', 'member')
+                return vsprintf("%s.%s", obj_js, self.prop)
         else:
             return vsprintf("%s.%s",
                             self.obj.generate_js(indentation, factory_method),
