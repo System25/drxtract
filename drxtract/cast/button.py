@@ -85,13 +85,13 @@ class ButtonParser(CastParser):
         idx += 2
         logging.debug("unknown9 = %s", unknown9)            
         
-        unknown10 =  struct.unpack(">h", header_data[idx:idx+2])[0]
+        height =  struct.unpack(">h", header_data[idx:idx+2])[0]
         idx += 2
-        logging.debug("unknown10 = %s", unknown10)             
+        logging.debug("height = %s", height)             
         
-        unknown11 =  struct.unpack(">h", header_data[idx:idx+2])[0]
+        width =  struct.unpack(">h", header_data[idx:idx+2])[0]
         idx += 2
-        logging.debug("unknown11 = %s", unknown11)  
+        logging.debug("width = %s", width)  
         
         unknown12 =  struct.unpack(">h", header_data[idx:idx+2])[0]
         idx += 2
@@ -120,5 +120,7 @@ class ButtonParser(CastParser):
         castData['backgroundColor'] = vsprintf('#%02X%02X%02X',
             bgcolor_red, bgcolor_green, bgcolor_blue)
         castData['buttonType'] = buttonType
+        castData['height'] = height
+        castData['width'] = width
         
         return castData

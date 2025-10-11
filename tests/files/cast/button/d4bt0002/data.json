@@ -3,6 +3,7 @@
     "backgroundColor": "#CC9966",
     "buttonType": "pushButton",
     "content": {},
+    "height": 16,
     "text": "Click me!",
     "txt_format": [
         {
@@ -15,5 +16,6 @@
             "underline": false
         }
     ],
-    "type": "button"
+    "type": "button",
+    "width": 160
 }

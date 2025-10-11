@@ -16,6 +16,7 @@
         ],
         "name": "my-button"
     },
+    "height": 16,
     "text": "Click me!",
     "txt_format": [
         {
@@ -28,5 +29,6 @@
             "underline": false
         }
     ],
-    "type": "button"
+    "type": "button",
+    "width": 160
 }
