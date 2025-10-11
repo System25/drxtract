@@ -387,12 +387,6 @@ def vwsc_to_score(vwsc_elements: List[Any]) -> Dict[str, Any]:
                     sprite['startFrame'] = i+1
                     sprite['endFrame'] = i+1
                     sprite['locZ'] = j+1
-                    sprite['left'] = math.ceil(sprite['locH'] -
-                                               sprite['width']/2)
-                    sprite['top'] = math.ceil(sprite['locV'] -
-                                              sprite['height']/2)
-                    sprite['right'] = sprite['left'] + sprite['width']
-                    sprite['bottom'] = sprite['top'] + sprite['height']
 
                     data['sprite'][j].append(sprite)
                     
