@@ -27,6 +27,7 @@ class TestScript(unittest.TestCase):
         ['d4TempoTypes'],
         ['d4TempoValues'],
         ['d4SpriteEvents'],
+        ['d4StretchFlag'],
         
     ])
     def test_exe(self, dir_name: str):

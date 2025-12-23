@@ -34,6 +34,7 @@
                 "moveable": false,
                 "scriptId": 0,
                 "startFrame": 1,
+                "stretch": 1,
                 "trails": 0,
                 "type": 7,
                 "width": 286
@@ -53,6 +54,7 @@
                 "moveable": false,
                 "scriptId": 0,
                 "startFrame": 2,
+                "stretch": 1,
                 "trails": 0,
                 "type": 7,
                 "width": 120
@@ -72,6 +74,7 @@
                 "moveable": false,
                 "scriptId": 0,
                 "startFrame": 3,
+                "stretch": 1,
                 "trails": 0,
                 "type": 7,
                 "width": 120
@@ -91,6 +94,7 @@
                 "moveable": false,
                 "scriptId": 0,
                 "startFrame": 4,
+                "stretch": 1,
                 "trails": 0,
                 "type": 7,
                 "width": 431
@@ -110,6 +114,7 @@
                 "moveable": false,
                 "scriptId": 0,
                 "startFrame": 5,
+                "stretch": 1,
                 "trails": 0,
                 "type": 7,
                 "width": 572
@@ -131,6 +136,7 @@
                 "moveable": false,
                 "scriptId": 0,
                 "startFrame": 5,
+                "stretch": 0,
                 "trails": 0,
                 "type": 16,
                 "width": 160

@@ -238,18 +238,18 @@ class D4VwscChannelParser(VwscChannelParser):
         if DEBUG_SPRITE_INFO:
             logging.debug("Sprite[%d] flags: %x", i, flags)
     
-        ink_type = (int(frameData[indx]) % 64)
+        ink_type = int(frameData[indx])
         
-        # The first two bits of ink_type is also a flag bit
-        unknown_flag = ((ink_type >> 7) & 1)
+        stretch = ((ink_type >> 7) & 1)
         if DEBUG_SPRITE_INFO:
-            logging.debug("Sprite[%d] unknown_flag: %d", i, unknown_flag)
+            logging.debug("Sprite[%d] stretch: %d", i, stretch)
     
         trails = ((ink_type >> 6) & 1)
         if DEBUG_SPRITE_INFO:
             logging.debug("Sprite[%d] trails: %d", i, trails)
     
-        ink_type_name = self.get_ink_name(ink_type & 0x3F)
+        ink_type = (ink_type & 0x3F)
+        ink_type_name = self.get_ink_name(ink_type)
         indx += 1
         if DEBUG_SPRITE_INFO:
             logging.debug("Sprite[%d] ink_type: %s (%s)", i, ink_type,
@@ -307,6 +307,7 @@ class D4VwscChannelParser(VwscChannelParser):
             sprite_data['x'] = x
             sprite_data['height'] = height
             sprite_data['width'] = width
+            sprite_data['stretch'] = stretch
             sprite_data['trails'] = trails
             sprite_data['moveable'] = (((flag2 >> 15) & 1) != 0)
             sprite_data['editable'] = (((flag2 >> 14) & 1) != 0)
