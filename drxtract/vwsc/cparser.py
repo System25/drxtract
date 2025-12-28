@@ -51,7 +51,7 @@ class VwscChannelParser:
             else:
                 return 'fade_to_white'
         
-        return str(operation)
+        return 'normal'
 
     def get_sprite_type(self, value: int) -> str:
         if value in get_keys(self.spriteTypes):

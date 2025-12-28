@@ -28,6 +28,8 @@ class TestScript(unittest.TestCase):
         ['d4TempoValues'],
         ['d4SpriteEvents'],
         ['d4StretchFlag'],
+        ['d4ColorCycleLoop'],
+        ['d4ColorCycleAutoReverse']
         
     ])
     def test_exe(self, dir_name: str):

@@ -9,6 +9,8 @@ import logging
 import struct
 from typing import Dict, Any
 
+def reverse_first_bit(n: int):
+    return n ^ 0x80
 
 def standarize_tempo_values(tempo):
     tempoType = 0 # FPS
@@ -148,17 +150,26 @@ class D4VwscChannelParser(VwscChannelParser):
         if DEBUG_PALETTE_CHANNEL_INFO:
             logging.debug("palette: %s", palette_name)
     
-        unknown2 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
-        indx = indx + 2
+        first_cycle_color = reverse_first_bit(int(frameData[indx]))
+        indx += 1
+
         if DEBUG_PALETTE_CHANNEL_INFO:
-            logging.debug("unknown2: %04x", unknown2)
+            logging.debug("first_cycle_color: %d", first_cycle_color)
+
+        last_cycle_color = reverse_first_bit(int(frameData[indx]))
+        indx += 1
+
+        if DEBUG_PALETTE_CHANNEL_INFO:
+            logging.debug("last_cycle_color: %d", last_cycle_color)
     
         operation_code = int(frameData[indx])
         indx += 1
         
+        over_time = ((operation_code & 0x4) != 0)
         operation = self.get_operation_name(operation_code)
         if DEBUG_PALETTE_CHANNEL_INFO:
-            logging.debug("operation: %s", operation)
+            logging.debug("code: %d operation: %s over_time: %s",
+                          operation_code, operation, over_time)
     
         tempo = int(frameData[indx])
         indx += 1
@@ -167,10 +178,10 @@ class D4VwscChannelParser(VwscChannelParser):
             
         tempo = standarize_tempo_values(tempo)
     
-        unknown4 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+        frames_duration = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
         indx = indx + 2
         if DEBUG_PALETTE_CHANNEL_INFO:
-            logging.debug("unknown4: %04x", unknown4)
+            logging.debug("frames_duration: %d", frames_duration)
     
         cycles = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
         indx = indx + 2
@@ -203,6 +214,11 @@ class D4VwscChannelParser(VwscChannelParser):
             palette_data['operation'] = operation
             palette_data['palette_id'] = palette_id
             palette_data['cycles'] = cycles
+            palette_data['over_time'] = over_time
+            palette_data['frames_duration'] = frames_duration
+            palette_data['first_cycle_color'] = first_cycle_color
+            palette_data['last_cycle_color'] = last_cycle_color
+            
     
         return palette_data
     

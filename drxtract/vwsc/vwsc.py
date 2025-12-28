@@ -335,6 +335,22 @@ def vwsc_to_score(vwsc_elements: List[Any]) -> Dict[str, Any]:
             pal = {}
             pal['frame'] = i+1
             pal['palette_id'] = vwsc_elements[i]['palette']['palette_id']
+            pal['operation'] = vwsc_elements[i]['palette']['operation']
+            pal['over_time'] = vwsc_elements[i]['palette']['over_time']
+            pal['frames_duration'] = vwsc_elements[i]['palette'][
+                'frames_duration']
+            
+            if str(pal['operation']).startswith('color_cycling'):
+                if not pal['over_time']:
+                    pal['cycles'] = vwsc_elements[i]['palette']['cycles']
+                pal['first_cycle_color'] = vwsc_elements[i]['palette'][
+                    'first_cycle_color']
+                pal['last_cycle_color'] = vwsc_elements[i]['palette'][
+                    'last_cycle_color']
+            else:
+                if not pal['over_time']:
+                    pal['tempo'] = vwsc_elements[i]['palette']['tempo']
+
             data['palette'].append(pal)
         
     for i in range(0, data['lastFrame']):
