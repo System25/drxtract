@@ -1,23 +1,13 @@
 {
     "lastChannel": 48,
-    "lastFrame": 10,
+    "lastFrame": 11,
     "palette": [
         {
-            "endFrame": 1,
-            "operation": "normal",
-            "over_time": false,
-            "palette_id": 1,
-            "startFrame": 1,
-            "tempo": 30
-        },
-        {
-            "endFrame": 10,
-            "first_cycle_color": 241,
-            "last_cycle_color": 252,
-            "operation": "color_cycling_loop",
+            "endFrame": 11,
+            "operation": "fade_to_black",
             "over_time": true,
             "palette_id": 1,
-            "startFrame": 2
+            "startFrame": 1
         }
     ],
     "script": [],
@@ -30,12 +20,12 @@
                 "blend": 100,
                 "castId": 2,
                 "editable": false,
-                "endFrame": 10,
+                "endFrame": 11,
                 "foreColor": 255,
-                "height": 182,
+                "height": 480,
                 "ink": 0,
-                "locH": 132,
-                "locV": 158,
+                "locH": 319,
+                "locV": 240,
                 "locZ": 1,
                 "moveable": false,
                 "scriptId": 0,
@@ -43,7 +33,7 @@
                 "stretch": 0,
                 "trails": 0,
                 "type": 1,
-                "width": 130
+                "width": 640
             }
         ],
         [],

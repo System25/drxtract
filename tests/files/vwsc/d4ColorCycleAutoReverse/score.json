@@ -3,93 +3,21 @@
     "lastFrame": 10,
     "palette": [
         {
-            "frame": 1,
-            "frames_duration": 1,
+            "endFrame": 1,
             "operation": "normal",
             "over_time": false,
             "palette_id": 1,
+            "startFrame": 1,
             "tempo": 30
         },
         {
+            "endFrame": 10,
             "first_cycle_color": 241,
-            "frame": 2,
-            "frames_duration": 9,
             "last_cycle_color": 252,
             "operation": "color_cycling_auto_reverse",
             "over_time": true,
-            "palette_id": 1
-        },
-        {
-            "first_cycle_color": 241,
-            "frame": 3,
-            "frames_duration": 9,
-            "last_cycle_color": 252,
-            "operation": "color_cycling_auto_reverse",
-            "over_time": true,
-            "palette_id": 1
-        },
-        {
-            "first_cycle_color": 241,
-            "frame": 4,
-            "frames_duration": 9,
-            "last_cycle_color": 252,
-            "operation": "color_cycling_auto_reverse",
-            "over_time": true,
-            "palette_id": 1
-        },
-        {
-            "first_cycle_color": 241,
-            "frame": 5,
-            "frames_duration": 9,
-            "last_cycle_color": 252,
-            "operation": "color_cycling_auto_reverse",
-            "over_time": true,
-            "palette_id": 1
-        },
-        {
-            "first_cycle_color": 241,
-            "frame": 6,
-            "frames_duration": 9,
-            "last_cycle_color": 252,
-            "operation": "color_cycling_auto_reverse",
-            "over_time": true,
-            "palette_id": 1
-        },
-        {
-            "first_cycle_color": 241,
-            "frame": 7,
-            "frames_duration": 9,
-            "last_cycle_color": 252,
-            "operation": "color_cycling_auto_reverse",
-            "over_time": true,
-            "palette_id": 1
-        },
-        {
-            "first_cycle_color": 241,
-            "frame": 8,
-            "frames_duration": 9,
-            "last_cycle_color": 252,
-            "operation": "color_cycling_auto_reverse",
-            "over_time": true,
-            "palette_id": 1
-        },
-        {
-            "first_cycle_color": 241,
-            "frame": 9,
-            "frames_duration": 9,
-            "last_cycle_color": 252,
-            "operation": "color_cycling_auto_reverse",
-            "over_time": true,
-            "palette_id": 1
-        },
-        {
-            "first_cycle_color": 241,
-            "frame": 10,
-            "frames_duration": 9,
-            "last_cycle_color": 252,
-            "operation": "color_cycling_auto_reverse",
-            "over_time": true,
-            "palette_id": 1
+            "palette_id": 1,
+            "startFrame": 2
         }
     ],
     "script": [],

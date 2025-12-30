@@ -178,10 +178,10 @@ class D4VwscChannelParser(VwscChannelParser):
             
         tempo = standarize_tempo_values(tempo)
     
-        frames_duration = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
+        frames_selected = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
         indx = indx + 2
         if DEBUG_PALETTE_CHANNEL_INFO:
-            logging.debug("frames_duration: %d", frames_duration)
+            logging.debug("frames_selected: %d", frames_selected)
     
         cycles = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
         indx = indx + 2
@@ -215,7 +215,7 @@ class D4VwscChannelParser(VwscChannelParser):
             palette_data['palette_id'] = palette_id
             palette_data['cycles'] = cycles
             palette_data['over_time'] = over_time
-            palette_data['frames_duration'] = frames_duration
+            palette_data['frames_selected'] = frames_selected
             palette_data['first_cycle_color'] = first_cycle_color
             palette_data['last_cycle_color'] = last_cycle_color
             

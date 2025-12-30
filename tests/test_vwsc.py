@@ -29,7 +29,10 @@ class TestScript(unittest.TestCase):
         ['d4SpriteEvents'],
         ['d4StretchFlag'],
         ['d4ColorCycleLoop'],
-        ['d4ColorCycleAutoReverse']
+        ['d4ColorCycleAutoReverse'],
+        ['d4FadeToBlack'],
+        ['d4FadeToWhite'],
+        ['d4PaletteTransition']
         
     ])
     def test_exe(self, dir_name: str):
