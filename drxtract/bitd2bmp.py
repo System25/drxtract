@@ -40,7 +40,7 @@ def bitd_file2bmp(castData, bitd_file):
         file_name = "%s.%s"%(os.path.basename(bitd_file)[:-5], file_ext)
 
         # Check if the palette is a casting member number (custom palette)
-        if type(bmp_palette) == int:
+        if type(bmp_palette) == int or bmp_palette.isnumeric():
             bmp_palette = str(bmp_palette)
             
             # Check if the cast member exists
