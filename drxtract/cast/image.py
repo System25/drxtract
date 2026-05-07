@@ -7,7 +7,7 @@ import logging
 import struct
 from typing import Dict, Any
 
-from ..common import get_palette_name
+from ..common import get_palette_name, adjust_palette
 
 
 #
@@ -120,6 +120,7 @@ class ImageParser(CastParser):
                 bmp_bpp = bitdepth
 
             palette_id = struct.unpack(">h", header_data[idx:idx+2])[0]
+            palette_id = adjust_palette(palette_id)
             palette = str(palette_id)
             palette_txt =  get_palette_name(palette_id)
             idx += 2

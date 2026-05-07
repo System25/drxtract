@@ -6,7 +6,7 @@ from typing import Dict, Any
 import struct
 import logging
 
-from ..common import get_palette_name, get_tempo_type_name
+from ..common import get_palette_name, adjust_palette
 
 #
 # Reads from VWCF data the basic information
@@ -197,10 +197,12 @@ def parse_vwcf_file_data(fdata: bytes) -> Dict[str, Any]:
     if version == 'dir4': 
         indx = 0x46
         palette = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+        palette = adjust_palette(palette)
         palette = get_palette_name(palette)
     elif version == 'dir5':
         indx = 0x4E
         palette = struct.unpack(">h", fdata[(indx):(indx+2)])[0]
+        palette = adjust_palette(palette)
         palette = get_palette_name(palette)
     else:
         palette = 'unknonw'

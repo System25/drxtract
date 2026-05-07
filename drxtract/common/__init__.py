@@ -16,13 +16,18 @@ def get_tempo_type_name(value: int) -> str:
     return str(value)
 
 # ==============================================================================
-# Translate palette number to string representation
-def get_palette_name(value: int) -> str:
+# Adjust the palette number
+def adjust_palette(value: int) -> int:
     if value <= 0:
         # There is no zero casting member so
         # it must be a predefined palette
-        value = value - 1
+        return value - 1
     
+    return value
+
+# ==============================================================================
+# Translate palette number to string representation
+def get_palette_name(value: int) -> str:
     if value in get_keys(DIR_PALETTE_NAMES):
         return DIR_PALETTE_NAMES[value]
     
@@ -49,4 +54,4 @@ def get_shape_name(value: int) -> str:
 __all__ = ['get_palette_name', 'get_transition_name', 'get_shape_name',
            'DIR_SPRITE_TYPES', 'DIR_INK_NAMES', 'DIR_TRANSITION_NAMES',
            'DIR_PALETTE_NAMES', 'DIR4_PALETTE_NAMES', 'DIR_SHAPE_NAMES',
-           'get_tempo_type_name']
+           'get_tempo_type_name', 'adjust_palette']
