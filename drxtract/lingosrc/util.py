@@ -11,6 +11,24 @@ from typing import Dict, KeysView, Any
 # 
 
 # =============================================================================
+def get_value(dictionary: Dict, key: str) -> Any:
+    """
+    Retuns dictionary[key] if the key exists in the dictionary. Otherwise it
+    returns None. 
+    
+    Parameters
+    ----------
+    dictionary : Dictionary.
+    key : the key to obtain.
+            
+    Returns
+    -------
+    Any Any value.
+        
+    """
+    return dictionary.get(key)
+
+# =============================================================================
 def vsprintf(fmt: str, *args) -> str:
     """
     Retuns a C-style vsprintf formatted string.
