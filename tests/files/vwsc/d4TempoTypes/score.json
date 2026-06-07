@@ -216,36 +216,5 @@
             "tempoValue": 2
         }
     ],
-    "transition": [
-        {
-            "frame": 1,
-            "transition_chunk_size": 0,
-            "transition_duration": 0,
-            "transition_id": "0"
-        },
-        {
-            "frame": 2,
-            "transition_chunk_size": 0,
-            "transition_duration": 0,
-            "transition_id": "0"
-        },
-        {
-            "frame": 3,
-            "transition_chunk_size": 0,
-            "transition_duration": 0,
-            "transition_id": "0"
-        },
-        {
-            "frame": 4,
-            "transition_chunk_size": 0,
-            "transition_duration": 0,
-            "transition_id": "0"
-        },
-        {
-            "frame": 5,
-            "transition_chunk_size": 0,
-            "transition_duration": 0,
-            "transition_id": "0"
-        }
-    ]
+    "transition": []
 }

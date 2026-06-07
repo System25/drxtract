@@ -32,7 +32,8 @@ class TestScript(unittest.TestCase):
         ['d4ColorCycleAutoReverse'],
         ['d4FadeToBlack'],
         ['d4FadeToWhite'],
-        ['d4PaletteTransition']
+        ['d4PaletteTransition'],
+        ['d4Transition']
         
     ])
     def test_exe(self, dir_name: str):

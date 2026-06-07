@@ -124,7 +124,8 @@ class D4VwscChannelParser(VwscChannelParser):
             logging.debug("unknown3: %04x", unknown3)
     
         main_data: Dict[str, Any] = {}
-        if tempo != 0 or sound1_cast != 0 or sound2_cast != 0 or script != 0:
+        if (tempo != 0 or sound1_cast != 0 or sound2_cast != 0 or script != 0
+            or transition_id != 0):
             main_data['tempo'] = tempo
             main_data['transition_id'] = transition_id
             main_data['sound1_cast'] = sound1_cast
@@ -132,6 +133,9 @@ class D4VwscChannelParser(VwscChannelParser):
             main_data['script'] = script
             main_data['transition_chunk_size'] = transition_chunk_size
             main_data['transition_duration'] = transition_duration
+            main_data['transition_area'] = 'stage area'
+            if transition_in_changing_area == 1:
+                main_data['transition_area'] = 'changing area'
     
         return main_data
 

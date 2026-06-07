@@ -268,13 +268,14 @@ def vwsc_to_score(vwsc_elements: List[Any]) -> Dict[str, Any]:
         
     for i in range(0, data['lastFrame']):
         main = vwsc_elements[i]['main']
-        if ('transition_id' in main and main['transition_id'] != ''):
+        if ('transition_id' in main and main['transition_id'] != '0'):
             tran = {}
             tran['frame'] = i+1
             # TODO! Convert this into casting member
-            tran['transition_id'] = main['transition_id']
-            tran['transition_chunk_size'] = main['transition_chunk_size']
-            tran['transition_duration'] = main['transition_duration']
+            tran['id'] = main['transition_id']
+            tran['chunk_size'] = main['transition_chunk_size']
+            tran['duration'] = main['transition_duration']
+            tran['area'] = main['transition_area']
             
             data['transition'].append(tran)
         

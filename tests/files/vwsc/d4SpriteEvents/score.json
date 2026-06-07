@@ -166,12 +166,5 @@
         []
     ],
     "tempo": [],
-    "transition": [
-        {
-            "frame": 1,
-            "transition_chunk_size": 0,
-            "transition_duration": 0,
-            "transition_id": "0"
-        }
-    ]
+    "transition": []
 }
