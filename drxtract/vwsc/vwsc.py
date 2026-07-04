@@ -268,15 +268,21 @@ def vwsc_to_score(vwsc_elements: List[Any]) -> Dict[str, Any]:
         
     for i in range(0, data['lastFrame']):
         main = vwsc_elements[i]['main']
-        if ('transition_id' in main and main['transition_id'] != '0'):
+        if ('transition_type' in main and main['transition_type'] != 0):
             tran = {}
             tran['frame'] = i+1
-            # TODO! Convert this into casting member
-            tran['id'] = main['transition_id']
+            tran['transition_type'] = main['transition_type']
+            tran['transition_type_name'] = main['transition_type_name']
             tran['chunk_size'] = main['transition_chunk_size']
             tran['duration'] = main['transition_duration']
-            tran['area'] = main['transition_area']
+            tran['change_area'] = main['transition_change_area']
             
+            data['transition'].append(tran)
+
+        if ('transition_cast_id' in main and main['transition_cast_id'] != '0'):
+            tran = {}
+            tran['frame'] = i+1
+            tran['castId'] = main['transition_cast_id']
             data['transition'].append(tran)
         
         if ('sound1_cast' in main and main['sound1_cast'] > 0):    

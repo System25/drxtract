@@ -23,10 +23,6 @@ class ButtonParser(CastParser):
         logging.info("Is a push button")
         castData['type'] = 'button'
         
-        unknown0 =  int(header_data[idx])
-        idx += 1            
-        logging.debug("unknown0 = %s", unknown0)
-        
         unknown1 =  struct.unpack(">h", header_data[idx:idx+2])[0]
         idx += 2
         logging.debug("unknown1 = %s", unknown1) 

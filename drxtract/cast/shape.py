@@ -28,10 +28,6 @@ class ShapeParser(CastParser):
         
         logging.info("Is a shape")
         castData['type'] = 'shape'
-        
-        unknown00 =  int(header_data[idx])
-        idx += 1                
-        logging.debug("unknown00 = %s", unknown00) 
 
         shape_type =  get_shape_name(
             struct.unpack(">h", header_data[idx:idx+2])[0])

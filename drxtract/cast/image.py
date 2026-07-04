@@ -24,10 +24,6 @@ class ImageParser(CastParser):
         # Director bitmap type
         logging.info("Is a bitmap")
         castData['type'] = 'bitmap'
-        
-        flags =  int(header_data[idx])
-        idx += 1
-        logging.debug("flags = %s", flags)
 
         bmp_bpp_val =  int(header_data[idx])
         idx += 1

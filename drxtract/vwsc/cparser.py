@@ -9,7 +9,7 @@ from ..lingosrc.util import get_keys
 from ..common import DIR_INK_NAMES, DIR_PALETTE_NAMES, DIR_TRANSITION_NAMES, \
     DIR_SPRITE_TYPES
 
-DEBUG_MAIN_CHANNEL_INFO: bool = False
+DEBUG_MAIN_CHANNEL_INFO: bool = True
 DEBUG_PALETTE_CHANNEL_INFO: bool = False
 DEBUG_SPRITE_INFO: bool = False
 

@@ -81,7 +81,8 @@ class D5VwscChannelParser(VwscChannelParser):
             logging.debug("unknown10: %04x", unknown10)
     
         main_data = {}
-        if tempo != 0 or sound1_cast != 0 or sound2_cast != 0 or script != 0:
+        if (tempo != 0 or sound1_cast != 0 or sound2_cast != 0 or script != 0
+            or transition_cast_id != 0):
             main_data['tempo'] = tempo
             main_data['transition_cast_id'] = transition_cast_id
             main_data['sound1_cast'] = sound1_cast
@@ -166,9 +167,9 @@ class D5VwscChannelParser(VwscChannelParser):
         ink_type = (int(frameData[indx]) % 64)
         
         # The first two bits of ink_type is also a flag bit
-        unknown_flag = ((ink_type >> 7) & 1)
+        stretch = ((ink_type >> 7) & 1)
         if DEBUG_SPRITE_INFO:
-            logging.debug("Sprite[%d] unknown_flag: %d", i, unknown_flag)
+            logging.debug("Sprite[%d] stretch: %d", i, stretch)
     
         trails = ((ink_type >> 6) & 1)
         if DEBUG_SPRITE_INFO:
@@ -232,17 +233,20 @@ class D5VwscChannelParser(VwscChannelParser):
         if DEBUG_SPRITE_INFO:
             logging.debug("Sprite[%d] width: %d", i, width)
     
-        flag2 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
-        flag2 = (flag2 & 0xFFFF)
+        scriptId = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
         indx = indx + 2
         if DEBUG_SPRITE_INFO:
-            logging.debug("Sprite[%d] flag2: %04x", i, flag2)
-            
-        flag1 = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
-        flag1 = (flag1 & 0xFFFF)
-        indx = indx + 2
+            logging.debug("Sprite[%d] scriptId: %04x", i, scriptId)
+        
+        flag2 = int(frameData[indx])
+        indx += 1
         if DEBUG_SPRITE_INFO:
-            logging.debug("Sprite[%d] flag1: %04x", i, flag1)
+            logging.debug("Sprite[%d] flag2: %02x", i, flag2)
+    
+        blend = int(frameData[indx])
+        indx += 1
+        if DEBUG_SPRITE_INFO:
+            logging.debug("Sprite[%d] blend: %d", i, blend)
     
         
         if castId > 0:
@@ -255,10 +259,13 @@ class D5VwscChannelParser(VwscChannelParser):
             sprite_data['y'] = y
             sprite_data['x'] = x
             sprite_data['height'] = height
+            sprite_data['stretch'] = stretch
             sprite_data['width'] = width
             sprite_data['trails'] = trails
             sprite_data['moveable'] = (((flag2 >> 15) & 1) != 0)
             sprite_data['editable'] = (((flag2 >> 14) & 1) != 0)
+            sprite_data['blend'] = int((255 - blend)*100/255)
+            sprite_data['scriptId'] = scriptId
             return sprite_data
         
         else:

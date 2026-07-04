@@ -9,6 +9,8 @@ import logging
 import struct
 from typing import Dict, Any
 
+TICK_IN_MS: int = 250
+
 def reverse_first_bit(n: int):
     return n ^ 0x80
 
@@ -63,7 +65,7 @@ class D4VwscChannelParser(VwscChannelParser):
         
         # The first bit indicates if is stage area or changing area
         transition_in_changing_area = ((transition_duration >> 7) & 1)
-        transition_duration = (transition_duration & 0x7F)
+        transition_duration = (transition_duration & 0x7F) * TICK_IN_MS
         indx += 1
         if DEBUG_MAIN_CHANNEL_INFO:
             logging.debug("transition_in_changing_area: %d",
@@ -83,10 +85,11 @@ class D4VwscChannelParser(VwscChannelParser):
             
         tempo = standarize_tempo_values(tempo)
         
-        transition_id = self.get_transition_name(int(frameData[indx]))
+        transition_type = int(frameData[indx])
+        transition_type_name = self.get_transition_name(transition_type)
         indx += 1
         if DEBUG_MAIN_CHANNEL_INFO:
-            logging.debug("transition_id: %s", transition_id)
+            logging.debug("transition_type: %s", transition_type_name)
     
         sound1_cast = struct.unpack(">h", frameData[(indx):(indx+2)])[0]
         indx = indx + 2
@@ -125,17 +128,17 @@ class D4VwscChannelParser(VwscChannelParser):
     
         main_data: Dict[str, Any] = {}
         if (tempo != 0 or sound1_cast != 0 or sound2_cast != 0 or script != 0
-            or transition_id != 0):
+            or transition_type != 0):
             main_data['tempo'] = tempo
-            main_data['transition_id'] = transition_id
+            main_data['transition_type'] = transition_type
+            main_data['transition_type_name'] = transition_type_name
             main_data['sound1_cast'] = sound1_cast
             main_data['sound2_cast'] = sound2_cast
             main_data['script'] = script
             main_data['transition_chunk_size'] = transition_chunk_size
             main_data['transition_duration'] = transition_duration
-            main_data['transition_area'] = 'stage area'
-            if transition_in_changing_area == 1:
-                main_data['transition_area'] = 'changing area'
+            main_data['transition_change_area'] = (
+                transition_in_changing_area == 1)
     
         return main_data
 

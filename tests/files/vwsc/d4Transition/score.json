@@ -1199,403 +1199,460 @@
     "tempo": [],
     "transition": [
         {
-            "area": "stage area",
+            "change_area": false,
             "chunk_size": 1,
             "duration": 0,
             "frame": 1,
-            "id": "wipe right"
+            "transition_type": 1,
+            "transition_type_name": "wipe right"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 4,
-            "duration": 8,
+            "duration": 2000,
             "frame": 2,
-            "id": "center out, square"
+            "transition_type": 9,
+            "transition_type_name": "center out, square"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 4,
-            "duration": 8,
+            "duration": 2000,
             "frame": 3,
-            "id": "center out, vertical"
+            "transition_type": 7,
+            "transition_type_name": "center out, vertical"
         },
         {
-            "area": "stage area",
+            "change_area": false,
             "chunk_size": 4,
-            "duration": 8,
+            "duration": 2000,
             "frame": 4,
-            "id": "checkerboard"
+            "transition_type": 38,
+            "transition_type_name": "checkerboard"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 16,
-            "duration": 8,
+            "duration": 2000,
             "frame": 5,
-            "id": "cover down"
+            "transition_type": 29,
+            "transition_type_name": "cover down"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 16,
-            "duration": 8,
+            "duration": 2000,
             "frame": 6,
-            "id": "cover down, left"
+            "transition_type": 30,
+            "transition_type_name": "cover down, left"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 16,
-            "duration": 8,
+            "duration": 2000,
             "frame": 7,
-            "id": "cover down, left"
+            "transition_type": 30,
+            "transition_type_name": "cover down, left"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 16,
-            "duration": 8,
+            "duration": 2000,
             "frame": 8,
-            "id": "cover down, right"
+            "transition_type": 31,
+            "transition_type_name": "cover down, right"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 16,
-            "duration": 8,
+            "duration": 2000,
             "frame": 9,
-            "id": "cover left"
+            "transition_type": 32,
+            "transition_type_name": "cover left"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 16,
-            "duration": 8,
+            "duration": 2000,
             "frame": 10,
-            "id": "cover right"
+            "transition_type": 33,
+            "transition_type_name": "cover right"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 16,
-            "duration": 8,
+            "duration": 2000,
             "frame": 11,
-            "id": "cover up"
+            "transition_type": 34,
+            "transition_type_name": "cover up"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 16,
-            "duration": 8,
+            "duration": 2000,
             "frame": 12,
-            "id": "cover up, left"
+            "transition_type": 35,
+            "transition_type_name": "cover up, left"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 16,
-            "duration": 8,
+            "duration": 2000,
             "frame": 13,
-            "id": "cover up, right"
+            "transition_type": 36,
+            "transition_type_name": "cover up, right"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 8,
-            "duration": 8,
+            "duration": 2000,
             "frame": 14,
-            "id": "dissolve, bits"
+            "transition_type": 52,
+            "transition_type_name": "dissolve, bits"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 8,
             "duration": 0,
             "frame": 15,
-            "id": "dissolve, bits fast"
+            "transition_type": 50,
+            "transition_type_name": "dissolve, bits fast"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 16,
-            "duration": 8,
+            "duration": 2000,
             "frame": 16,
-            "id": "dissolve, boxy rectangles"
+            "transition_type": 24,
+            "transition_type_name": "dissolve, boxy rectangles"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 16,
-            "duration": 8,
+            "duration": 2000,
             "frame": 17,
-            "id": "dissolve, boxy squares"
+            "transition_type": 25,
+            "transition_type_name": "dissolve, boxy squares"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 4,
-            "duration": 8,
+            "duration": 2000,
             "frame": 18,
-            "id": "dissolve, patterns"
+            "transition_type": 26,
+            "transition_type_name": "dissolve, patterns"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 1,
-            "duration": 8,
+            "duration": 2000,
             "frame": 19,
-            "id": "dissolve, pixels"
+            "transition_type": 51,
+            "transition_type_name": "dissolve, pixels"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 1,
             "duration": 0,
             "frame": 20,
-            "id": "dissolve, pixels fast"
+            "transition_type": 23,
+            "transition_type_name": "dissolve, pixels fast"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 4,
-            "duration": 8,
+            "duration": 2000,
             "frame": 21,
-            "id": "edges in, horizontal"
+            "transition_type": 6,
+            "transition_type_name": "edges in, horizontal"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 4,
-            "duration": 8,
+            "duration": 2000,
             "frame": 22,
-            "id": "edges in, square"
+            "transition_type": 10,
+            "transition_type_name": "edges in, square"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 4,
-            "duration": 8,
+            "duration": 2000,
             "frame": 23,
-            "id": "edges in, vertical"
+            "transition_type": 8,
+            "transition_type_name": "edges in, vertical"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 16,
-            "duration": 8,
+            "duration": 2000,
             "frame": 24,
-            "id": "push down"
+            "transition_type": 13,
+            "transition_type_name": "push down"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 16,
-            "duration": 8,
+            "duration": 2000,
             "frame": 25,
-            "id": "push left"
+            "transition_type": 11,
+            "transition_type_name": "push left"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 16,
-            "duration": 8,
+            "duration": 2000,
             "frame": 26,
-            "id": "push right"
+            "transition_type": 12,
+            "transition_type_name": "push right"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 16,
-            "duration": 8,
+            "duration": 2000,
             "frame": 27,
-            "id": "push up"
+            "transition_type": 14,
+            "transition_type_name": "push up"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 1,
-            "duration": 8,
+            "duration": 2000,
             "frame": 28,
-            "id": "random columns"
+            "transition_type": 28,
+            "transition_type_name": "random columns"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 1,
-            "duration": 8,
+            "duration": 2000,
             "frame": 29,
-            "id": "random rows"
+            "transition_type": 27,
+            "transition_type_name": "random rows"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 16,
-            "duration": 8,
+            "duration": 2000,
             "frame": 30,
-            "id": "reveal down"
+            "transition_type": 19,
+            "transition_type_name": "reveal down"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 16,
-            "duration": 8,
+            "duration": 2000,
             "frame": 31,
-            "id": "reveal down, left"
+            "transition_type": 20,
+            "transition_type_name": "reveal down, left"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 16,
-            "duration": 8,
+            "duration": 2000,
             "frame": 32,
-            "id": "reveal down, right"
+            "transition_type": 18,
+            "transition_type_name": "reveal down, right"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 16,
-            "duration": 8,
+            "duration": 2000,
             "frame": 33,
-            "id": "reveal left"
+            "transition_type": 21,
+            "transition_type_name": "reveal left"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 16,
-            "duration": 8,
+            "duration": 2000,
             "frame": 34,
-            "id": "reveal right"
+            "transition_type": 17,
+            "transition_type_name": "reveal right"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 16,
-            "duration": 8,
+            "duration": 2000,
             "frame": 35,
-            "id": "reveal up"
+            "transition_type": 15,
+            "transition_type_name": "reveal up"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 16,
-            "duration": 8,
+            "duration": 2000,
             "frame": 36,
-            "id": "reveal up, left"
+            "transition_type": 22,
+            "transition_type_name": "reveal up, left"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 16,
-            "duration": 8,
+            "duration": 2000,
             "frame": 37,
-            "id": "reveal up, right"
+            "transition_type": 16,
+            "transition_type_name": "reveal up, right"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 4,
-            "duration": 8,
+            "duration": 2000,
             "frame": 38,
-            "id": "strips on bottom, build left"
+            "transition_type": 39,
+            "transition_type_name": "strips on bottom, build left"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 4,
-            "duration": 8,
+            "duration": 2000,
             "frame": 39,
-            "id": "strips on bottom, build right"
+            "transition_type": 40,
+            "transition_type_name": "strips on bottom, build right"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 4,
-            "duration": 8,
+            "duration": 2000,
             "frame": 40,
-            "id": "strips on left, build down"
+            "transition_type": 41,
+            "transition_type_name": "strips on left, build down"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 4,
-            "duration": 8,
+            "duration": 2000,
             "frame": 41,
-            "id": "strips on left, build up"
+            "transition_type": 42,
+            "transition_type_name": "strips on left, build up"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 4,
-            "duration": 8,
+            "duration": 2000,
             "frame": 42,
-            "id": "strips on right, build down"
+            "transition_type": 43,
+            "transition_type_name": "strips on right, build down"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 4,
-            "duration": 8,
+            "duration": 2000,
             "frame": 43,
-            "id": "strips on right, build up"
+            "transition_type": 44,
+            "transition_type_name": "strips on right, build up"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 4,
-            "duration": 8,
+            "duration": 2000,
             "frame": 44,
-            "id": "strips on top, build left"
+            "transition_type": 45,
+            "transition_type_name": "strips on top, build left"
         },
         {
-            "area": "changing area",
+            "change_area": true,
             "chunk_size": 4,
-            "duration": 8,
+            "duration": 2000,
             "frame": 45,
-            "id": "strips on top, build right"
+            "transition_type": 46,
+            "transition_type_name": "strips on top, build right"
         },
         {
-            "area": "stage area",
+            "change_area": false,
             "chunk_size": 2,
-            "duration": 8,
+            "duration": 2000,
             "frame": 46,
-            "id": "venetian blinds"
+            "transition_type": 37,
+            "transition_type_name": "venetian blinds"
         },
         {
-            "area": "stage area",
+            "change_area": false,
             "chunk_size": 1,
             "duration": 0,
             "frame": 47,
-            "id": "wipe right"
+            "transition_type": 1,
+            "transition_type_name": "wipe right"
         },
         {
-            "area": "stage area",
+            "change_area": false,
             "chunk_size": 1,
             "duration": 0,
             "frame": 48,
-            "id": "wipe right"
+            "transition_type": 1,
+            "transition_type_name": "wipe right"
         },
         {
-            "area": "stage area",
+            "change_area": false,
             "chunk_size": 1,
             "duration": 0,
             "frame": 49,
-            "id": "wipe right"
+            "transition_type": 1,
+            "transition_type_name": "wipe right"
         },
         {
-            "area": "stage area",
+            "change_area": false,
             "chunk_size": 1,
             "duration": 0,
             "frame": 50,
-            "id": "wipe right"
+            "transition_type": 1,
+            "transition_type_name": "wipe right"
         },
         {
-            "area": "stage area",
+            "change_area": false,
             "chunk_size": 1,
             "duration": 0,
             "frame": 51,
-            "id": "wipe right"
+            "transition_type": 1,
+            "transition_type_name": "wipe right"
         },
         {
-            "area": "stage area",
+            "change_area": false,
             "chunk_size": 1,
             "duration": 0,
             "frame": 52,
-            "id": "wipe right"
+            "transition_type": 1,
+            "transition_type_name": "wipe right"
         },
         {
-            "area": "stage area",
+            "change_area": false,
             "chunk_size": 1,
             "duration": 0,
             "frame": 53,
-            "id": "wipe right"
+            "transition_type": 1,
+            "transition_type_name": "wipe right"
         },
         {
-            "area": "stage area",
+            "change_area": false,
             "chunk_size": 12,
-            "duration": 45,
+            "duration": 11250,
             "frame": 54,
-            "id": "wipe right"
+            "transition_type": 1,
+            "transition_type_name": "wipe right"
         },
         {
-            "area": "stage area",
+            "change_area": false,
             "chunk_size": 10,
-            "duration": 81,
+            "duration": 20250,
             "frame": 55,
-            "id": "wipe right"
+            "transition_type": 1,
+            "transition_type_name": "wipe right"
         },
         {
-            "area": "stage area",
+            "change_area": false,
             "chunk_size": 4,
-            "duration": 74,
+            "duration": 18500,
             "frame": 56,
-            "id": "wipe right"
+            "transition_type": 1,
+            "transition_type_name": "wipe right"
         },
         {
-            "area": "stage area",
+            "change_area": false,
             "chunk_size": 48,
-            "duration": 42,
+            "duration": 10500,
             "frame": 57,
-            "id": "wipe right"
+            "transition_type": 1,
+            "transition_type_name": "wipe right"
         }
     ]
 }

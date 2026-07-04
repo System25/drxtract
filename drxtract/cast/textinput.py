@@ -21,11 +21,7 @@ class TextInputParser(CastParser):
         castData: Dict[str, Any] = {}
         
         logging.info("Is a text input field")
-        castData['type'] = 'field'            
-
-        unknown0 =  int(header_data[idx])
-        idx += 1            
-        logging.debug("unknown0 = %s", unknown0)  
+        castData['type'] = 'field'
 
         border =  int(header_data[idx])
         idx += 1            

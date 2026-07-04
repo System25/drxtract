@@ -94,8 +94,12 @@ def parse_cast_data_struct_dir4(fdata: bytes) -> CastDataStruct:
     idx += 1
     logging.debug("data_type = %02x", data_type)
     
-    header_data = fdata[idx:idx + header_size - 1]
-    idx += header_size - 1
+    flags =  int(fdata[idx])
+    idx += 1
+    logging.debug("flags = %s", flags)
+    
+    header_data = fdata[idx:idx + header_size - 2]
+    idx += header_size - 2
     
     if additional_size > 0:
         basic_data = fdata[idx:idx + additional_size]

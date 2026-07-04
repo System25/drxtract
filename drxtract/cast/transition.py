@@ -25,13 +25,13 @@ class TransitionParser(CastParser):
         logging.info("Is a transition")
         castData['type'] = 'transition'
             
-        smoothness =  struct.unpack(">h", header_data[idx:idx+2])[0]
+        chunk_size =  struct.unpack(">h", header_data[idx:idx+2])[0]
         idx += 2
-        logging.debug("smoothness = %s", smoothness)
+        logging.debug("chunk_size = %s", chunk_size)
         
-        transition =  header_data[idx]
+        transition_type =  header_data[idx]
         idx += 1                
-        logging.debug("transition = %s", transition) 
+        logging.debug("transition_type = %s", transition_type) 
         
         stage_or_area =  header_data[idx]
         idx += 1                
@@ -43,8 +43,10 @@ class TransitionParser(CastParser):
         logging.debug("duration = %s", duration)
         
         castData['transition'] = {}
-        castData['transition']['type'] = get_transition_name(transition)
-        castData['transition']['smoothness'] = smoothness
+        castData['transition']['transition_type'] = transition_type
+        castData['transition']['transition_type_name'] = get_transition_name(
+            transition_type)
+        castData['transition']['chunk_size'] = chunk_size
         castData['transition']['duration'] = duration
-        castData['transition']['in_changing_area'] = (stage_or_area == 2)
+        castData['transition']['change_area'] = (stage_or_area == 2)
         return castData

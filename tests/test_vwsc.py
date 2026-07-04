@@ -21,7 +21,6 @@ class TestScript(unittest.TestCase):
     def setUp(self):
         os.chdir(os.path.join(os.path.dirname(__file__), 'files', 'vwsc'))
     
-
     @parameterized.expand([
         ['AppleGame'],
         ['d4TempoTypes'],
