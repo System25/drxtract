@@ -276,6 +276,9 @@ def parse_dir_file_data(byte_order: str, rifx_offset, \
                 
                 elif res.chunkID == 'THUM':
                     logging.info("Thumnail are ignored!")
+                    
+                elif res.chunkID == 'XMED':
+                    logging.info("Xtra Media are ignored!")
                 
                 elif res.chunkID == 'BITD':
                     clutData = bytes()

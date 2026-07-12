@@ -42,11 +42,10 @@ class TransitionParser(CastParser):
         idx += 2
         logging.debug("duration = %s", duration)
         
-        castData['transition'] = {}
-        castData['transition']['transition_type'] = transition_type
-        castData['transition']['transition_type_name'] = get_transition_name(
+        castData['transition_type'] = transition_type
+        castData['transition_type_name'] = get_transition_name(
             transition_type)
-        castData['transition']['chunk_size'] = chunk_size
-        castData['transition']['duration'] = duration
-        castData['transition']['change_area'] = (stage_or_area == 2)
+        castData['chunk_size'] = chunk_size
+        castData['duration'] = duration
+        castData['change_area'] = (stage_or_area == 2)
         return castData

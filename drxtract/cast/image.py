@@ -134,6 +134,7 @@ class ImageParser(CastParser):
         castData['locH'] = locH
         castData['locV'] = locV
         castData['depth'] = bmp_bpp
+        castData['palette'] = 0
         if bmp_bpp == 8:
             castData['palette'] = palette
             castData['palette_txt'] = palette_txt

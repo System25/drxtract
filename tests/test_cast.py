@@ -13,6 +13,7 @@ import wave
 from parameterized import parameterized
 
 from drxtract.dir import parse_dir_file_data, DirectorFile
+from drxtract.lingosrc.util import vsprintf
 
 
 class TestScript(unittest.TestCase):
@@ -22,6 +23,31 @@ class TestScript(unittest.TestCase):
     def setUp(self):
         os.chdir(os.path.join(os.path.dirname(__file__), 'files', 'cast'))
     
+
+    @parameterized.expand([
+        ['<', 'd5tr0001'],
+    ])
+    def test_transitions(self, byte_order: str, dir_name: str):
+        dir_file = os.path.join('transition', dir_name, dir_name + ".DIR")
+        
+        with open(dir_file, mode='rb') as file:
+            fdata = file.read()
+            
+            # Parse the director file
+            dirFile: DirectorFile = parse_dir_file_data(byte_order, 0, fdata)
+            
+            # Get all transition casting elements
+            n = 0
+            for element in dirFile.cast:
+                n = n + 1
+                if element['type'] == 'transition':
+                    actualData = json.dumps(element, indent=4, sort_keys=True)
+                    fname = vsprintf("cast%s.json", n)
+                    json_file = os.path.join('transition', dir_name, fname)
+                    
+                    with open(json_file, mode='rb') as file:
+                        expectedData = file.read().decode('utf-8')
+                    self.assertEqual(expectedData, actualData)
 
     @parameterized.expand([
         ['<', 'd4tf0001'],

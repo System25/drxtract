@@ -32,7 +32,8 @@ class TestScript(unittest.TestCase):
         ['d4FadeToBlack'],
         ['d4FadeToWhite'],
         ['d4PaletteTransition'],
-        ['d4Transition']
+        ['d4Transition'],
+        ['d5Transition']
         
     ])
     def test_exe(self, dir_name: str):

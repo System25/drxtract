@@ -1,0 +1,9 @@
+{
+    "change_area": true,
+    "chunk_size": 2,
+    "content": {},
+    "duration": 2000,
+    "transition_type": 1,
+    "transition_type_name": "wipe right",
+    "type": "transition"
+}
