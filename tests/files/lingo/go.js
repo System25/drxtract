@@ -4,13 +4,13 @@ function exitFrame() {
 
 function keyDown() {
     put(new LingoString("In frame 1, key = "), _key.key);
-    if (_key.key == new LingoString("n")) {
+    if ((_key.key).valueOf() == new LingoString("n")) {
         _movie.goNext();
     }
-    if (_key.key == new LingoString("p")) {
+    if ((_key.key).valueOf() == new LingoString("p")) {
         _movie.goPrevious();
     }
-    if (_key.key == new LingoString("1")) {
+    if ((_key.key).valueOf() == new LingoString("1")) {
         _movie.go(1);
     }
 }

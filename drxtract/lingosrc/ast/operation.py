@@ -246,7 +246,7 @@ class BinaryOperation(Node):
         if operation == 'assign':
             return vsprintf("%s = %s",
                               l.generate_js(indentation, factory_method),
-                              r.generate_js(indentation, factory_method))            
+                              r.generate_js(indentation, factory_method))       
         
         op: str = JS_BIN_OP[operation]
         if op.startswith('sprite('):
@@ -257,6 +257,10 @@ class BinaryOperation(Node):
             return vsprintf("%s%s(%s)",
                             l.generate_js(indentation, factory_method), op,
                             r.generate_js(indentation, factory_method))
+        elif operation == 'eq' or operation == 'ne':
+            return vsprintf("((%s).valueOf() %s %s)",
+                                 l.generate_js(indentation, factory_method), op,
+                                 r.generate_js(indentation, factory_method))
         else:  
             return vsprintf("(%s %s %s)",
                                  l.generate_js(indentation, factory_method), op,

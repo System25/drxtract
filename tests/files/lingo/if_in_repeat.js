@@ -4,7 +4,7 @@ function exitFrame() {
     put(new LingoString("first loop"));
     for(i = 1; i <= 10; i++) {
         put(new LingoString("i="), i);
-        if ((i % 2) == 0) {
+        if (((i % 2)).valueOf() == 0) {
             put(new LingoString("i is even"));
         } else {
             put(new LingoString("i is odd"));
@@ -13,7 +13,7 @@ function exitFrame() {
     put(new LingoString("Second loop"));
     for(i = 1; i <= 10; i++) {
         put(new LingoString("i="), i);
-        if (i == 9) {
+        if ((i).valueOf() == 9) {
             break;
         } else {
             put(new LingoString("do not exit yet"));
